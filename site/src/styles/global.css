@@ -37,6 +37,7 @@ html {
 	scroll-behavior: smooth;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
+	overflow-x: hidden;
 }
 
 /* Dark mode (default) */
@@ -57,13 +58,21 @@ body {
 	line-height: 1.8;
 	letter-spacing: 0.01em;
 	word-spacing: 0.05em;
-	font-size: 1.0625rem;
+	font-size: 1rem;
+}
+
+@media (min-width: 640px) {
+	body {
+		font-size: 1.0625rem;
+	}
 }
 
 /* Prose styles */
 .prose {
 	max-width: 65ch;
 	margin-inline: auto;
+	overflow-wrap: break-word;
+	word-break: break-word;
 }
 
 .prose h1,
@@ -214,6 +223,21 @@ html.light .prose th {
 
 html.light .prose tbody tr:nth-child(even) {
 	background: var(--color-surface-100);
+}
+
+@media (max-width: 639px) {
+	.prose table {
+		display: block;
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
+		white-space: nowrap;
+	}
+
+	.prose th,
+	.prose td {
+		padding: 0.5em 0.75em;
+		font-size: 0.8125rem;
+	}
 }
 
 /* Callouts */

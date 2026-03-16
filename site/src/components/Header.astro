@@ -8,15 +8,15 @@ const navLinks = [
 ---
 
 <header class="sticky top-0 z-50 border-b border-surface-800 bg-surface-950/80 backdrop-blur-lg light:border-surface-200 light:bg-surface-50/80">
-	<nav class="mx-auto flex max-w-4xl items-center justify-between px-6 py-4">
+	<nav class="mx-auto flex max-w-4xl items-center justify-between px-4 py-4 sm:px-6">
 		<a href="/" class="group flex items-center gap-3 text-lg font-bold no-underline">
 			<span class="text-2xl" aria-hidden="true">🌙</span>
-			<span class="text-surface-100 light:text-surface-900">
+			<span class="hidden text-surface-100 sm:inline light:text-surface-900">
 				Shipping <span class="text-surface-500 light:text-surface-700">in the</span> Dark
 			</span>
 		</a>
 
-		<div class="flex items-center gap-6">
+		<div class="flex items-center gap-3 sm:gap-6">
 			{navLinks.map(({ href, label }) => (
 				<a
 					href={href}
