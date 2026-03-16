@@ -5,7 +5,7 @@ interface Props {
 	ogImage?: string;
 }
 
-const { title, description = 'The honest journal of a solo developer building something that matters.', ogImage } = Astro.props;
+const { title, description = 'The honest journal of a solo developer building something that matters.', ogImage = new URL('/og/default.png', Astro.site).toString() } = Astro.props;
 const canonicalUrl = new URL(Astro.url.pathname, Astro.site);
 ---
 

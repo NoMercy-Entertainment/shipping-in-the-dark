@@ -15,7 +15,7 @@ const agentMap = new Map(
 );
 ---
 
-<BaseLayout title="Home">
+<BaseLayout title="Home" ogImage={new URL('/og/default.png', Astro.site).toString()}>
 	<Header />
 
 	<main class="mx-auto max-w-4xl px-6 py-12">

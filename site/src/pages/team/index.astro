@@ -10,7 +10,7 @@ const agents = (await getCollection('agents'))
 	.sort((a, b) => a.data.display_name.localeCompare(b.data.display_name));
 ---
 
-<BaseLayout title="The Team">
+<BaseLayout title="The Team" ogImage={new URL('/og/default.png', Astro.site).toString()}>
 	<Header />
 
 	<main class="mx-auto max-w-4xl px-6 py-12">
