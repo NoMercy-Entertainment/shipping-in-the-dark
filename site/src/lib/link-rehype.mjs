@@ -11,6 +11,8 @@ export function rehypeRewriteLinks() {
 			const agentMatch = href.match(/\.\.\/agents\/([^.]+)\.md$/);
 			if (agentMatch) {
 				node.properties.href = `/team/${agentMatch[1]}`;
+				node.properties['data-agent'] = agentMatch[1];
+				node.properties.className = [...(node.properties.className || []), 'agent-link'];
 				return;
 			}
 

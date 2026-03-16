@@ -2,6 +2,7 @@
 import BaseLayout from './BaseLayout.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import AgentTooltip from '../components/AgentTooltip.astro';
 
 interface Props {
 	title: string;
@@ -111,6 +112,7 @@ const difficultyLabels: Record<string, string> = {
 				<slot />
 			</div>
 		</article>
+		<AgentTooltip />
 	</main>
 
 	<Footer />

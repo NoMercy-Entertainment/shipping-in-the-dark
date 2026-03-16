@@ -3,6 +3,7 @@ import { getCollection, render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
+import AgentTooltip from '../../components/AgentTooltip.astro';
 
 export async function getStaticPaths() {
 	const agents = await getCollection('agents');
@@ -60,6 +61,7 @@ const modelColors: Record<string, string> = {
 		<div class="prose">
 			<Content />
 		</div>
+		<AgentTooltip />
 	</main>
 
 	<Footer />

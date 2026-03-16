@@ -1,0 +1,302 @@
+---
+// No props needed — this is a self-contained island
+---
+
+<div id="agent-tooltip" class="agent-tooltip" role="tooltip" aria-hidden="true">
+	<div class="agent-tooltip-inner">
+		<div class="agent-tooltip-header">
+			<span class="agent-tooltip-emoji" id="tooltip-emoji"></span>
+			<div>
+				<div class="agent-tooltip-name" id="tooltip-name"></div>
+				<div class="agent-tooltip-title" id="tooltip-title"></div>
+			</div>
+		</div>
+		<div class="agent-tooltip-tagline" id="tooltip-tagline"></div>
+		<div class="agent-tooltip-footer">
+			<span class="agent-tooltip-model" id="tooltip-model"></span>
+			<span class="agent-tooltip-pronouns" id="tooltip-pronouns"></span>
+		</div>
+	</div>
+</div>
+
+<style is:global>
+.agent-tooltip {
+	position: fixed;
+	z-index: 100;
+	pointer-events: none;
+	opacity: 0;
+	transform: translateY(4px);
+	transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.agent-tooltip.visible {
+	opacity: 1;
+	transform: translateY(0);
+	pointer-events: auto;
+}
+
+.agent-tooltip-inner {
+	background: var(--color-surface-900);
+	border: 1px solid var(--color-surface-700);
+	border-radius: 12px;
+	padding: 16px;
+	max-width: 320px;
+	min-width: 240px;
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+html.light .agent-tooltip-inner {
+	background: white;
+	border-color: var(--color-surface-200);
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.agent-tooltip-header {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	margin-bottom: 10px;
+}
+
+.agent-tooltip-emoji {
+	font-size: 2rem;
+	line-height: 1;
+}
+
+.agent-tooltip-name {
+	font-weight: 700;
+	font-size: 1rem;
+	color: var(--color-surface-50);
+}
+
+html.light .agent-tooltip-name {
+	color: var(--color-surface-950);
+}
+
+.agent-tooltip-title {
+	font-size: 0.8125rem;
+	color: var(--color-surface-400);
+}
+
+html.light .agent-tooltip-title {
+	color: var(--color-surface-600);
+}
+
+.agent-tooltip-tagline {
+	font-size: 0.8125rem;
+	font-style: italic;
+	color: var(--color-surface-400);
+	margin-bottom: 10px;
+	line-height: 1.5;
+}
+
+html.light .agent-tooltip-tagline {
+	color: var(--color-surface-700);
+}
+
+.agent-tooltip-footer {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+}
+
+.agent-tooltip-model {
+	font-size: 0.75rem;
+	font-weight: 600;
+	padding: 2px 8px;
+	border-radius: 9999px;
+}
+
+.agent-tooltip-model[data-model="opus"] {
+	background: rgba(168, 85, 247, 0.15);
+	color: #c084fc;
+}
+.agent-tooltip-model[data-model="sonnet"] {
+	background: rgba(56, 189, 248, 0.15);
+	color: #38bdf8;
+}
+.agent-tooltip-model[data-model="haiku"] {
+	background: rgba(52, 211, 153, 0.15);
+	color: #34d399;
+}
+.agent-tooltip-model[data-model="human"] {
+	background: rgba(251, 191, 36, 0.15);
+	color: #fbbf24;
+}
+
+html.light .agent-tooltip-model[data-model="opus"] {
+	background: rgba(147, 51, 234, 0.1);
+	color: #7c3aed;
+}
+html.light .agent-tooltip-model[data-model="sonnet"] {
+	background: rgba(14, 165, 233, 0.1);
+	color: #0369a1;
+}
+html.light .agent-tooltip-model[data-model="haiku"] {
+	background: rgba(16, 185, 129, 0.1);
+	color: #047857;
+}
+html.light .agent-tooltip-model[data-model="human"] {
+	background: rgba(245, 158, 11, 0.1);
+	color: #b45309;
+}
+
+.agent-tooltip-pronouns {
+	font-size: 0.75rem;
+	color: var(--color-surface-500);
+}
+
+/* Agent link styling */
+a.agent-link {
+	text-decoration-style: dotted !important;
+}
+</style>
+
+<script is:inline>
+(function() {
+	let agentData = null;
+	let tooltip = null;
+	let currentLink = null;
+	let hideTimeout = null;
+	let showTimeout = null;
+
+	async function loadAgentData() {
+		if (agentData) return agentData;
+		try {
+			const res = await fetch('/agents.json');
+			agentData = await res.json();
+			return agentData;
+		} catch {
+			return null;
+		}
+	}
+
+	function positionTooltip(tooltip, link) {
+		const rect = link.getBoundingClientRect();
+		const tooltipRect = tooltip.getBoundingClientRect();
+
+		let top = rect.top - tooltipRect.height - 8;
+		let left = rect.left + (rect.width / 2) - (tooltipRect.width / 2);
+
+		// If tooltip would go above viewport, show below
+		if (top < 8) {
+			top = rect.bottom + 8;
+		}
+
+		// Keep within horizontal bounds
+		if (left < 8) left = 8;
+		if (left + tooltipRect.width > window.innerWidth - 8) {
+			left = window.innerWidth - tooltipRect.width - 8;
+		}
+
+		tooltip.style.top = top + 'px';
+		tooltip.style.left = left + 'px';
+	}
+
+	async function showTooltip(link) {
+		const agentId = link.dataset.agent;
+		if (!agentId) return;
+
+		const data = await loadAgentData();
+		if (!data || !data[agentId]) return;
+
+		const agent = data[agentId];
+		tooltip = document.getElementById('agent-tooltip');
+		if (!tooltip) return;
+
+		document.getElementById('tooltip-emoji').textContent = agent.avatarEmoji;
+		document.getElementById('tooltip-name').textContent = agent.displayName;
+		document.getElementById('tooltip-title').textContent = agent.fullTitle.replace(/ — NoMercy Entertainment$/, '');
+		document.getElementById('tooltip-tagline').textContent = '"' + agent.tagline + '"';
+
+		const modelEl = document.getElementById('tooltip-model');
+		const modelLabels = { opus: 'Opus', sonnet: 'Sonnet', haiku: 'Haiku', human: 'Human' };
+		modelEl.textContent = modelLabels[agent.model] || agent.model;
+		modelEl.dataset.model = agent.model;
+
+		document.getElementById('tooltip-pronouns').textContent = agent.pronouns;
+
+		tooltip.classList.add('visible');
+		tooltip.setAttribute('aria-hidden', 'false');
+
+		// Position after making visible so we can measure
+		requestAnimationFrame(() => positionTooltip(tooltip, link));
+
+		currentLink = link;
+	}
+
+	function hideTooltip() {
+		if (tooltip) {
+			tooltip.classList.remove('visible');
+			tooltip.setAttribute('aria-hidden', 'true');
+		}
+		currentLink = null;
+	}
+
+	// Event delegation on the document
+	document.addEventListener('mouseenter', function(e) {
+		const link = e.target.closest('a.agent-link');
+		if (!link) return;
+
+		clearTimeout(hideTimeout);
+		clearTimeout(showTimeout);
+
+		showTimeout = setTimeout(() => showTooltip(link), 200);
+	}, true);
+
+	document.addEventListener('mouseleave', function(e) {
+		const link = e.target.closest('a.agent-link');
+		if (!link) return;
+
+		clearTimeout(showTimeout);
+		hideTimeout = setTimeout(hideTooltip, 150);
+	}, true);
+
+	// Keep tooltip visible when hovering over it
+	document.addEventListener('mouseenter', function(e) {
+		if (e.target.closest('#agent-tooltip')) {
+			clearTimeout(hideTimeout);
+		}
+	}, true);
+
+	document.addEventListener('mouseleave', function(e) {
+		if (e.target.closest('#agent-tooltip')) {
+			hideTimeout = setTimeout(hideTooltip, 150);
+		}
+	}, true);
+
+	// Mobile: tap to toggle
+	document.addEventListener('click', function(e) {
+		const link = e.target.closest('a.agent-link');
+		if (!link) return;
+
+		// On touch devices, first tap shows tooltip, second tap navigates
+		if ('ontouchstart' in window) {
+			if (currentLink === link && tooltip && tooltip.classList.contains('visible')) {
+				// Second tap — let navigation happen
+				return;
+			}
+			e.preventDefault();
+			showTooltip(link);
+		}
+	});
+
+	// Close tooltip on outside tap (mobile)
+	document.addEventListener('click', function(e) {
+		if (!e.target.closest('#agent-tooltip') && !e.target.closest('a.agent-link')) {
+			hideTooltip();
+		}
+	});
+
+	// Close on scroll
+	document.addEventListener('scroll', function() {
+		clearTimeout(showTimeout);
+		hideTooltip();
+	}, { passive: true });
+
+	// Preload agent data
+	if (document.querySelector('a.agent-link')) {
+		loadAgentData();
+	}
+})();
+</script>
