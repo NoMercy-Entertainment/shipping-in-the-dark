@@ -298,10 +298,25 @@ export const GET: APIRoute = async ({ props }) => {
 					style: 'normal',
 				},
 			],
+			loadAdditionalAsset: async (languageCode: string, segment: string) => {
+				if (languageCode === 'emoji') {
+					const codePoint = segment.codePointAt(0)?.toString(16);
+					if (!codePoint) return '';
+					const url = `https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/${codePoint}.svg`;
+					const response = await fetch(url);
+					if (!response.ok) return '';
+					const svgText = await response.text();
+					return `data:image/svg+xml;base64,${Buffer.from(svgText).toString('base64')}`;
+				}
+				return '';
+			},
 		},
 	);
 
-	const resvg = new Resvg(svg, { fitTo: { mode: 'width', value: 1200 } });
+	const resvg = new Resvg(svg, {
+		fitTo: { mode: 'width', value: 1200 },
+		font: { loadSystemFonts: false },
+	});
 	const png = resvg.render().asPng();
 
 	return new Response(png, {
