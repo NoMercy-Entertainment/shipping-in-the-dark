@@ -7,6 +7,7 @@ interface Props {
 	title: string;
 	date: Date;
 	description?: string;
+	ogImage?: string;
 	readingTime?: number;
 	difficulty?: string;
 	severity?: string;
@@ -20,6 +21,8 @@ interface Props {
 const {
 	title,
 	date,
+	description,
+	ogImage,
 	readingTime,
 	difficulty,
 	severity,
@@ -29,6 +32,27 @@ const {
 	series,
 	author,
 } = Astro.props;
+
+const canonicalUrl = new URL(Astro.url.pathname, Astro.site).toString();
+
+const jsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'BlogPosting',
+	headline: title,
+	datePublished: date.toISOString(),
+	author: {
+		'@type': 'Organization',
+		name: 'NoMercy Entertainment',
+	},
+	publisher: {
+		'@type': 'Organization',
+		name: 'NoMercy Entertainment',
+		url: 'https://nomercy.tv',
+	},
+	url: canonicalUrl,
+	...(description ? { description } : {}),
+	...(ogImage ? { image: ogImage } : {}),
+};
 
 const formattedDate = date.toLocaleDateString('en-US', {
 	weekday: 'long',
@@ -50,7 +74,8 @@ const difficultyLabels: Record<string, string> = {
 };
 ---
 
-<BaseLayout title={title}>
+<BaseLayout title={title} description={description} ogImage={ogImage}>
+	<script type="application/ld+json" set:html={JSON.stringify(jsonLd)} slot="head" />
 	<Header />
 
 	<main class="mx-auto max-w-4xl px-6 py-12">
