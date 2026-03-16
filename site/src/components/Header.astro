@@ -12,7 +12,7 @@ const navLinks = [
 		<a href="/" class="group flex items-center gap-3 text-lg font-bold no-underline">
 			<span class="text-2xl" aria-hidden="true">🌙</span>
 			<span class="text-surface-100 light:text-surface-900">
-				Shipping <span class="text-surface-500">in the</span> Dark
+				Shipping <span class="text-surface-500 light:text-surface-700">in the</span> Dark
 			</span>
 		</a>
 
@@ -23,7 +23,7 @@ const navLinks = [
 					class:list={[
 						'text-sm font-medium no-underline transition-colors',
 						currentPath === href || (href !== '/' && currentPath.startsWith(href))
-							? 'text-accent-400 light:text-accent-600'
+							? 'text-accent-400 light:text-accent-700'
 							: 'text-surface-400 hover:text-surface-100 light:text-surface-600 light:hover:text-surface-900',
 					]}
 				>
@@ -33,7 +33,7 @@ const navLinks = [
 			<button
 				id="theme-toggle"
 				type="button"
-				class="rounded-full p-2 text-surface-400 transition-colors hover:bg-surface-800 hover:text-surface-100 light:hover:bg-surface-200 light:hover:text-surface-900"
+				class="rounded-full p-2 text-surface-400 transition-colors hover:bg-surface-800 hover:text-surface-100 light:text-surface-600 light:hover:bg-surface-200 light:hover:text-surface-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-600"
 				aria-label="Toggle theme"
 			>
 				<svg class="dark-icon hidden h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

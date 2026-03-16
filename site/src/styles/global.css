@@ -20,6 +20,7 @@
 	--color-accent-400: oklch(0.765 0.177 163.223);
 	--color-accent-500: oklch(0.696 0.17 162.48);
 	--color-accent-600: oklch(0.596 0.145 163.225);
+	--color-accent-700: oklch(0.48 0.13 163);
 }
 
 /* Base reset */
@@ -94,11 +95,15 @@ html.light .prose h2 { border-bottom-color: var(--color-surface-200); }
 }
 
 html.light .prose a {
-	color: var(--color-accent-600);
+	color: var(--color-accent-700);
 }
 
 .prose a:hover {
 	color: var(--color-accent-500);
+}
+
+html.light .prose a:hover {
+	color: var(--color-accent-600);
 }
 
 .prose blockquote {
@@ -112,7 +117,7 @@ html.light .prose a {
 
 html.light .prose blockquote {
 	border-left-color: var(--color-accent-600);
-	color: var(--color-surface-600);
+	color: var(--color-surface-700);
 }
 
 .prose ul,
@@ -129,6 +134,10 @@ html.light .prose blockquote {
 	color: var(--color-surface-500);
 }
 
+html.light .prose li::marker {
+	color: var(--color-surface-700);
+}
+
 /* Code blocks */
 .prose code {
 	font-family: var(--font-mono);
@@ -140,6 +149,7 @@ html.light .prose blockquote {
 
 html.light .prose code {
 	background: var(--color-surface-200);
+	color: var(--color-surface-900);
 }
 
 .prose pre {
@@ -155,6 +165,7 @@ html.light .prose code {
 
 html.light .prose pre {
 	border-color: var(--color-surface-200);
+	background-color: var(--color-surface-100);
 }
 
 .prose pre code {
@@ -192,7 +203,7 @@ html.light .prose td {
 }
 
 html.light .prose th {
-	color: var(--color-surface-600);
+	color: var(--color-surface-700);
 }
 
 .prose tbody tr:nth-child(even) {
@@ -244,9 +255,9 @@ html.light .prose tbody tr:nth-child(even) {
 	background: oklch(0.65 0.2 25 / 0.08);
 }
 
-html.light .callout-info { background: oklch(0.7 0.15 230 / 0.06); }
-html.light .callout-warning { background: oklch(0.75 0.15 75 / 0.06); }
-html.light .callout-danger { background: oklch(0.65 0.2 25 / 0.06); }
+html.light .callout-info { background: oklch(0.7 0.15 230 / 0.12); }
+html.light .callout-warning { background: oklch(0.75 0.15 75 / 0.12); }
+html.light .callout-danger { background: oklch(0.65 0.2 25 / 0.12); }
 
 /* Horizontal rule */
 .prose hr {

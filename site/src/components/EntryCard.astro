@@ -34,7 +34,7 @@ const difficultyLabels: Record<string, string> = {
 ---
 
 <a href={`/entry/${slug}`} class="group block rounded-xl border border-surface-800 p-6 no-underline transition-all hover:border-surface-600 hover:bg-surface-900/50 light:border-surface-200 light:hover:border-surface-300 light:hover:bg-surface-100/50">
-	<div class="mb-3 flex flex-wrap items-center gap-3 text-sm text-surface-500">
+	<div class="mb-3 flex flex-wrap items-center gap-3 text-sm text-surface-500 light:text-surface-700">
 		{severity && severity !== 'none' && (
 			<span class={`inline-block h-2.5 w-2.5 rounded-full ${severityColors[severity] || severityColors.none}`} title={`Severity: ${severity}`}></span>
 		)}
@@ -49,7 +49,7 @@ const difficultyLabels: Record<string, string> = {
 
 	{series && (
 		<div class="mb-3">
-			<span class="inline-flex items-center rounded-full bg-accent-400/10 px-3 py-1 text-xs font-medium text-accent-400 light:bg-accent-600/10 light:text-accent-600">
+			<span class="inline-flex items-center rounded-full bg-accent-400/10 px-3 py-1 text-xs font-medium text-accent-400 light:bg-accent-600/10 light:text-accent-700">
 				{series.name} · Part {series.part}
 			</span>
 		</div>
@@ -64,7 +64,7 @@ const difficultyLabels: Record<string, string> = {
 				) : null;
 			})}
 			{agents.length > 8 && (
-				<span class="ml-1 text-sm text-surface-500">+{agents.length - 8}</span>
+				<span class="ml-1 text-sm text-surface-500 light:text-surface-700">+{agents.length - 8}</span>
 			)}
 		</div>
 	)}

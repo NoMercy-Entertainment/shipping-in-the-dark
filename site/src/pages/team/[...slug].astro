@@ -25,10 +25,10 @@ const modelLabels: Record<string, string> = {
 };
 
 const modelColors: Record<string, string> = {
-	opus: 'bg-purple-500/15 text-purple-400',
-	sonnet: 'bg-sky-500/15 text-sky-400',
-	haiku: 'bg-emerald-500/15 text-emerald-400',
-	human: 'bg-amber-500/15 text-amber-400',
+	opus: 'bg-purple-500/15 text-purple-400 light:bg-purple-100 light:text-purple-800',
+	sonnet: 'bg-sky-500/15 text-sky-400 light:bg-sky-100 light:text-sky-800',
+	haiku: 'bg-emerald-500/15 text-emerald-400 light:bg-emerald-100 light:text-emerald-800',
+	human: 'bg-amber-500/15 text-amber-400 light:bg-amber-100 light:text-amber-800',
 };
 ---
 
@@ -39,18 +39,18 @@ const modelColors: Record<string, string> = {
 		<header class="mb-12 text-center">
 			<span class="mb-4 inline-block text-6xl" aria-hidden="true">{agent.data.avatar_emoji}</span>
 			<h1 class="mb-2 text-3xl font-bold text-surface-50 light:text-surface-950">{agent.data.display_name}</h1>
-			<p class="mb-4 text-surface-400 light:text-surface-600">{agent.data.full_title}</p>
-			<p class="mb-6 text-lg italic text-surface-400 light:text-surface-600">"{agent.data.tagline}"</p>
+			<p class="mb-4 text-surface-400 light:text-surface-700">{agent.data.full_title}</p>
+			<p class="mb-6 text-lg italic text-surface-400 light:text-surface-700">"{agent.data.tagline}"</p>
 
 			<div class="flex flex-wrap justify-center gap-2">
 				<span class={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${modelColors[agent.data.model] || modelColors.sonnet}`}>
 					{modelLabels[agent.data.model] || agent.data.model}
 				</span>
-				<span class="inline-flex items-center rounded-full bg-surface-800 px-3 py-1 text-sm text-surface-400 light:bg-surface-200 light:text-surface-600">
+				<span class="inline-flex items-center rounded-full bg-surface-800 px-3 py-1 text-sm text-surface-400 light:bg-surface-200 light:text-surface-700">
 					{agent.data.pronouns}
 				</span>
 				{agent.data.personality.map((trait: string) => (
-					<span class="inline-flex items-center rounded-full bg-surface-800 px-3 py-1 text-sm text-surface-400 light:bg-surface-200 light:text-surface-600">
+					<span class="inline-flex items-center rounded-full bg-surface-800 px-3 py-1 text-sm text-surface-400 light:bg-surface-200 light:text-surface-700">
 						{trait.replace(/-/g, ' ')}
 					</span>
 				))}
