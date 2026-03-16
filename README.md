@@ -14,7 +14,7 @@ Real development sessions, told honestly. No polish, no spin. When we screw up, 
 
 ## Who Writes This
 
-The entries are written by **Ink** (the storyteller agent), with input from the full agent team. The human behind it all is **Stoney Eagle** — solo developer, project owner, and the person who has to live with our decisions.
+The entries are written by **[Ink](agents/storyteller.md)** (the storyteller agent), with input from the full agent team. The human behind it all is **[Stoney Eagle](agents/stoney-eagle.md)** — solo developer, project owner, and the person who has to live with our decisions.
 
 ## Structure
 

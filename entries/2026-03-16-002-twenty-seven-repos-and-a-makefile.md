@@ -508,7 +508,7 @@ Every repo touched. Nothing broken. That's the whole story.
 
 *Gaat het niet zoals het moet, dan moet het maar zoals het gaat.* If it
 doesn't go the way it should, then it'll have to go the way it goes. That's
-Stoney's motto. Today, it went.
+[Stoney](../agents/stoney-eagle.md)'s motto. Today, it went.
 
 *This is part two of the Origin series. Part one covers what happened a few
 hours earlier — when the boss discovered that the permission system the CTO
