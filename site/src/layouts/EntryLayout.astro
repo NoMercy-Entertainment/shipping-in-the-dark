@@ -1,0 +1,92 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+
+interface Props {
+	title: string;
+	date: Date;
+	description?: string;
+	readingTime?: number;
+	difficulty?: string;
+	severity?: string;
+	sessionStart?: string;
+	sessionEnd?: string;
+	durationMinutes?: number;
+	series?: { name: string; part: number };
+	author?: string;
+}
+
+const {
+	title,
+	date,
+	readingTime,
+	difficulty,
+	severity,
+	sessionStart,
+	sessionEnd,
+	durationMinutes,
+	series,
+	author,
+} = Astro.props;
+
+const formattedDate = date.toLocaleDateString('en-US', {
+	weekday: 'long',
+	year: 'numeric',
+	month: 'long',
+	day: 'numeric',
+});
+
+const severityColors: Record<string, string> = {
+	critical: 'text-red-400',
+	major: 'text-amber-400',
+	minor: 'text-sky-400',
+};
+
+const difficultyLabels: Record<string, string> = {
+	beginner: 'Beginner-friendly',
+	intermediate: 'Intermediate',
+	advanced: 'Advanced',
+};
+---
+
+<BaseLayout title={title}>
+	<Header />
+
+	<main class="mx-auto max-w-4xl px-6 py-12">
+		<article>
+			<header class="mb-12">
+				{series && (
+					<a href={`/series/${series.name.toLowerCase()}`} class="mb-4 inline-flex items-center rounded-full bg-accent-400/10 px-3 py-1 text-sm font-medium text-accent-400 no-underline transition-colors hover:bg-accent-400/20 light:bg-accent-600/10 light:text-accent-600">
+						{series.name} · Part {series.part}
+					</a>
+				)}
+
+				<h1 class="mb-4 text-3xl font-bold leading-tight tracking-tight text-surface-50 sm:text-4xl light:text-surface-950">
+					{title}
+				</h1>
+
+				<div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-surface-500">
+					<time datetime={date.toISOString()}>{formattedDate}</time>
+					{readingTime && <span>{readingTime} min read</span>}
+					{difficulty && <span>{difficultyLabels[difficulty] || difficulty}</span>}
+					{severity && severity !== 'none' && (
+						<span class={severityColors[severity] || ''}>
+							{severity.charAt(0).toUpperCase() + severity.slice(1)}
+						</span>
+					)}
+					{durationMinutes && (
+						<span>Session: {Math.floor(durationMinutes / 60)}h {durationMinutes % 60}m</span>
+					)}
+					{author && <span>by {author}</span>}
+				</div>
+			</header>
+
+			<div class="prose">
+				<slot />
+			</div>
+		</article>
+	</main>
+
+	<Footer />
+</BaseLayout>

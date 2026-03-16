@@ -1,0 +1,56 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import EntryCard from '../../components/EntryCard.astro';
+
+export async function getStaticPaths() {
+	const entries = await getCollection('entries');
+	const seriesNames = [...new Set(entries.filter((e) => e.data.series).map((e) => e.data.series!.name))];
+	return seriesNames.map((name) => ({
+		params: { name: name.toLowerCase() },
+		props: { name, entries: entries.filter((e) => e.data.series?.name === name).sort((a, b) => (a.data.series?.part || 0) - (b.data.series?.part || 0)) },
+	}));
+}
+
+const { name, entries } = Astro.props;
+
+const allAgents = await getCollection('agents');
+const agentMap = new Map(
+	allAgents.map((a) => [a.data.id, { display_name: a.data.display_name, avatar_emoji: a.data.avatar_emoji }])
+);
+---
+
+<BaseLayout title={`${name} Series`}>
+	<Header />
+
+	<main class="mx-auto max-w-4xl px-6 py-12">
+		<section class="mb-12">
+			<h1 class="mb-4 text-4xl font-bold tracking-tight text-surface-50 light:text-surface-950">
+				{name} Series
+			</h1>
+			<p class="text-lg text-surface-400 light:text-surface-600">
+				{entries.length} {entries.length === 1 ? 'entry' : 'entries'} in this series.
+			</p>
+		</section>
+
+		<div class="flex flex-col gap-4">
+			{entries.map((entry) => (
+				<EntryCard
+					title={entry.data.title}
+					slug={entry.data.slug}
+					date={entry.data.date}
+					readingTime={entry.data.reading_time_minutes}
+					difficulty={entry.data.difficulty}
+					severity={entry.data.severity}
+					series={entry.data.series}
+					agents={entry.data.agents}
+					agentMap={agentMap}
+				/>
+			))}
+		</div>
+	</main>
+
+	<Footer />
+</BaseLayout>

@@ -1,0 +1,71 @@
+---
+interface Props {
+	title: string;
+	slug: string;
+	date: Date;
+	readingTime?: number;
+	difficulty?: string;
+	severity?: string;
+	series?: { name: string; part: number };
+	agents?: string[];
+	agentMap?: Map<string, { display_name: string; avatar_emoji: string }>;
+}
+
+const { title, slug, date, readingTime, difficulty, severity, series, agents, agentMap } = Astro.props;
+
+const formattedDate = date.toLocaleDateString('en-US', {
+	year: 'numeric',
+	month: 'long',
+	day: 'numeric',
+});
+
+const severityColors: Record<string, string> = {
+	critical: 'bg-red-500',
+	major: 'bg-amber-500',
+	minor: 'bg-sky-500',
+	none: 'bg-surface-600',
+};
+
+const difficultyLabels: Record<string, string> = {
+	beginner: 'Beginner-friendly',
+	intermediate: 'Intermediate',
+	advanced: 'Advanced',
+};
+---
+
+<a href={`/entry/${slug}`} class="group block rounded-xl border border-surface-800 p-6 no-underline transition-all hover:border-surface-600 hover:bg-surface-900/50 light:border-surface-200 light:hover:border-surface-300 light:hover:bg-surface-100/50">
+	<div class="mb-3 flex flex-wrap items-center gap-3 text-sm text-surface-500">
+		{severity && severity !== 'none' && (
+			<span class={`inline-block h-2.5 w-2.5 rounded-full ${severityColors[severity] || severityColors.none}`} title={`Severity: ${severity}`}></span>
+		)}
+		<time datetime={date.toISOString()}>{formattedDate}</time>
+		{readingTime && <span>· {readingTime} min read</span>}
+		{difficulty && <span>· {difficultyLabels[difficulty] || difficulty}</span>}
+	</div>
+
+	<h2 class="mb-3 text-xl font-bold text-surface-100 transition-colors group-hover:text-accent-400 light:text-surface-900 light:group-hover:text-accent-600">
+		{title}
+	</h2>
+
+	{series && (
+		<div class="mb-3">
+			<span class="inline-flex items-center rounded-full bg-accent-400/10 px-3 py-1 text-xs font-medium text-accent-400 light:bg-accent-600/10 light:text-accent-600">
+				{series.name} · Part {series.part}
+			</span>
+		</div>
+	)}
+
+	{agents && agents.length > 0 && agentMap && (
+		<div class="flex items-center gap-1">
+			{agents.slice(0, 8).map((agentId) => {
+				const agent = agentMap.get(agentId);
+				return agent ? (
+					<span class="text-lg" title={agent.display_name}>{agent.avatar_emoji}</span>
+				) : null;
+			})}
+			{agents.length > 8 && (
+				<span class="ml-1 text-sm text-surface-500">+{agents.length - 8}</span>
+			)}
+		</div>
+	)}
+</a>

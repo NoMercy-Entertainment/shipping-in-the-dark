@@ -1,0 +1,50 @@
+---
+interface Props {
+	title: string;
+	description?: string;
+	ogImage?: string;
+}
+
+const { title, description = 'The honest journal of a solo developer building something that matters.', ogImage } = Astro.props;
+const canonicalUrl = new URL(Astro.url.pathname, Astro.site);
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="generator" content={Astro.generator} />
+		<meta name="darkreader-lock" />
+
+		<title>{title} — Shipping in the Dark</title>
+		<meta name="description" content={description} />
+		<link rel="canonical" href={canonicalUrl} />
+
+		<meta property="og:title" content={`${title} — Shipping in the Dark`} />
+		<meta property="og:description" content={description} />
+		<meta property="og:url" content={canonicalUrl} />
+		<meta property="og:type" content="article" />
+		{ogImage && <meta property="og:image" content={ogImage} />}
+
+		<link rel="alternate" type="application/rss+xml" title="Shipping in the Dark" href="/rss.xml" />
+
+		<link rel="preconnect" href="https://fonts.bunny.net" />
+		<link href="https://fonts.bunny.net/css?family=atkinson-hyperlegible:400,400i,700,700i|jetbrains-mono:400" rel="stylesheet" />
+
+		<script is:inline>
+			const stored = localStorage.getItem('theme');
+			const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+			if (stored === 'light' || (!stored && !prefersDark)) {
+				document.documentElement.classList.add('light');
+			}
+		</script>
+
+		<style is:global>
+			@import '../styles/global.css';
+		</style>
+	</head>
+	<body class="min-h-screen">
+		<slot />
+	</body>
+</html>

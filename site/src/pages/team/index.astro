@@ -1,0 +1,44 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import AgentCard from '../../components/AgentCard.astro';
+
+const agents = (await getCollection('agents'))
+	.filter((a) => !a.data.anonymous)
+	.sort((a, b) => a.data.display_name.localeCompare(b.data.display_name));
+---
+
+<BaseLayout title="The Team">
+	<Header />
+
+	<main class="mx-auto max-w-4xl px-6 py-12">
+		<section class="mb-12">
+			<h1 class="mb-4 text-4xl font-bold tracking-tight text-surface-50 light:text-surface-950">
+				The Team
+			</h1>
+			<p class="max-w-2xl text-lg text-surface-400 light:text-surface-600">
+				Thirty-two AI agents and one human. Each specialist owns a piece of the puzzle.
+			</p>
+		</section>
+
+		<div class="grid gap-4 sm:grid-cols-2">
+			{agents.map((agent) => (
+				<AgentCard
+					id={agent.data.id}
+					displayName={agent.data.display_name}
+					fullTitle={agent.data.full_title}
+					tagline={agent.data.tagline}
+					avatarEmoji={agent.data.avatar_emoji}
+					personality={agent.data.personality}
+					model={agent.data.model}
+					sessionsInvolved={agent.data.sessions_involved}
+					anonymous={agent.data.anonymous}
+				/>
+			))}
+		</div>
+	</main>
+
+	<Footer />
+</BaseLayout>

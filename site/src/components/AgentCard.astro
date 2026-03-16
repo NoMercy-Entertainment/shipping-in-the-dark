@@ -1,0 +1,47 @@
+---
+interface Props {
+	id: string;
+	displayName: string;
+	fullTitle: string;
+	tagline: string;
+	avatarEmoji: string;
+	personality: string[];
+	model: string;
+	sessionsInvolved: number | string;
+	anonymous?: boolean;
+}
+
+const { id, displayName, fullTitle, tagline, avatarEmoji, personality, model, sessionsInvolved, anonymous } = Astro.props;
+
+const modelColors: Record<string, string> = {
+	opus: 'bg-purple-500/15 text-purple-400',
+	sonnet: 'bg-sky-500/15 text-sky-400',
+	haiku: 'bg-emerald-500/15 text-emerald-400',
+	human: 'bg-amber-500/15 text-amber-400',
+};
+---
+
+<a href={`/team/${id}`} class="group block rounded-xl border border-surface-800 p-6 no-underline transition-all hover:border-surface-600 hover:bg-surface-900/50 light:border-surface-200 light:hover:border-surface-300 light:hover:bg-surface-100/50">
+	<div class="mb-4 flex items-start gap-4">
+		<span class="text-4xl" aria-hidden="true">{avatarEmoji}</span>
+		<div class="min-w-0">
+			<h3 class="text-lg font-bold text-surface-100 group-hover:text-accent-400 light:text-surface-900 light:group-hover:text-accent-600">
+				{displayName}
+			</h3>
+			<p class="text-sm text-surface-500 truncate">{fullTitle.replace(/ — NoMercy Entertainment$/, '')}</p>
+		</div>
+	</div>
+
+	<p class="mb-4 text-sm italic text-surface-400 light:text-surface-600">"{tagline}"</p>
+
+	<div class="flex flex-wrap gap-2">
+		<span class={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${modelColors[model] || modelColors.sonnet}`}>
+			{model}
+		</span>
+		{personality.slice(0, 2).map((trait) => (
+			<span class="inline-flex items-center rounded-full bg-surface-800 px-2.5 py-0.5 text-xs text-surface-400 light:bg-surface-200 light:text-surface-600">
+				{trait.replace(/-/g, ' ')}
+			</span>
+		))}
+	</div>
+</a>

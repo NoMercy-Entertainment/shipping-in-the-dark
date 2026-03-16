@@ -1,0 +1,52 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import EntryCard from '../components/EntryCard.astro';
+
+const entries = (await getCollection('entries')).sort(
+	(a, b) => b.data.date.getTime() - a.data.date.getTime()
+);
+
+const allAgents = await getCollection('agents');
+const agentMap = new Map(
+	allAgents.map((a) => [a.data.id, { display_name: a.data.display_name, avatar_emoji: a.data.avatar_emoji }])
+);
+---
+
+<BaseLayout title="Home">
+	<Header />
+
+	<main class="mx-auto max-w-4xl px-6 py-12">
+		<section class="mb-16">
+			<h1 class="mb-4 text-4xl font-bold tracking-tight text-surface-50 light:text-surface-950">
+				Shipping in the Dark
+			</h1>
+			<p class="max-w-2xl text-lg text-surface-400 light:text-surface-600">
+				The honest journal of a solo developer building something that matters.
+				One developer. 32 AIs. Eight years. A fight for media ownership.
+			</p>
+		</section>
+
+		<section>
+			<div class="flex flex-col gap-4">
+				{entries.map((entry) => (
+					<EntryCard
+						title={entry.data.title}
+						slug={entry.data.slug}
+						date={entry.data.date}
+						readingTime={entry.data.reading_time_minutes}
+						difficulty={entry.data.difficulty}
+						severity={entry.data.severity}
+						series={entry.data.series}
+						agents={entry.data.agents}
+						agentMap={agentMap}
+					/>
+				))}
+			</div>
+		</section>
+	</main>
+
+	<Footer />
+</BaseLayout>
