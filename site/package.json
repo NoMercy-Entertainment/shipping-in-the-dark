@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
-    "build": "node scripts/copy-content.mjs && astro build",
+    "build": "node scripts/copy-content.mjs && astro build && npx pagefind --site dist",
     "preview": "astro preview"
   },
   "dependencies": {
@@ -21,5 +21,8 @@
     "satori": "^0.25.0",
     "tailwindcss": "^4.1.0",
     "unist-util-visit": "^5.0.0"
+  },
+  "devDependencies": {
+    "pagefind": "^1.4.0"
   }
 }

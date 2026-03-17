@@ -1,4 +1,6 @@
 ---
+import Search from './Search.astro';
+
 const currentPath = Astro.url.pathname;
 
 const navLinks = [
@@ -30,6 +32,7 @@ const navLinks = [
 					{label}
 				</a>
 			))}
+			<Search />
 			<button
 				id="theme-toggle"
 				type="button"

@@ -11,7 +11,7 @@ export async function getStaticPaths() {
 }
 
 const { entry } = Astro.props;
-const { Content } = await render(entry);
+const { Content, headings } = await render(entry);
 
 const ogImage = new URL(`/og/${entry.data.slug}.png`, Astro.site).toString();
 
@@ -38,6 +38,8 @@ const description = descriptionParts.join(' — ');
 	durationMinutes={entry.data.duration_minutes}
 	series={entry.data.series}
 	author={entry.data.author}
+	headings={headings}
+	tags={entry.data.tags ?? []}
 >
 	<Content />
 </EntryLayout>

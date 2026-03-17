@@ -1,4 +1,6 @@
 ---
+import { ViewTransitions } from 'astro:transitions';
+
 interface Props {
 	title: string;
 	description?: string;
@@ -51,6 +53,10 @@ const canonicalUrl = new URL(Astro.url.pathname, Astro.site);
 				document.documentElement.classList.add('light');
 			}
 		</script>
+
+		<ViewTransitions />
+
+		<link href="/pagefind/pagefind-ui.css" rel="stylesheet" />
 
 		<style is:global>
 			@import '../styles/global.css';
