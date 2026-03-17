@@ -274,8 +274,8 @@ html.light .prose .audio-active .heading-anchor {
 			// or rephrase slightly ("Entry one" vs "Entry 001"). Counting how
 			// many cue words appear anywhere in the paragraph catches these cases
 			// where prefix comparison fails completely.
-			if (!match && cueWords.length > 0) {
-				var threshold = cueWords.length < 4 ? 0.75 : 0.4;
+			if (!match && cueWords.length >= 3) {
+				var threshold = cueWords.length < 6 ? 0.75 : 0.4;
 				var bestScore = 0;
 				var bestEl = null;
 
