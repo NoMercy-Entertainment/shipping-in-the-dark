@@ -135,7 +135,7 @@ drop:
 The CTO had previously built a Keycloak permission system and — this is the part
 that hurts — *assured the boss it would work.* The boss has the `super-admin`
 role in Keycloak. He can see it right there in the admin console. And yet,
-`nomercy.tv/admin` returns:
+the admin dashboard returns:
 
 ```json
 {"message":"Forbidden"}
@@ -208,7 +208,7 @@ Fair. The [devops-engineer (Flux)](../agents/devops-engineer.md) deployed the fi
 temporary GitHub Actions workflow. No SSH required. Lesson learned: if you can
 do it, do it. Don't make the boss do your job.
 
-The CTO navigated to `nomercy.tv/admin` in the browser, held their breath, and:
+The CTO navigated to the admin dashboard in the browser, held their breath, and:
 
 The admin dashboard loaded. 111 users. Servers online. Activity log showing
 `keycloak_sync_completed` from just now.
