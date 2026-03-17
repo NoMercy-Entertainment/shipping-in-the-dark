@@ -67,13 +67,20 @@
 		document.body.style.overflow = 'hidden';
 
 		if (!loaded) {
-			const { PagefindUI } = await import('/pagefind/pagefind-ui.js');
-			new PagefindUI({
-				element: '#search-widget',
-				showSubResults: true,
-				showImages: false,
-			});
-			loaded = true;
+			try {
+				const mod = await import('/pagefind/pagefind-ui.js');
+				const PagefindUI = mod.PagefindUI || mod.default;
+				if (PagefindUI) {
+					new PagefindUI({
+						element: '#search-widget',
+						showSubResults: true,
+						showImages: false,
+					});
+					loaded = true;
+				}
+			} catch (err) {
+				document.getElementById('search-widget').innerHTML = '<p style="padding:1em;opacity:0.6">Search is not available. Try again after a full site build.</p>';
+			}
 		}
 
 		setTimeout(() => {

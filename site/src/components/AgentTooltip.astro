@@ -233,9 +233,14 @@ a.agent-link {
 		currentLink = null;
 	}
 
+	function closest(el, selector) {
+		if (!el || !el.closest) return null;
+		return el.closest(selector);
+	}
+
 	// Event delegation on the document
 	document.addEventListener('mouseenter', function(e) {
-		const link = e.target.closest('a.agent-link');
+		const link = closest(e.target, 'a.agent-link');
 		if (!link) return;
 
 		clearTimeout(hideTimeout);
@@ -245,7 +250,7 @@ a.agent-link {
 	}, true);
 
 	document.addEventListener('mouseleave', function(e) {
-		const link = e.target.closest('a.agent-link');
+		const link = closest(e.target, 'a.agent-link');
 		if (!link) return;
 
 		clearTimeout(showTimeout);
@@ -254,20 +259,20 @@ a.agent-link {
 
 	// Keep tooltip visible when hovering over it
 	document.addEventListener('mouseenter', function(e) {
-		if (e.target.closest('#agent-tooltip')) {
+		if (closest(e.target, '#agent-tooltip')) {
 			clearTimeout(hideTimeout);
 		}
 	}, true);
 
 	document.addEventListener('mouseleave', function(e) {
-		if (e.target.closest('#agent-tooltip')) {
+		if (closest(e.target, '#agent-tooltip')) {
 			hideTimeout = setTimeout(hideTooltip, 150);
 		}
 	}, true);
 
 	// Mobile: tap to toggle
 	document.addEventListener('click', function(e) {
-		const link = e.target.closest('a.agent-link');
+		const link = closest(e.target, 'a.agent-link');
 		if (!link) return;
 
 		// On touch devices, first tap shows tooltip, second tap navigates
@@ -283,7 +288,7 @@ a.agent-link {
 
 	// Close tooltip on outside tap (mobile)
 	document.addEventListener('click', function(e) {
-		if (!e.target.closest('#agent-tooltip') && !e.target.closest('a.agent-link')) {
+		if (!closest(e.target, '#agent-tooltip') && !closest(e.target, 'a.agent-link')) {
 			hideTooltip();
 		}
 	});
