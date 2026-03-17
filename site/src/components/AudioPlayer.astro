@@ -1,0 +1,624 @@
+---
+interface Props {
+	audioUrl?: string;
+	title?: string;
+}
+
+const { audioUrl = '', title = '' } = Astro.props;
+---
+
+<div
+	id="audio-player"
+	class="audio-player"
+	data-audio-url={audioUrl}
+	data-title={title}
+	aria-label="Audio player"
+	role="region"
+>
+	<!-- Seekable progress bar sits at the very top of the bar -->
+	<div
+		id="audio-progress-bar"
+		class="audio-progress-bar"
+		role="progressbar"
+		aria-valuemin="0"
+		aria-valuemax="100"
+		aria-valuenow="0"
+		aria-label="Playback progress"
+		tabindex="0"
+	>
+		<div id="audio-progress-fill" class="audio-progress-fill"></div>
+	</div>
+
+	<div class="audio-controls">
+		<button
+			id="audio-play-btn"
+			class="audio-play-btn"
+			aria-label="Play"
+			type="button"
+		>
+			<!-- Play icon (shown by default) -->
+			<svg id="icon-play" class="audio-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+				<path d="M8 5v14l11-7z" />
+			</svg>
+			<!-- Pause icon (hidden by default) -->
+			<svg id="icon-pause" class="audio-icon hidden" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+				<path d="M6 19h4V5H6zm8-14v14h4V5z" />
+			</svg>
+		</button>
+
+		<div class="audio-time" aria-live="off">
+			<span id="audio-current" class="audio-current">0:00</span>
+			<span class="audio-separator" aria-hidden="true">/</span>
+			<span id="audio-duration" class="audio-duration">0:00</span>
+		</div>
+
+		<div id="audio-title" class="audio-title" aria-label="Now playing">
+			{title}
+		</div>
+
+		<button
+			id="audio-speed-btn"
+			class="audio-speed"
+			aria-label="Playback speed: 1x"
+			type="button"
+		>
+			1x
+		</button>
+	</div>
+</div>
+
+<style is:global>
+	/* ------------------------------------------------------------------ */
+	/* Audio player — sticky bottom bar                                     */
+	/* ------------------------------------------------------------------ */
+
+	.audio-player {
+		position: fixed;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		z-index: 50;
+		height: 64px;
+		background-color: var(--color-surface-900);
+		border-top: 1px solid var(--color-surface-800);
+		backdrop-filter: blur(12px);
+		-webkit-backdrop-filter: blur(12px);
+
+		/* Hidden by default — slides up when audio is loaded */
+		transform: translateY(100%);
+		transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+		display: flex;
+		flex-direction: column;
+	}
+
+	.audio-player.is-visible {
+		transform: translateY(0);
+	}
+
+	/* Light mode overrides */
+	html.light .audio-player {
+		background-color: rgba(255, 255, 255, 0.92);
+		border-top-color: var(--color-surface-200);
+	}
+
+	/* ------------------------------------------------------------------ */
+	/* Progress bar — thin seekable strip at the very top of the bar       */
+	/* ------------------------------------------------------------------ */
+
+	.audio-progress-bar {
+		width: 100%;
+		height: 4px;
+		background-color: var(--color-surface-700);
+		cursor: pointer;
+		flex-shrink: 0;
+		position: relative;
+		outline: none;
+	}
+
+	html.light .audio-progress-bar {
+		background-color: var(--color-surface-300);
+	}
+
+	.audio-progress-bar:hover {
+		height: 6px;
+		margin-top: -2px; /* keep bottom edge anchored */
+	}
+
+	.audio-progress-bar:focus-visible {
+		outline: 2px solid var(--color-accent-400);
+		outline-offset: 1px;
+	}
+
+	.audio-progress-fill {
+		height: 100%;
+		width: 0%;
+		background-color: var(--color-accent-400);
+		transition: width 0.1s linear;
+		pointer-events: none;
+	}
+
+	html.light .audio-progress-fill {
+		background-color: var(--color-accent-600);
+	}
+
+	/* ------------------------------------------------------------------ */
+	/* Controls row                                                         */
+	/* ------------------------------------------------------------------ */
+
+	.audio-controls {
+		flex: 1;
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		padding: 0 16px;
+		min-width: 0;
+	}
+
+	@media (min-width: 640px) {
+		.audio-controls {
+			padding: 0 24px;
+		}
+	}
+
+	/* Play / pause button */
+	.audio-play-btn {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 36px;
+		height: 36px;
+		border-radius: 50%;
+		border: none;
+		cursor: pointer;
+		background-color: var(--color-accent-400);
+		color: var(--color-surface-950);
+		flex-shrink: 0;
+		transition: background-color 0.15s ease, transform 0.1s ease;
+		outline: none;
+	}
+
+	html.light .audio-play-btn {
+		background-color: var(--color-accent-600);
+		color: white;
+	}
+
+	.audio-play-btn:hover {
+		background-color: var(--color-accent-500);
+		transform: scale(1.05);
+	}
+
+	html.light .audio-play-btn:hover {
+		background-color: var(--color-accent-700);
+	}
+
+	.audio-play-btn:active {
+		transform: scale(0.97);
+	}
+
+	.audio-play-btn:focus-visible {
+		outline: 2px solid var(--color-accent-400);
+		outline-offset: 2px;
+	}
+
+	.audio-icon {
+		width: 18px;
+		height: 18px;
+	}
+
+	.audio-icon.hidden {
+		display: none;
+	}
+
+	/* Time display */
+	.audio-time {
+		display: flex;
+		align-items: center;
+		gap: 4px;
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
+		color: var(--color-surface-400);
+		flex-shrink: 0;
+		white-space: nowrap;
+	}
+
+	html.light .audio-time {
+		color: var(--color-surface-600);
+	}
+
+	.audio-separator {
+		color: var(--color-surface-600);
+	}
+
+	html.light .audio-separator {
+		color: var(--color-surface-400);
+	}
+
+	/* Title — takes remaining space, truncates */
+	.audio-title {
+		flex: 1;
+		min-width: 0;
+		font-size: 0.8125rem;
+		font-weight: 500;
+		color: var(--color-surface-200);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		padding: 0 8px;
+	}
+
+	html.light .audio-title {
+		color: var(--color-surface-800);
+	}
+
+	/* Speed badge */
+	.audio-speed {
+		flex-shrink: 0;
+		font-family: var(--font-mono);
+		font-size: 0.6875rem;
+		font-weight: 600;
+		color: var(--color-surface-400);
+		background-color: var(--color-surface-800);
+		border: 1px solid var(--color-surface-700);
+		border-radius: 9999px;
+		padding: 2px 8px;
+		cursor: pointer;
+		transition: color 0.15s ease, background-color 0.15s ease;
+		outline: none;
+		white-space: nowrap;
+	}
+
+	html.light .audio-speed {
+		color: var(--color-surface-600);
+		background-color: var(--color-surface-200);
+		border-color: var(--color-surface-300);
+	}
+
+	.audio-speed:hover {
+		color: var(--color-surface-100);
+		background-color: var(--color-surface-700);
+	}
+
+	html.light .audio-speed:hover {
+		color: var(--color-surface-900);
+		background-color: var(--color-surface-300);
+	}
+
+	.audio-speed:focus-visible {
+		outline: 2px solid var(--color-accent-400);
+		outline-offset: 2px;
+	}
+
+	/* ------------------------------------------------------------------ */
+	/* Body padding — pushed up when player is visible                      */
+	/* ------------------------------------------------------------------ */
+
+	body.audio-player-visible {
+		padding-bottom: 64px;
+	}
+</style>
+
+<script is:inline>
+(function () {
+	'use strict';
+
+	// ------------------------------------------------------------------ //
+	// Grab DOM refs                                                         //
+	// ------------------------------------------------------------------ //
+
+	var player   = document.getElementById('audio-player');
+	var progressBar  = document.getElementById('audio-progress-bar');
+	var progressFill = document.getElementById('audio-progress-fill');
+	var playBtn  = document.getElementById('audio-play-btn');
+	var iconPlay = document.getElementById('icon-play');
+	var iconPause = document.getElementById('icon-pause');
+	var currentTimeEl = document.getElementById('audio-current');
+	var durationEl = document.getElementById('audio-duration');
+	var titleEl  = document.getElementById('audio-title');
+	var speedBtn = document.getElementById('audio-speed-btn');
+
+	if (!player) return;
+
+	// ------------------------------------------------------------------ //
+	// Audio engine — native HTML5 Audio                                    //
+	// ------------------------------------------------------------------ //
+
+	var audio = new Audio();
+	audio.preload = 'metadata';
+
+	var speeds = [0.75, 1, 1.25, 1.5];
+	var speedIndex = 1; // start at 1x
+
+	// ------------------------------------------------------------------ //
+	// State helpers                                                         //
+	// ------------------------------------------------------------------ //
+
+	function showPlayer() {
+		player.classList.add('is-visible');
+		document.body.classList.add('audio-player-visible');
+	}
+
+	function hidePlayer() {
+		player.classList.remove('is-visible');
+		document.body.classList.remove('audio-player-visible');
+	}
+
+	function setPlayingState(playing) {
+		if (playing) {
+			iconPlay.classList.add('hidden');
+			iconPause.classList.remove('hidden');
+			playBtn.setAttribute('aria-label', 'Pause');
+		} else {
+			iconPlay.classList.remove('hidden');
+			iconPause.classList.add('hidden');
+			playBtn.setAttribute('aria-label', 'Play');
+		}
+	}
+
+	function formatTime(seconds) {
+		if (!isFinite(seconds) || isNaN(seconds)) return '0:00';
+		var m = Math.floor(seconds / 60);
+		var s = Math.floor(seconds % 60);
+		return m + ':' + (s < 10 ? '0' : '') + s;
+	}
+
+	function updateProgress() {
+		if (!audio.duration) return;
+		var pct = (audio.currentTime / audio.duration) * 100;
+		progressFill.style.width = pct + '%';
+		progressBar.setAttribute('aria-valuenow', Math.round(pct));
+		currentTimeEl.textContent = formatTime(audio.currentTime);
+	}
+
+	// ------------------------------------------------------------------ //
+	// Load a track                                                          //
+	// ------------------------------------------------------------------ //
+
+	function loadTrack(url, entryTitle) {
+		if (!url) {
+			hidePlayer();
+			return;
+		}
+
+		// Reset state visually before loading
+		setPlayingState(false);
+		progressFill.style.width = '0%';
+		currentTimeEl.textContent = '0:00';
+		durationEl.textContent = '0:00';
+		titleEl.textContent = entryTitle || '';
+		speedIndex = 1;
+		speedBtn.textContent = '1x';
+		speedBtn.setAttribute('aria-label', 'Playback speed: 1x');
+		audio.playbackRate = 1;
+
+		audio.src = url;
+		audio.load();
+		showPlayer();
+	}
+
+	// ------------------------------------------------------------------ //
+	// Audio events                                                          //
+	// ------------------------------------------------------------------ //
+
+	audio.addEventListener('loadedmetadata', function () {
+		durationEl.textContent = formatTime(audio.duration);
+	});
+
+	audio.addEventListener('timeupdate', updateProgress);
+
+	audio.addEventListener('play', function () {
+		setPlayingState(true);
+	});
+
+	audio.addEventListener('pause', function () {
+		setPlayingState(false);
+	});
+
+	audio.addEventListener('ended', function () {
+		setPlayingState(false);
+		audio.currentTime = 0;
+		progressFill.style.width = '0%';
+		currentTimeEl.textContent = '0:00';
+	});
+
+	audio.addEventListener('error', function () {
+		console.warn('[AudioPlayer] Failed to load audio:', audio.src);
+		hidePlayer();
+	});
+
+	// ------------------------------------------------------------------ //
+	// Controls                                                              //
+	// ------------------------------------------------------------------ //
+
+	playBtn.addEventListener('click', function () {
+		if (audio.paused) {
+			audio.play().catch(function (err) {
+				console.warn('[AudioPlayer] Play blocked:', err);
+			});
+		} else {
+			audio.pause();
+		}
+	});
+
+	speedBtn.addEventListener('click', function () {
+		speedIndex = (speedIndex + 1) % speeds.length;
+		var rate = speeds[speedIndex];
+		audio.playbackRate = rate;
+		var label = rate + 'x';
+		speedBtn.textContent = label;
+		speedBtn.setAttribute('aria-label', 'Playback speed: ' + label);
+	});
+
+	// ------------------------------------------------------------------ //
+	// Progress bar — click to seek, keyboard support                        //
+	// ------------------------------------------------------------------ //
+
+	function seekToPercent(pct) {
+		if (!audio.duration) return;
+		audio.currentTime = (pct / 100) * audio.duration;
+		updateProgress();
+	}
+
+	function getClickPercent(e) {
+		var rect = progressBar.getBoundingClientRect();
+		var x = (e.clientX !== undefined ? e.clientX : e.touches[0].clientX) - rect.left;
+		return Math.max(0, Math.min(100, (x / rect.width) * 100));
+	}
+
+	var isSeeking = false;
+
+	progressBar.addEventListener('mousedown', function (e) {
+		e.preventDefault();
+		isSeeking = true;
+		seekToPercent(getClickPercent(e));
+	});
+
+	document.addEventListener('mousemove', function (e) {
+		if (!isSeeking) return;
+		seekToPercent(getClickPercent(e));
+	});
+
+	document.addEventListener('mouseup', function () {
+		isSeeking = false;
+	});
+
+	// Touch support
+	progressBar.addEventListener('touchstart', function (e) {
+		e.preventDefault();
+		seekToPercent(getClickPercent(e));
+	}, { passive: false });
+
+	progressBar.addEventListener('touchmove', function (e) {
+		e.preventDefault();
+		seekToPercent(getClickPercent(e));
+	}, { passive: false });
+
+	// Keyboard seek: left/right arrows on the progress bar
+	progressBar.addEventListener('keydown', function (e) {
+		if (!audio.duration) return;
+		var step = (e.shiftKey ? 30 : 5); // 5s or 30s with shift
+		if (e.key === 'ArrowLeft') {
+			audio.currentTime = Math.max(0, audio.currentTime - step);
+			e.preventDefault();
+		} else if (e.key === 'ArrowRight') {
+			audio.currentTime = Math.min(audio.duration, audio.currentTime + step);
+			e.preventDefault();
+		}
+	});
+
+	// ------------------------------------------------------------------ //
+	// View Transitions — Astro's SPA-like navigation                        //
+	// ------------------------------------------------------------------ //
+
+	function checkCurrentPage() {
+		var pagePlayer = document.getElementById('audio-player');
+		if (!pagePlayer) return;
+
+		var url   = pagePlayer.getAttribute('data-audio-url') || '';
+		var title = pagePlayer.getAttribute('data-title') || '';
+
+		if (url) {
+			// Only reload if the URL actually changed
+			if (url !== audio.src) {
+				loadTrack(url, title);
+			} else {
+				// Same track — just update title in case it changed
+				titleEl.textContent = title;
+				showPlayer();
+			}
+		} else {
+			// This page has no audio — pause and hide
+			audio.pause();
+			hidePlayer();
+		}
+	}
+
+	document.addEventListener('astro:before-swap', function () {
+		audio.pause();
+		hidePlayer();
+	});
+
+	document.addEventListener('astro:page-load', function () {
+		// Re-grab element references after the swap (DOM replaced)
+		player       = document.getElementById('audio-player');
+		progressBar  = document.getElementById('audio-progress-bar');
+		progressFill = document.getElementById('audio-progress-fill');
+		playBtn      = document.getElementById('audio-play-btn');
+		iconPlay     = document.getElementById('icon-play');
+		iconPause    = document.getElementById('icon-pause');
+		currentTimeEl = document.getElementById('audio-current');
+		durationEl   = document.getElementById('audio-duration');
+		titleEl      = document.getElementById('audio-title');
+		speedBtn     = document.getElementById('audio-speed-btn');
+
+		if (!player) return;
+
+		// Re-attach play/pause button listener after DOM swap
+		playBtn.addEventListener('click', function () {
+			if (audio.paused) {
+				audio.play().catch(function (err) {
+					console.warn('[AudioPlayer] Play blocked:', err);
+				});
+			} else {
+				audio.pause();
+			}
+		});
+
+		speedBtn.addEventListener('click', function () {
+			speedIndex = (speedIndex + 1) % speeds.length;
+			var rate = speeds[speedIndex];
+			audio.playbackRate = rate;
+			var label = rate + 'x';
+			speedBtn.textContent = label;
+			speedBtn.setAttribute('aria-label', 'Playback speed: ' + label);
+		});
+
+		progressBar.addEventListener('mousedown', function (e) {
+			e.preventDefault();
+			isSeeking = true;
+			seekToPercent(getClickPercent(e));
+		});
+
+		progressBar.addEventListener('touchstart', function (e) {
+			e.preventDefault();
+			seekToPercent(getClickPercent(e));
+		}, { passive: false });
+
+		progressBar.addEventListener('touchmove', function (e) {
+			e.preventDefault();
+			seekToPercent(getClickPercent(e));
+		}, { passive: false });
+
+		progressBar.addEventListener('keydown', function (e) {
+			if (!audio.duration) return;
+			var step = (e.shiftKey ? 30 : 5);
+			if (e.key === 'ArrowLeft') {
+				audio.currentTime = Math.max(0, audio.currentTime - step);
+				e.preventDefault();
+			} else if (e.key === 'ArrowRight') {
+				audio.currentTime = Math.min(audio.duration, audio.currentTime + step);
+				e.preventDefault();
+			}
+		});
+
+		// Sync visual state if audio was already playing before navigation
+		setPlayingState(!audio.paused);
+		if (audio.duration) {
+			durationEl.textContent = formatTime(audio.duration);
+			updateProgress();
+		}
+		if (speedBtn) {
+			speedBtn.textContent = speeds[speedIndex] + 'x';
+		}
+
+		checkCurrentPage();
+	});
+
+	// ------------------------------------------------------------------ //
+	// Initial page load (no view transitions fired yet)                    //
+	// ------------------------------------------------------------------ //
+
+	checkCurrentPage();
+
+})();
+</script>

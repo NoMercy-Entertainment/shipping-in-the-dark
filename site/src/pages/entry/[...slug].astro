@@ -2,6 +2,13 @@
 import { getCollection, render } from 'astro:content';
 import EntryLayout from '../../layouts/EntryLayout.astro';
 
+// Audio URL map — keyed by entry slug.
+// URLs come from GitHub Releases once audio publishing is set up.
+// For now, a placeholder drives the player UI for testing.
+const audioUrls: Record<string, string> = {
+	'2026-03-16-001-how-the-cto-locked-the-boss-out': '/audio/test-output.mp3',
+};
+
 export async function getStaticPaths() {
 	const entries = await getCollection('entries');
 	return entries.map((entry) => ({
@@ -23,6 +30,8 @@ if (entry.data.type) {
 	descriptionParts.push(entry.data.type);
 }
 const description = descriptionParts.join(' — ');
+
+const audioUrl = audioUrls[entry.data.slug];
 ---
 
 <EntryLayout
@@ -40,6 +49,7 @@ const description = descriptionParts.join(' — ');
 	author={entry.data.author}
 	headings={headings}
 	tags={entry.data.tags ?? []}
+	audioUrl={audioUrl}
 >
 	<Content />
 </EntryLayout>

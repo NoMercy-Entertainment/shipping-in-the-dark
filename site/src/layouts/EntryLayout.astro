@@ -5,6 +5,7 @@ import Footer from '../components/Footer.astro';
 import AgentTooltip from '../components/AgentTooltip.astro';
 import TableOfContents from '../components/TableOfContents.astro';
 import TagList from '../components/TagList.astro';
+import AudioPlayer from '../components/AudioPlayer.astro';
 
 interface Props {
 	title: string;
@@ -21,6 +22,7 @@ interface Props {
 	author?: string;
 	headings?: { depth: number; slug: string; text: string }[];
 	tags?: string[];
+	audioUrl?: string;
 }
 
 const {
@@ -38,6 +40,7 @@ const {
 	author,
 	headings = [],
 	tags = [],
+	audioUrl,
 } = Astro.props;
 
 const canonicalUrl = new URL(Astro.url.pathname, Astro.site).toString();
@@ -129,6 +132,8 @@ const difficultyLabels: Record<string, string> = {
 	</main>
 
 	<Footer />
+
+	<AudioPlayer audioUrl={audioUrl} title={title} />
 </BaseLayout>
 
 <script is:inline>
