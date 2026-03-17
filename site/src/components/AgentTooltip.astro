@@ -159,6 +159,14 @@ a.agent-link {
 	let currentLink = null;
 	let hideTimeout = null;
 	let showTimeout = null;
+	let listenersAttached = false;
+
+	function getTooltip() {
+		if (!tooltip || !document.contains(tooltip)) {
+			tooltip = document.getElementById('agent-tooltip');
+		}
+		return tooltip;
+	}
 
 	async function loadAgentData() {
 		if (agentData) return agentData;
@@ -201,34 +209,34 @@ a.agent-link {
 		if (!data || !data[agentId]) return;
 
 		const agent = data[agentId];
-		tooltip = document.getElementById('agent-tooltip');
-		if (!tooltip) return;
+		const tt = getTooltip();
+		if (!tt) return;
 
-		document.getElementById('tooltip-emoji').textContent = agent.avatarEmoji;
-		document.getElementById('tooltip-name').textContent = agent.displayName;
-		document.getElementById('tooltip-title').textContent = agent.fullTitle.replace(/ — NoMercy Entertainment$/, '');
-		document.getElementById('tooltip-tagline').textContent = '"' + agent.tagline + '"';
+		tt.querySelector('#tooltip-emoji').textContent = agent.avatarEmoji;
+		tt.querySelector('#tooltip-name').textContent = agent.displayName;
+		tt.querySelector('#tooltip-title').textContent = agent.fullTitle.replace(/ — NoMercy Entertainment$/, '');
+		tt.querySelector('#tooltip-tagline').textContent = '"' + agent.tagline + '"';
 
-		const modelEl = document.getElementById('tooltip-model');
+		const modelEl = tt.querySelector('#tooltip-model');
 		const modelLabels = { opus: 'Opus', sonnet: 'Sonnet', haiku: 'Haiku', human: 'Human' };
 		modelEl.textContent = modelLabels[agent.model] || agent.model;
 		modelEl.dataset.model = agent.model;
 
-		document.getElementById('tooltip-pronouns').textContent = agent.pronouns;
+		tt.querySelector('#tooltip-pronouns').textContent = agent.pronouns;
 
-		tooltip.classList.add('visible');
-		tooltip.setAttribute('aria-hidden', 'false');
+		tt.classList.add('visible');
+		tt.setAttribute('aria-hidden', 'false');
 
-		// Position after making visible so we can measure
-		requestAnimationFrame(() => positionTooltip(tooltip, link));
+		requestAnimationFrame(() => positionTooltip(tt, link));
 
 		currentLink = link;
 	}
 
 	function hideTooltip() {
-		if (tooltip) {
-			tooltip.classList.remove('visible');
-			tooltip.setAttribute('aria-hidden', 'true');
+		const tt = getTooltip();
+		if (tt) {
+			tt.classList.remove('visible');
+			tt.setAttribute('aria-hidden', 'true');
 		}
 		currentLink = null;
 	}
@@ -277,7 +285,8 @@ a.agent-link {
 
 		// On touch devices, first tap shows tooltip, second tap navigates
 		if ('ontouchstart' in window) {
-			if (currentLink === link && tooltip && tooltip.classList.contains('visible')) {
+			const tt = getTooltip();
+			if (currentLink === link && tt && tt.classList.contains('visible')) {
 				// Second tap — let navigation happen
 				return;
 			}
