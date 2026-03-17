@@ -158,6 +158,23 @@ html.light .prose li::marker {
 	border-radius: 4px;
 }
 
+/* Inline code syntax colors — One Dark Pro palette */
+.ic-class { color: #e5c07b; }   /* yellow — class/type names */
+.ic-method { color: #61afef; }  /* blue — method calls */
+.ic-const { color: #d19a66; }   /* orange — constants */
+.ic-var { color: #e06c75; }     /* red — variables */
+.ic-prop { color: #e06c75; }    /* red — properties */
+.ic-punct { color: #abb2bf; }   /* gray — punctuation */
+.ic-ctor { color: #c678dd; }    /* purple — constructors */
+
+html.light .ic-class { color: #c18401; }
+html.light .ic-method { color: #4078f2; }
+html.light .ic-const { color: #986801; }
+html.light .ic-var { color: #e45649; }
+html.light .ic-prop { color: #e45649; }
+html.light .ic-punct { color: #383a42; }
+html.light .ic-ctor { color: #a626a4; }
+
 html.light .prose code {
 	background: var(--color-surface-200);
 	color: var(--color-surface-900);
@@ -185,10 +202,12 @@ html.light .prose pre {
 }
 
 /* Shiki dual theme: dark mode uses --shiki-dark variables (class-based, not media query) */
-html:not(.light) .shiki,
+html:not(.light) .shiki {
+	background-color: var(--shiki-dark-bg) !important;
+}
+
 html:not(.light) .shiki span {
 	color: var(--shiki-dark) !important;
-	background-color: var(--shiki-dark-bg) !important;
 	font-style: var(--shiki-dark-font-style) !important;
 	font-weight: var(--shiki-dark-font-weight) !important;
 	text-decoration: var(--shiki-dark-text-decoration) !important;

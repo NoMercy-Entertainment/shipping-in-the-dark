@@ -3,6 +3,7 @@ import sitemap from '@astrojs/sitemap';
 import remarkGfm from 'remark-gfm';
 import { remarkCallouts } from './src/lib/callout-remark.mjs';
 import { rehypeRewriteLinks } from './src/lib/link-rehype.mjs';
+import { rehypeInlineCode } from './src/lib/inline-code-rehype.mjs';
 
 export default defineConfig({
 	site: 'https://journal.nomercy.tv',
@@ -10,7 +11,7 @@ export default defineConfig({
 	integrations: [sitemap()],
 	markdown: {
 		remarkPlugins: [remarkGfm, remarkCallouts],
-		rehypePlugins: [rehypeRewriteLinks],
+		rehypePlugins: [rehypeRewriteLinks, rehypeInlineCode],
 		shikiConfig: {
 			themes: {
 				light: 'one-light',
