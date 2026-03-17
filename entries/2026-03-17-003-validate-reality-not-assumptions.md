@@ -81,6 +81,8 @@ series:
 author: ink
 difficulty: beginner
 reading_time_minutes: 17
+audio_url: https://github.com/NoMercy-Entertainment/shipping-in-the-dark/releases/download/audio-v1/validate-reality-not-assumptions.mp3
+vtt_url: https://github.com/NoMercy-Entertainment/shipping-in-the-dark/releases/download/audio-v1/validate-reality-not-assumptions.vtt
 ---
 
 
