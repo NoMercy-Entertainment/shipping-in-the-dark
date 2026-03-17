@@ -334,24 +334,30 @@ const { audioUrl = '', title = '' } = Astro.props;
 	// ------------------------------------------------------------------ //
 
 	function showPlayer() {
-		player.classList.add('is-visible');
+		var p = document.getElementById('audio-player');
+		if (p) p.classList.add('is-visible');
 		document.body.classList.add('audio-player-visible');
 	}
 
 	function hidePlayer() {
-		player.classList.remove('is-visible');
+		var p = document.getElementById('audio-player');
+		if (p) p.classList.remove('is-visible');
 		document.body.classList.remove('audio-player-visible');
 	}
 
 	function setPlayingState(playing) {
+		var ip = document.getElementById('icon-play');
+		var ipa = document.getElementById('icon-pause');
+		var pb = document.getElementById('audio-play-btn');
+		if (!ip || !ipa || !pb) return;
 		if (playing) {
-			iconPlay.classList.add('hidden');
-			iconPause.classList.remove('hidden');
-			playBtn.setAttribute('aria-label', 'Pause');
+			ip.classList.add('hidden');
+			ipa.classList.remove('hidden');
+			pb.setAttribute('aria-label', 'Pause');
 		} else {
-			iconPlay.classList.remove('hidden');
-			iconPause.classList.add('hidden');
-			playBtn.setAttribute('aria-label', 'Play');
+			ip.classList.remove('hidden');
+			ipa.classList.add('hidden');
+			pb.setAttribute('aria-label', 'Play');
 		}
 	}
 
@@ -365,9 +371,12 @@ const { audioUrl = '', title = '' } = Astro.props;
 	function updateProgress() {
 		if (!audio.duration) return;
 		var pct = (audio.currentTime / audio.duration) * 100;
-		progressFill.style.width = pct + '%';
-		progressBar.setAttribute('aria-valuenow', Math.round(pct));
-		currentTimeEl.textContent = formatTime(audio.currentTime);
+		var pf = document.getElementById('audio-progress-fill');
+		var pb = document.getElementById('audio-progress-bar');
+		var ct = document.getElementById('audio-current');
+		if (pf) pf.style.width = pct + '%';
+		if (pb) pb.setAttribute('aria-valuenow', Math.round(pct));
+		if (ct) ct.textContent = formatTime(audio.currentTime);
 	}
 
 	// ------------------------------------------------------------------ //
@@ -382,13 +391,17 @@ const { audioUrl = '', title = '' } = Astro.props;
 
 		// Reset state visually before loading
 		setPlayingState(false);
-		progressFill.style.width = '0%';
-		currentTimeEl.textContent = '0:00';
-		durationEl.textContent = '0:00';
-		titleEl.textContent = entryTitle || '';
+		var pf = document.getElementById('audio-progress-fill');
+		var ct = document.getElementById('audio-current');
+		var dt = document.getElementById('audio-duration');
+		var tl = document.getElementById('audio-title');
+		var sb = document.getElementById('audio-speed-btn');
+		if (pf) pf.style.width = '0%';
+		if (ct) ct.textContent = '0:00';
+		if (dt) dt.textContent = '0:00';
+		if (tl) tl.textContent = entryTitle || '';
 		speedIndex = 1;
-		speedBtn.textContent = '1x';
-		speedBtn.setAttribute('aria-label', 'Playback speed: 1x');
+		if (sb) { sb.textContent = '1x'; sb.setAttribute('aria-label', 'Playback speed: 1x'); }
 		audio.playbackRate = 1;
 
 		audio.src = url;
@@ -401,7 +414,8 @@ const { audioUrl = '', title = '' } = Astro.props;
 	// ------------------------------------------------------------------ //
 
 	audio.addEventListener('loadedmetadata', function () {
-		durationEl.textContent = formatTime(audio.duration);
+		var de = document.getElementById('audio-duration');
+		if (de) de.textContent = formatTime(audio.duration);
 	});
 
 	audio.addEventListener('timeupdate', updateProgress);
@@ -430,23 +444,28 @@ const { audioUrl = '', title = '' } = Astro.props;
 	// Controls                                                              //
 	// ------------------------------------------------------------------ //
 
-	playBtn.addEventListener('click', function () {
-		if (audio.paused) {
-			audio.play().catch(function (err) {
-				console.warn('[AudioPlayer] Play blocked:', err);
-			});
-		} else {
-			audio.pause();
+	// Use event delegation — survives View Transition DOM swaps
+	document.addEventListener('click', function (e) {
+		if (e.target.closest('#audio-play-btn')) {
+			if (audio.paused) {
+				audio.play().catch(function (err) {
+					console.warn('[AudioPlayer] Play blocked:', err);
+				});
+			} else {
+				audio.pause();
+			}
 		}
-	});
-
-	speedBtn.addEventListener('click', function () {
-		speedIndex = (speedIndex + 1) % speeds.length;
-		var rate = speeds[speedIndex];
-		audio.playbackRate = rate;
-		var label = rate + 'x';
-		speedBtn.textContent = label;
-		speedBtn.setAttribute('aria-label', 'Playback speed: ' + label);
+		if (e.target.closest('#audio-speed-btn')) {
+			speedIndex = (speedIndex + 1) % speeds.length;
+			var rate = speeds[speedIndex];
+			audio.playbackRate = rate;
+			var label = rate + 'x';
+			var btn = document.getElementById('audio-speed-btn');
+			if (btn) {
+				btn.textContent = label;
+				btn.setAttribute('aria-label', 'Playback speed: ' + label);
+			}
+		}
 	});
 
 	// ------------------------------------------------------------------ //
@@ -460,14 +479,17 @@ const { audioUrl = '', title = '' } = Astro.props;
 	}
 
 	function getClickPercent(e) {
-		var rect = progressBar.getBoundingClientRect();
+		var bar = document.getElementById('audio-progress-bar');
+		if (!bar) return 0;
+		var rect = bar.getBoundingClientRect();
 		var x = (e.clientX !== undefined ? e.clientX : e.touches[0].clientX) - rect.left;
 		return Math.max(0, Math.min(100, (x / rect.width) * 100));
 	}
 
 	var isSeeking = false;
 
-	progressBar.addEventListener('mousedown', function (e) {
+	document.addEventListener('mousedown', function (e) {
+		if (!e.target.closest('#audio-progress-bar')) return;
 		e.preventDefault();
 		isSeeking = true;
 		seekToPercent(getClickPercent(e));
@@ -553,53 +575,7 @@ const { audioUrl = '', title = '' } = Astro.props;
 
 		if (!player) return;
 
-		// Re-attach play/pause button listener after DOM swap
-		playBtn.addEventListener('click', function () {
-			if (audio.paused) {
-				audio.play().catch(function (err) {
-					console.warn('[AudioPlayer] Play blocked:', err);
-				});
-			} else {
-				audio.pause();
-			}
-		});
-
-		speedBtn.addEventListener('click', function () {
-			speedIndex = (speedIndex + 1) % speeds.length;
-			var rate = speeds[speedIndex];
-			audio.playbackRate = rate;
-			var label = rate + 'x';
-			speedBtn.textContent = label;
-			speedBtn.setAttribute('aria-label', 'Playback speed: ' + label);
-		});
-
-		progressBar.addEventListener('mousedown', function (e) {
-			e.preventDefault();
-			isSeeking = true;
-			seekToPercent(getClickPercent(e));
-		});
-
-		progressBar.addEventListener('touchstart', function (e) {
-			e.preventDefault();
-			seekToPercent(getClickPercent(e));
-		}, { passive: false });
-
-		progressBar.addEventListener('touchmove', function (e) {
-			e.preventDefault();
-			seekToPercent(getClickPercent(e));
-		}, { passive: false });
-
-		progressBar.addEventListener('keydown', function (e) {
-			if (!audio.duration) return;
-			var step = (e.shiftKey ? 30 : 5);
-			if (e.key === 'ArrowLeft') {
-				audio.currentTime = Math.max(0, audio.currentTime - step);
-				e.preventDefault();
-			} else if (e.key === 'ArrowRight') {
-				audio.currentTime = Math.min(audio.duration, audio.currentTime + step);
-				e.preventDefault();
-			}
-		});
+		// Event listeners use delegation (on document) so no re-attachment needed.
 
 		// Sync visual state if audio was already playing before navigation
 		setPlayingState(!audio.paused);
