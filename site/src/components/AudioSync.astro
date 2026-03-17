@@ -1,8 +1,12 @@
 ---
 /**
  * AudioSync — synchronized paragraph highlighting + auto-scroll
- * Reads a VTT file with section-based cues and highlights the
- * corresponding heading/section in the prose as audio plays.
+ *
+ * Parses a VTT file where each cue is the spoken text of a prose paragraph.
+ * On load, fuzzy-matches each cue to a DOM paragraph by normalized prefix.
+ * On timeupdate, highlights the active paragraph and scrolls it into view.
+ *
+ * Also supports legacy section:-prefixed cues for backwards compat.
  */
 interface Props {
 	vttUrl?: string;
@@ -16,7 +20,33 @@ const { vttUrl = '' } = Astro.props;
 )}
 
 <style is:global>
-/* Active section highlight */
+/* ------------------------------------------------------------------ */
+/* Active paragraph highlight                                           */
+/* ------------------------------------------------------------------ */
+
+.prose p.audio-active {
+	position: relative;
+	border-left: 3px solid var(--color-accent-400);
+	padding-left: 0.85em;
+	margin-left: -1em;
+	background-color: oklch(0.765 0.177 163.223 / 0.06);
+	border-radius: 0 4px 4px 0;
+	transition:
+		border-color 0.25s ease,
+		background-color 0.25s ease,
+		padding-left 0.25s ease,
+		margin-left 0.25s ease;
+}
+
+html.light .prose p.audio-active {
+	border-left-color: var(--color-accent-700);
+	background-color: oklch(0.48 0.13 163 / 0.07);
+}
+
+/* ------------------------------------------------------------------ */
+/* Active heading highlight (legacy + section fallback)                */
+/* ------------------------------------------------------------------ */
+
 .prose h2.audio-active,
 .prose h3.audio-active {
 	position: relative;
@@ -39,7 +69,6 @@ html.light .prose h3.audio-active::before {
 	background: var(--color-accent-700);
 }
 
-/* Subtle pulse on the active section heading */
 .prose .audio-active .heading-anchor {
 	color: var(--color-accent-400) !important;
 }
@@ -50,52 +79,259 @@ html.light .prose .audio-active .heading-anchor {
 </style>
 
 <script is:inline>
-(function() {
+(function () {
+
+	// ------------------------------------------------------------------ //
+	// State                                                                //
+	// ------------------------------------------------------------------ //
+
+	/** @type {{ start: number, end: number, element: Element|null, section: string|null }[]} */
 	var cues = [];
 	var loaded = false;
-	var activeHeading = null;
+	var activeElement = null;
+	var activeTocSlug = null;
 
+	// ------------------------------------------------------------------ //
+	// Text normalization — strips markdown artifacts, lowercases,          //
+	// collapses whitespace, removes punctuation. Used for fuzzy matching.  //
+	// ------------------------------------------------------------------ //
+
+	function normalize(text) {
+		return text
+			.toLowerCase()
+			// strip markdown bold/italic markers
+			.replace(/\*{1,3}|_{1,3}/g, '')
+			// strip inline links — keep link text, ditch URL
+			.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+			// strip HTML tags
+			.replace(/<[^>]+>/g, '')
+			// strip punctuation (keep letters, digits, whitespace)
+			.replace(/[^\w\s]/g, ' ')
+			// collapse whitespace
+			.replace(/\s+/g, ' ')
+			.trim();
+	}
+
+	/** Extract first N words from a normalized string */
+	function firstWords(text, n) {
+		return text.split(' ').slice(0, n).join(' ');
+	}
+
+	// ------------------------------------------------------------------ //
+	// VTT parser                                                           //
+	// ------------------------------------------------------------------ //
+
+	function parseTimestamp(ts) {
+		var parts = ts.split(':');
+		return parseInt(parts[0]) * 3600 + parseInt(parts[1]) * 60 + parseFloat(parts[2]);
+	}
+
+	/**
+	 * Parse VTT text into raw cue objects.
+	 * @returns {{ start: number, end: number, text: string, section: string|null }[]}
+	 */
 	function parseVTT(text) {
 		var lines = text.split('\n');
 		var result = [];
 		var i = 0;
 
-		// Skip header
+		// Skip WEBVTT header line(s)
 		while (i < lines.length && !lines[i].match(/^\d+$/)) i++;
 
 		while (i < lines.length) {
-			// Cue number
-			if (lines[i].match(/^\d+$/)) {
-				i++;
-				// Timestamp line
-				var timeMatch = lines[i] && lines[i].match(/(\d+:\d+:\d+\.\d+)\s*-->\s*(\d+:\d+:\d+\.\d+)/);
-				if (timeMatch) {
-					var start = parseTimestamp(timeMatch[1]);
-					var end = parseTimestamp(timeMatch[2]);
-					i++;
-					// Cue text (section slug)
-					var cueText = '';
-					while (i < lines.length && lines[i].trim() !== '') {
-						cueText += lines[i].trim();
-						i++;
-					}
-					if (cueText.startsWith('section:')) {
-						result.push({ start: start, end: end, section: cueText.replace('section:', '') });
-					}
-				}
-			}
+			if (!lines[i].match(/^\d+$/)) { i++; continue; }
+
+			i++; // step past cue number
+
+			var timeMatch = lines[i] && lines[i].match(
+				/(\d+:\d+:\d+\.\d+)\s*-->\s*(\d+:\d+:\d+\.\d+)/
+			);
+			if (!timeMatch) { i++; continue; }
+
+			var start = parseTimestamp(timeMatch[1]);
+			var end   = parseTimestamp(timeMatch[2]);
 			i++;
+
+			var cueLines = [];
+			while (i < lines.length && lines[i].trim() !== '') {
+				cueLines.push(lines[i].trim());
+				i++;
+			}
+			var cueText = cueLines.join(' ');
+
+			// Legacy section: prefix support
+			if (cueText.startsWith('section:')) {
+				result.push({ start: start, end: end, text: '', section: cueText.replace('section:', '') });
+			} else {
+				result.push({ start: start, end: end, text: cueText, section: null });
+			}
 		}
+
 		return result;
 	}
 
-	function parseTimestamp(ts) {
-		var parts = ts.split(':');
-		var hours = parseInt(parts[0]);
-		var mins = parseInt(parts[1]);
-		var secs = parseFloat(parts[2]);
-		return hours * 3600 + mins * 60 + secs;
+	// ------------------------------------------------------------------ //
+	// Paragraph matching — run once after VTT + DOM are both ready         //
+	// ------------------------------------------------------------------ //
+
+	/**
+	 * For each raw cue with text, find the best-matching .prose p element.
+	 * Strategy: compare first 8 normalized words of the cue against the
+	 * first 8 normalized words of each paragraph. Exact prefix match wins.
+	 * Falls back to longest common prefix if no exact match.
+	 */
+	function buildCueMap(rawCues) {
+		var proseEl = document.querySelector('.prose');
+		if (!proseEl) return rawCues.map(function(c) {
+			return { start: c.start, end: c.end, element: null, section: c.section };
+		});
+
+		// Collect all paragraphs + their normalized first-8-word prefix
+		var paragraphs = Array.from(proseEl.querySelectorAll('p'));
+		var paraData = paragraphs.map(function(p) {
+			var norm = normalize(p.textContent || '');
+			return { el: p, prefix: firstWords(norm, 8) };
+		});
+
+		// For each cue, find best paragraph match
+		return rawCues.map(function(cue) {
+			// Legacy section: cues → resolve by heading ID
+			if (cue.section) {
+				return { start: cue.start, end: cue.end, element: document.getElementById(cue.section), section: cue.section };
+			}
+
+			if (!cue.text) return { start: cue.start, end: cue.end, element: null, section: null };
+
+			var normCue = normalize(cue.text);
+			var cuePrefix = firstWords(normCue, 8);
+
+			// Try exact prefix match first
+			var match = null;
+			for (var i = 0; i < paraData.length; i++) {
+				if (paraData[i].prefix === cuePrefix) {
+					match = paraData[i].el;
+					break;
+				}
+			}
+
+			// If no exact match, find paragraph whose prefix shares the most
+			// leading words with the cue prefix (tolerates minor TTS rewording)
+			if (!match && cuePrefix.length > 0) {
+				var bestScore = 0;
+				var cueWords = cuePrefix.split(' ');
+				for (var j = 0; j < paraData.length; j++) {
+					var paraWords = paraData[j].prefix.split(' ');
+					var score = 0;
+					var limit = Math.min(cueWords.length, paraWords.length);
+					for (var k = 0; k < limit; k++) {
+						if (cueWords[k] === paraWords[k]) score++;
+						else break;
+					}
+					if (score > bestScore) {
+						bestScore = score;
+						match = paraData[j].el;
+					}
+				}
+				// Require at least 4 matching leading words to avoid false positives
+				if (bestScore < 4) match = null;
+			}
+
+			// Derive which section heading this paragraph belongs to
+			var sectionSlug = null;
+			if (match) {
+				var prev = match.previousElementSibling;
+				while (prev) {
+					if (prev.matches('h2[id], h3[id]')) {
+						sectionSlug = prev.id;
+						break;
+					}
+					prev = prev.previousElementSibling;
+				}
+				// If the immediate sibling scan fails, walk the parent
+				if (!sectionSlug) {
+					var node = match;
+					while (node && node !== proseEl) {
+						node = node.parentElement;
+						if (!node) break;
+						var heading = node.querySelector('h2[id], h3[id]');
+						if (heading) { sectionSlug = heading.id; break; }
+					}
+				}
+			}
+
+			return { start: cue.start, end: cue.end, element: match, section: sectionSlug };
+		});
 	}
+
+	// ------------------------------------------------------------------ //
+	// Active cue lookup — simple linear scan (cues are ~100-300 items,    //
+	// well within perf budget for 60fps timeupdate)                        //
+	// ------------------------------------------------------------------ //
+
+	function findActiveCue(currentTime) {
+		for (var i = 0; i < cues.length; i++) {
+			if (currentTime >= cues[i].start && currentTime < cues[i].end) {
+				return cues[i];
+			}
+		}
+		return null;
+	}
+
+	// ------------------------------------------------------------------ //
+	// Highlight + scroll                                                   //
+	// ------------------------------------------------------------------ //
+
+	function applyHighlight(cue) {
+		var el = cue ? cue.element : null;
+		var slug = cue ? cue.section : null;
+
+		// Paragraph highlight
+		if (el !== activeElement) {
+			if (activeElement) activeElement.classList.remove('audio-active');
+			if (el) el.classList.add('audio-active');
+			activeElement = el;
+
+			// Auto-scroll: bring active paragraph into view if out of viewport
+			if (el) {
+				var rect = el.getBoundingClientRect();
+				var vh   = window.innerHeight;
+				// Scroll if the element is outside the middle band (80px–65% of viewport)
+				if (rect.top < 80 || rect.bottom > vh * 0.85) {
+					el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+				}
+			}
+		}
+
+		// ToC highlight — only update when the section actually changes
+		if (slug !== activeTocSlug) {
+			activeTocSlug = slug;
+			var tocLinks = document.querySelectorAll('.toc-link');
+			for (var i = 0; i < tocLinks.length; i++) {
+				var link = tocLinks[i];
+				if (slug && link.getAttribute('data-heading') === slug) {
+					link.classList.add('active');
+				} else {
+					link.classList.remove('active');
+				}
+			}
+		}
+	}
+
+	function clearHighlight() {
+		if (activeElement) {
+			activeElement.classList.remove('audio-active');
+			activeElement = null;
+		}
+		activeTocSlug = null;
+		var tocLinks = document.querySelectorAll('.toc-link');
+		for (var i = 0; i < tocLinks.length; i++) {
+			tocLinks[i].classList.remove('active');
+		}
+	}
+
+	// ------------------------------------------------------------------ //
+	// VTT loading                                                          //
+	// ------------------------------------------------------------------ //
 
 	function loadVTT() {
 		var syncData = document.getElementById('audio-sync-data');
@@ -105,82 +341,44 @@ html.light .prose .audio-active .heading-anchor {
 		if (!url) return;
 
 		fetch(url)
-			.then(function(r) { return r.text(); })
-			.then(function(text) {
-				cues = parseVTT(text);
+			.then(function (r) { return r.text(); })
+			.then(function (text) {
+				var rawCues = parseVTT(text);
+				cues = buildCueMap(rawCues);
 				loaded = true;
 			})
-			.catch(function() { /* VTT not available yet — silent */ });
+			.catch(function () {
+				// VTT not available — silent failure, no highlight
+			});
 	}
 
-	function highlightSection(currentTime) {
-		if (cues.length === 0) return;
+	// ------------------------------------------------------------------ //
+	// Event wiring                                                         //
+	// ------------------------------------------------------------------ //
 
-		var activeCue = null;
-		for (var i = 0; i < cues.length; i++) {
-			if (currentTime >= cues[i].start && currentTime < cues[i].end) {
-				activeCue = cues[i];
-				break;
-			}
-		}
-
-		if (!activeCue) {
-			clearHighlight();
-			return;
-		}
-
-		var heading = document.getElementById(activeCue.section);
-		if (!heading || heading === activeHeading) return;
-
-		clearHighlight();
-		heading.classList.add('audio-active');
-		activeHeading = heading;
-
-		// Auto-scroll: keep active heading in view
-		var rect = heading.getBoundingClientRect();
-		var viewHeight = window.innerHeight;
-		if (rect.top < 80 || rect.top > viewHeight * 0.6) {
-			heading.scrollIntoView({ behavior: 'smooth', block: 'center' });
-		}
-
-		// Also highlight in ToC
-		var tocLinks = document.querySelectorAll('.toc-link');
-		tocLinks.forEach(function(link) {
-			if (link.getAttribute('data-heading') === activeCue.section) {
-				link.classList.add('active');
-			} else {
-				link.classList.remove('active');
-			}
-		});
-	}
-
-	function clearHighlight() {
-		if (activeHeading) {
-			activeHeading.classList.remove('audio-active');
-			activeHeading = null;
-		}
-	}
-
-	// Listen for audio timeupdate from the player
-	// The AudioPlayer uses a global Audio object — we hook into timeupdate
-	// by watching for a custom event dispatched by the player
-	document.addEventListener('audio-timeupdate', function(e) {
+	document.addEventListener('audio-timeupdate', function (e) {
 		if (!loaded) loadVTT();
-		if (cues.length > 0) {
-			highlightSection(e.detail.currentTime);
-		}
+		if (cues.length === 0) return;
+		var active = findActiveCue(e.detail.currentTime);
+		applyHighlight(active);
 	});
 
-	document.addEventListener('audio-ended', function() {
+	document.addEventListener('audio-ended', function () {
 		clearHighlight();
 	});
 
-	document.addEventListener('audio-paused', function() {
-		// Keep highlight visible when paused — user might be reading
+	// audio-paused: keep highlight visible — user may be reading
+
+	// Re-run matching on page load (DOM may have changed via View Transitions)
+	document.addEventListener('astro:page-load', function () {
+		loaded = false;
+		cues = [];
+		activeElement = null;
+		activeTocSlug = null;
+		loadVTT();
 	});
 
-	// Load VTT on page load
-	document.addEventListener('astro:page-load', loadVTT);
 	loadVTT();
+
 })();
 </script>
