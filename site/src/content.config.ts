@@ -30,6 +30,8 @@ const entries = defineCollection({
 		author: z.string().optional(),
 		difficulty: z.string().optional(),
 		reading_time_minutes: z.number().optional(),
+		audio_url: z.string().optional(),
+		vtt_url: z.string().optional(),
 	}),
 });
 

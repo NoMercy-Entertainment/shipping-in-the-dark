@@ -2,16 +2,6 @@
 import { getCollection, render } from 'astro:content';
 import EntryLayout from '../../layouts/EntryLayout.astro';
 
-// Audio URL map — keyed by entry slug (from frontmatter).
-// Audio files hosted as GitHub Release assets.
-const audioUrls: Record<string, string> = {
-	'how-the-cto-locked-the-boss-out': 'https://github.com/NoMercy-Entertainment/shipping-in-the-dark/releases/download/audio-v1/how-the-cto-locked-the-boss-out.mp3',
-};
-
-const vttUrls: Record<string, string> = {
-	'how-the-cto-locked-the-boss-out': 'https://github.com/NoMercy-Entertainment/shipping-in-the-dark/releases/download/audio-v1/how-the-cto-locked-the-boss-out.vtt',
-};
-
 export async function getStaticPaths() {
 	const entries = await getCollection('entries');
 	return entries.map((entry) => ({
@@ -33,9 +23,6 @@ if (entry.data.type) {
 	descriptionParts.push(entry.data.type);
 }
 const description = descriptionParts.join(' — ');
-
-const audioUrl = audioUrls[entry.data.slug];
-const vttUrl = vttUrls[entry.data.slug];
 ---
 
 <EntryLayout
@@ -53,8 +40,8 @@ const vttUrl = vttUrls[entry.data.slug];
 	author={entry.data.author}
 	headings={headings}
 	tags={entry.data.tags ?? []}
-	audioUrl={audioUrl}
-	vttUrl={vttUrl}
+	audioUrl={entry.data.audio_url}
+	vttUrl={entry.data.vtt_url}
 >
 	<Content />
 </EntryLayout>
