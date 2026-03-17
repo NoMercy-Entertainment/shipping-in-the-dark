@@ -6,6 +6,7 @@ import AgentTooltip from '../components/AgentTooltip.astro';
 import TableOfContents from '../components/TableOfContents.astro';
 import TagList from '../components/TagList.astro';
 import AudioPlayer from '../components/AudioPlayer.astro';
+import AudioSync from '../components/AudioSync.astro';
 
 interface Props {
 	title: string;
@@ -23,6 +24,7 @@ interface Props {
 	headings?: { depth: number; slug: string; text: string }[];
 	tags?: string[];
 	audioUrl?: string;
+	vttUrl?: string;
 }
 
 const {
@@ -41,6 +43,7 @@ const {
 	headings = [],
 	tags = [],
 	audioUrl,
+	vttUrl,
 } = Astro.props;
 
 const canonicalUrl = new URL(Astro.url.pathname, Astro.site).toString();
@@ -93,7 +96,7 @@ const difficultyLabels: Record<string, string> = {
 
 	<main class="mx-auto max-w-4xl px-4 py-12 sm:px-6">
 		<article>
-			<header class="mb-12">
+			<header class="prose mb-12">
 				{series && (
 					<a href={`/series/${series.name.toLowerCase()}`} class="mb-4 inline-flex items-center rounded-full bg-accent-400/10 px-3 py-1 text-sm font-medium text-accent-400 no-underline transition-colors hover:bg-accent-400/20 light:bg-accent-600/10 light:text-accent-700">
 						{series.name} · Part {series.part}
@@ -133,6 +136,7 @@ const difficultyLabels: Record<string, string> = {
 
 	<Footer />
 
+	<AudioSync vttUrl={vttUrl} />
 	<AudioPlayer audioUrl={audioUrl} title={title} />
 </BaseLayout>
 

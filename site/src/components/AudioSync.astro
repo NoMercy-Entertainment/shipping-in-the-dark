@@ -1,0 +1,186 @@
+---
+/**
+ * AudioSync — synchronized paragraph highlighting + auto-scroll
+ * Reads a VTT file with section-based cues and highlights the
+ * corresponding heading/section in the prose as audio plays.
+ */
+interface Props {
+	vttUrl?: string;
+}
+
+const { vttUrl = '' } = Astro.props;
+---
+
+{vttUrl && (
+	<div data-vtt-url={vttUrl} id="audio-sync-data"></div>
+)}
+
+<style is:global>
+/* Active section highlight */
+.prose h2.audio-active,
+.prose h3.audio-active {
+	position: relative;
+}
+
+.prose h2.audio-active::before,
+.prose h3.audio-active::before {
+	content: '';
+	position: absolute;
+	left: -1.5rem;
+	top: 0;
+	bottom: 0;
+	width: 3px;
+	background: var(--color-accent-400);
+	border-radius: 2px;
+}
+
+html.light .prose h2.audio-active::before,
+html.light .prose h3.audio-active::before {
+	background: var(--color-accent-700);
+}
+
+/* Subtle pulse on the active section heading */
+.prose .audio-active .heading-anchor {
+	color: var(--color-accent-400) !important;
+}
+
+html.light .prose .audio-active .heading-anchor {
+	color: var(--color-accent-700) !important;
+}
+</style>
+
+<script is:inline>
+(function() {
+	var cues = [];
+	var loaded = false;
+	var activeHeading = null;
+
+	function parseVTT(text) {
+		var lines = text.split('\n');
+		var result = [];
+		var i = 0;
+
+		// Skip header
+		while (i < lines.length && !lines[i].match(/^\d+$/)) i++;
+
+		while (i < lines.length) {
+			// Cue number
+			if (lines[i].match(/^\d+$/)) {
+				i++;
+				// Timestamp line
+				var timeMatch = lines[i] && lines[i].match(/(\d+:\d+:\d+\.\d+)\s*-->\s*(\d+:\d+:\d+\.\d+)/);
+				if (timeMatch) {
+					var start = parseTimestamp(timeMatch[1]);
+					var end = parseTimestamp(timeMatch[2]);
+					i++;
+					// Cue text (section slug)
+					var cueText = '';
+					while (i < lines.length && lines[i].trim() !== '') {
+						cueText += lines[i].trim();
+						i++;
+					}
+					if (cueText.startsWith('section:')) {
+						result.push({ start: start, end: end, section: cueText.replace('section:', '') });
+					}
+				}
+			}
+			i++;
+		}
+		return result;
+	}
+
+	function parseTimestamp(ts) {
+		var parts = ts.split(':');
+		var hours = parseInt(parts[0]);
+		var mins = parseInt(parts[1]);
+		var secs = parseFloat(parts[2]);
+		return hours * 3600 + mins * 60 + secs;
+	}
+
+	function loadVTT() {
+		var syncData = document.getElementById('audio-sync-data');
+		if (!syncData || loaded) return;
+
+		var url = syncData.getAttribute('data-vtt-url');
+		if (!url) return;
+
+		fetch(url)
+			.then(function(r) { return r.text(); })
+			.then(function(text) {
+				cues = parseVTT(text);
+				loaded = true;
+			})
+			.catch(function() { /* VTT not available yet — silent */ });
+	}
+
+	function highlightSection(currentTime) {
+		if (cues.length === 0) return;
+
+		var activeCue = null;
+		for (var i = 0; i < cues.length; i++) {
+			if (currentTime >= cues[i].start && currentTime < cues[i].end) {
+				activeCue = cues[i];
+				break;
+			}
+		}
+
+		if (!activeCue) {
+			clearHighlight();
+			return;
+		}
+
+		var heading = document.getElementById(activeCue.section);
+		if (!heading || heading === activeHeading) return;
+
+		clearHighlight();
+		heading.classList.add('audio-active');
+		activeHeading = heading;
+
+		// Auto-scroll: keep active heading in view
+		var rect = heading.getBoundingClientRect();
+		var viewHeight = window.innerHeight;
+		if (rect.top < 80 || rect.top > viewHeight * 0.6) {
+			heading.scrollIntoView({ behavior: 'smooth', block: 'center' });
+		}
+
+		// Also highlight in ToC
+		var tocLinks = document.querySelectorAll('.toc-link');
+		tocLinks.forEach(function(link) {
+			if (link.getAttribute('data-heading') === activeCue.section) {
+				link.classList.add('active');
+			} else {
+				link.classList.remove('active');
+			}
+		});
+	}
+
+	function clearHighlight() {
+		if (activeHeading) {
+			activeHeading.classList.remove('audio-active');
+			activeHeading = null;
+		}
+	}
+
+	// Listen for audio timeupdate from the player
+	// The AudioPlayer uses a global Audio object — we hook into timeupdate
+	// by watching for a custom event dispatched by the player
+	document.addEventListener('audio-timeupdate', function(e) {
+		if (!loaded) loadVTT();
+		if (cues.length > 0) {
+			highlightSection(e.detail.currentTime);
+		}
+	});
+
+	document.addEventListener('audio-ended', function() {
+		clearHighlight();
+	});
+
+	document.addEventListener('audio-paused', function() {
+		// Keep highlight visible when paused — user might be reading
+	});
+
+	// Load VTT on page load
+	document.addEventListener('astro:page-load', loadVTT);
+	loadVTT();
+})();
+</script>

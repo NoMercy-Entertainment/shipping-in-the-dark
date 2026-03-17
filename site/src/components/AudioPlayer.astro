@@ -418,7 +418,10 @@ const { audioUrl = '', title = '' } = Astro.props;
 		if (de) de.textContent = formatTime(audio.duration);
 	});
 
-	audio.addEventListener('timeupdate', updateProgress);
+	audio.addEventListener('timeupdate', function() {
+		updateProgress();
+		document.dispatchEvent(new CustomEvent('audio-timeupdate', { detail: { currentTime: audio.currentTime, duration: audio.duration } }));
+	});
 
 	audio.addEventListener('play', function () {
 		setPlayingState(true);
@@ -429,6 +432,7 @@ const { audioUrl = '', title = '' } = Astro.props;
 	});
 
 	audio.addEventListener('ended', function () {
+		document.dispatchEvent(new CustomEvent('audio-ended'));
 		setPlayingState(false);
 		audio.currentTime = 0;
 		progressFill.style.width = '0%';
