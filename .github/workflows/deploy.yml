@@ -75,23 +75,31 @@ jobs:
           SUBJECT=$(echo "$COMMIT_MESSAGE" | head -n1)
 
           # Try to parse a conventional commit subject into a human-readable description.
-          # Matches patterns like:
-          #   feat(journal): add Entry 004 — Movie Night
-          #   docs: update README
-          #   fix(site): correct broken image path
-          # Falls back to the raw subject if it doesn't match.
           if echo "$SUBJECT" | grep -qE '^[a-z]+(\([^)]+\))?: .+'; then
             DESCRIPTION=$(echo "$SUBJECT" | sed 's/^[a-z]*([^)]*): //' | sed 's/^[a-z]*: //')
           else
             DESCRIPTION="$SUBJECT"
           fi
 
+          # Find the newest entry added in this commit and extract its slug for a direct link.
+          # Look for added/modified .md files in entries/ and parse the slug from frontmatter.
+          ENTRY_SLUG=""
+          NEWEST_ENTRY=$(git diff --name-only --diff-filter=A HEAD~1 HEAD -- 'entries/*.md' 2>/dev/null | tail -1)
+          if [ -n "$NEWEST_ENTRY" ] && [ -f "$NEWEST_ENTRY" ]; then
+            ENTRY_SLUG=$(grep -m1 '^slug:' "$NEWEST_ENTRY" | sed 's/^slug:[[:space:]]*//')
+          fi
+
+          # Build the URL — direct link to entry if we found a slug, otherwise homepage
+          if [ -n "$ENTRY_SLUG" ]; then
+            ENTRY_URL="https://journal.nomercy.tv/entry/${ENTRY_SLUG}"
+          else
+            ENTRY_URL="https://journal.nomercy.tv"
+          fi
+
           # Format the ISO timestamp into something readable.
-          # GitHub provides RFC 3339 — convert to "17 Mar 2026 at 14:32 UTC"
           FORMATTED_TIME=$(date -u -d "$COMMIT_TIMESTAMP" '+%d %b %Y at %H:%M UTC' 2>/dev/null || echo "$COMMIT_TIMESTAMP")
 
-          # NoMercy brand color: dark indigo-ish (#5865F2 is Discord blurple — use NoMercy purple instead)
-          # Decimal: 0x6C5CE7 = 7,134,951
+          # NoMercy brand color (#6C5CE7 = decimal 7,134,951)
           EMBED_COLOR=7134951
 
           PAYLOAD=$(cat <<EOF
@@ -101,7 +109,7 @@ jobs:
             "embeds": [
               {
                 "title": "$DESCRIPTION",
-                "url": "https://journal.nomercy.tv",
+                "url": "$ENTRY_URL",
                 "description": "A new entry has been published to the NoMercy dev journal.",
                 "color": $EMBED_COLOR,
                 "fields": [
