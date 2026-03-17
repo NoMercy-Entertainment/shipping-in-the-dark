@@ -8,6 +8,10 @@ const audioUrls: Record<string, string> = {
 	'how-the-cto-locked-the-boss-out': 'https://github.com/NoMercy-Entertainment/shipping-in-the-dark/releases/download/audio-v1/how-the-cto-locked-the-boss-out.mp3',
 };
 
+const vttUrls: Record<string, string> = {
+	'how-the-cto-locked-the-boss-out': 'https://github.com/NoMercy-Entertainment/shipping-in-the-dark/releases/download/audio-v1/how-the-cto-locked-the-boss-out.vtt',
+};
+
 export async function getStaticPaths() {
 	const entries = await getCollection('entries');
 	return entries.map((entry) => ({
@@ -31,6 +35,7 @@ if (entry.data.type) {
 const description = descriptionParts.join(' — ');
 
 const audioUrl = audioUrls[entry.data.slug];
+const vttUrl = vttUrls[entry.data.slug];
 ---
 
 <EntryLayout
@@ -49,6 +54,7 @@ const audioUrl = audioUrls[entry.data.slug];
 	headings={headings}
 	tags={entry.data.tags ?? []}
 	audioUrl={audioUrl}
+	vttUrl={vttUrl}
 >
 	<Content />
 </EntryLayout>
