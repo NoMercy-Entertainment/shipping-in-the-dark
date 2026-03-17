@@ -2,11 +2,13 @@
 /**
  * AudioSync — synchronized paragraph highlighting + auto-scroll
  *
- * Parses a VTT file where each cue is the spoken text of a prose paragraph.
- * On load, fuzzy-matches each cue to a DOM paragraph by normalized prefix.
+ * Parses a VTT file where each cue identifies a prose paragraph.
  * On timeupdate, highlights the active paragraph and scrolls it into view.
  *
- * Also supports legacy section:-prefixed cues for backwards compat.
+ * Cue matching priority:
+ *   1. section:slug  → document.getElementById(slug)  (legacy heading match)
+ *   2. p-N pattern   → document.getElementById('p-N') (deterministic ID match)
+ *   3. Text fuzzy    → prefix + word-overlap scoring   (fallback for old VTTs)
  */
 interface Props {
 	vttUrl?: string;
@@ -128,7 +130,11 @@ html.light .prose .audio-active .heading-anchor {
 
 	/**
 	 * Parse VTT text into raw cue objects.
-	 * @returns {{ start: number, end: number, text: string, section: string|null }[]}
+	 * @returns {{ start: number, end: number, text: string, section: string|null, elementId: string|null }[]}
+	 *
+	 * elementId is set when the cue body is a bare p-N id reference.
+	 * section   is set for legacy section:slug cues.
+	 * text      carries the spoken text for fuzzy-matched cues.
 	 */
 	function parseVTT(text) {
 		var lines = text.replace(/\r/g, '').split('\n');
@@ -161,9 +167,12 @@ html.light .prose .audio-active .heading-anchor {
 
 			// Legacy section: prefix support
 			if (cueText.startsWith('section:')) {
-				result.push({ start: start, end: end, text: '', section: cueText.replace('section:', '') });
+				result.push({ start: start, end: end, text: '', section: cueText.replace('section:', ''), elementId: null });
+			// Deterministic p-N id reference — the entire cue body is just the element id
+			} else if (/^p-\d+$/.test(cueText)) {
+				result.push({ start: start, end: end, text: '', section: null, elementId: cueText });
 			} else {
-				result.push({ start: start, end: end, text: cueText, section: null });
+				result.push({ start: start, end: end, text: cueText, section: null, elementId: null });
 			}
 		}
 
@@ -175,10 +184,15 @@ html.light .prose .audio-active .heading-anchor {
 	// ------------------------------------------------------------------ //
 
 	/**
-	 * For each raw cue with text, find the best-matching .prose p element.
-	 * Strategy: compare first 8 normalized words of the cue against the
-	 * first 8 normalized words of each paragraph. Exact prefix match wins.
-	 * Falls back to longest common prefix if no exact match.
+	 * For each raw cue, resolve it to a DOM element.
+	 *
+	 * Matching pipeline:
+	 *
+	 * 1. section:slug cues  → document.getElementById(slug)  (legacy heading match)
+	 * 2. elementId cues     → document.getElementById(elementId)  (direct p-N lookup)
+	 * 3. Text-based cues    → fuzzy match against .prose paragraphs (old VTTs)
+	 *    a. Exact prefix: first 8 normalized words of cue === first 8 of paragraph.
+	 *    b. Word-overlap scoring: bag-of-words, threshold 0.75 (<4 words) or 0.4.
 	 */
 	function buildCueMap(rawCues) {
 		// Use the last .prose element — the first one is the header metadata
@@ -188,80 +202,100 @@ html.light .prose .audio-active .heading-anchor {
 			return { start: c.start, end: c.end, element: null, section: c.section };
 		});
 
-		// Collect all paragraphs + their normalized first-8-word prefix
-		var paragraphs = Array.from(proseEl.querySelectorAll('p'));
-		var paraData = paragraphs.map(function(p) {
-			var norm = normalize(p.textContent || '');
-			return { el: p, prefix: firstWords(norm, 8) };
-		});
+		// Collect all paragraphs with both the normalized prefix (fast path)
+		// and the full normalized word set (overlap scoring fallback).
+		// Only built when there are text-based cues that need fuzzy matching.
+		var paraData = null;
+		function getParaData() {
+			if (paraData) return paraData;
+			var paragraphs = Array.from(proseEl.querySelectorAll('p'));
+			paraData = paragraphs.map(function(p) {
+				var norm = normalize(p.textContent || '');
+				var words = norm.split(' ').filter(Boolean);
+				// Build a plain object for O(1) membership checks during overlap scoring
+				var wordSet = {};
+				for (var wi = 0; wi < words.length; wi++) wordSet[words[wi]] = true;
+				return { el: p, prefix: firstWords(norm, 8), wordSet: wordSet };
+			});
+			return paraData;
+		}
+
+		// Derive section heading for a matched paragraph element
+		function deriveSectionSlug(match) {
+			var prev = match.previousElementSibling;
+			while (prev) {
+				if (prev.matches('h2[id], h3[id]')) return prev.id;
+				prev = prev.previousElementSibling;
+			}
+			// If the immediate sibling scan fails, walk up the parent chain
+			var node = match;
+			while (node && node !== proseEl) {
+				node = node.parentElement;
+				if (!node) break;
+				var heading = node.querySelector('h2[id], h3[id]');
+				if (heading) return heading.id;
+			}
+			return null;
+		}
 
 		// For each cue, find best paragraph match
 		return rawCues.map(function(cue) {
-			// Legacy section: cues → resolve by heading ID
+			// 1. Legacy section: cues — resolve by heading ID, no paragraph element
 			if (cue.section) {
 				return { start: cue.start, end: cue.end, element: document.getElementById(cue.section), section: cue.section };
 			}
 
+			// 2. Deterministic p-N id reference — direct getElementById, no fuzzy needed
+			if (cue.elementId) {
+				var el = document.getElementById(cue.elementId);
+				var sectionSlug = el ? deriveSectionSlug(el) : null;
+				return { start: cue.start, end: cue.end, element: el, section: sectionSlug };
+			}
+
+			// 3. Text-based fuzzy matching — fallback for VTTs without p-N ids
 			if (!cue.text) return { start: cue.start, end: cue.end, element: null, section: null };
 
+			var data = getParaData();
 			var normCue = normalize(cue.text);
 			var cuePrefix = firstWords(normCue, 8);
+			var cueWords = normCue.split(' ').filter(Boolean);
 
-			// Try exact prefix match first
+			// ---- Fast path: exact first-8-word prefix match ----
 			var match = null;
-			for (var i = 0; i < paraData.length; i++) {
-				if (paraData[i].prefix === cuePrefix) {
-					match = paraData[i].el;
+			for (var i = 0; i < data.length; i++) {
+				if (data[i].prefix === cuePrefix) {
+					match = data[i].el;
 					break;
 				}
 			}
 
-			// If no exact match, find paragraph whose prefix shares the most
-			// leading words with the cue prefix (tolerates minor TTS rewording)
-			if (!match && cuePrefix.length > 0) {
+			// ---- Fallback: word-overlap bag-of-words scoring ----
+			// TTS scripts frequently add preamble ("Here's the short version.")
+			// or rephrase slightly ("Entry one" vs "Entry 001"). Counting how
+			// many cue words appear anywhere in the paragraph catches these cases
+			// where prefix comparison fails completely.
+			if (!match && cueWords.length > 0) {
+				var threshold = cueWords.length < 4 ? 0.75 : 0.4;
 				var bestScore = 0;
-				var cueWords = cuePrefix.split(' ');
-				for (var j = 0; j < paraData.length; j++) {
-					var paraWords = paraData[j].prefix.split(' ');
-					var score = 0;
-					var limit = Math.min(cueWords.length, paraWords.length);
-					for (var k = 0; k < limit; k++) {
-						if (cueWords[k] === paraWords[k]) score++;
-						else break;
+				var bestEl = null;
+
+				for (var j = 0; j < data.length; j++) {
+					var hits = 0;
+					for (var k = 0; k < cueWords.length; k++) {
+						if (data[j].wordSet[cueWords[k]]) hits++;
 					}
+					var score = hits / cueWords.length;
 					if (score > bestScore) {
 						bestScore = score;
-						match = paraData[j].el;
+						bestEl = data[j].el;
 					}
 				}
-				// Require at least 4 matching leading words to avoid false positives
-				if (bestScore < 4) match = null;
+
+				if (bestScore >= threshold) match = bestEl;
 			}
 
-			// Derive which section heading this paragraph belongs to
-			var sectionSlug = null;
-			if (match) {
-				var prev = match.previousElementSibling;
-				while (prev) {
-					if (prev.matches('h2[id], h3[id]')) {
-						sectionSlug = prev.id;
-						break;
-					}
-					prev = prev.previousElementSibling;
-				}
-				// If the immediate sibling scan fails, walk the parent
-				if (!sectionSlug) {
-					var node = match;
-					while (node && node !== proseEl) {
-						node = node.parentElement;
-						if (!node) break;
-						var heading = node.querySelector('h2[id], h3[id]');
-						if (heading) { sectionSlug = heading.id; break; }
-					}
-				}
-			}
-
-			return { start: cue.start, end: cue.end, element: match, section: sectionSlug };
+			var fuzzySection = match ? deriveSectionSlug(match) : null;
+			return { start: cue.start, end: cue.end, element: match, section: fuzzySection };
 		});
 	}
 

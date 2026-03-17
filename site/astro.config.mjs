@@ -6,6 +6,7 @@ import { rehypeRewriteLinks } from './src/lib/link-rehype.mjs';
 import { rehypeInlineCode } from './src/lib/inline-code-rehype.mjs';
 import rehypeSlug from 'rehype-slug';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings';
+import rehypeParagraphIds from './src/lib/paragraph-ids-rehype.mjs';
 
 export default defineConfig({
 	site: 'https://journal.nomercy.tv',
@@ -14,6 +15,7 @@ export default defineConfig({
 	markdown: {
 		remarkPlugins: [remarkGfm, remarkCallouts],
 		rehypePlugins: [
+			rehypeParagraphIds,
 			rehypeRewriteLinks,
 			rehypeInlineCode,
 			rehypeSlug,
