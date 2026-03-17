@@ -86,6 +86,25 @@ body {
 	margin-bottom: 0.75em;
 }
 
+/* Heading anchor links */
+.heading-anchor {
+	text-decoration: none !important;
+	position: relative;
+}
+
+.heading-anchor:hover::before {
+	content: '#';
+	position: absolute;
+	left: -1.5em;
+	color: var(--color-accent-400);
+	font-weight: 400;
+	opacity: 0.6;
+}
+
+html.light .heading-anchor:hover::before {
+	color: var(--color-accent-700);
+}
+
 .prose h1 { font-size: 2rem; }
 .prose h2 { font-size: 1.5rem; border-bottom: 1px solid var(--color-surface-800); padding-bottom: 0.3em; }
 .prose h3 { font-size: 1.25rem; }
@@ -219,12 +238,22 @@ html:not(.light) .astro-code span {
 	text-decoration: var(--shiki-dark-text-decoration) !important;
 }
 
-/* Tables */
+/* Tables — break out of prose max-width */
 .prose table {
-	width: 100%;
+	width: calc(100% + 6rem);
+	margin-left: -3rem;
+	margin-right: -3rem;
 	border-collapse: collapse;
 	margin-bottom: 1.5em;
 	font-size: 0.9375rem;
+}
+
+@media (max-width: 639px) {
+	.prose table {
+		width: calc(100% + 2rem);
+		margin-left: -1rem;
+		margin-right: -1rem;
+	}
 }
 
 .prose th,
@@ -232,6 +261,11 @@ html:not(.light) .astro-code span {
 	padding: 0.75em 1em;
 	text-align: left;
 	border-bottom: 1px solid var(--color-surface-800);
+	white-space: nowrap;
+}
+
+.prose td:last-child {
+	white-space: normal;
 }
 
 html.light .prose th,
