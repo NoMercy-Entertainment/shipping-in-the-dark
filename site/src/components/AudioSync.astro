@@ -347,8 +347,8 @@ html.light .prose .audio-active .heading-anchor {
 				cues = buildCueMap(rawCues);
 				loaded = true;
 			})
-			.catch(function () {
-				// VTT not available — silent failure, no highlight
+			.catch(function (err) {
+				console.warn('[AudioSync] VTT load/parse failed:', err);
 			});
 	}
 
