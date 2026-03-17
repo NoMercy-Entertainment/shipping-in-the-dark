@@ -48,3 +48,93 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+  notify:
+    needs: deploy
+    runs-on: ubuntu-latest
+    if: ${{ success() && vars.DISCORD_NOTIFY != 'false' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Send Discord notification
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+          COMMIT_AUTHOR: ${{ github.event.head_commit.author.name }}
+          COMMIT_URL: ${{ github.event.head_commit.url }}
+          COMMIT_TIMESTAMP: ${{ github.event.head_commit.timestamp }}
+        run: |
+          # Skip silently if webhook secret is not set
+          if [ -z "$DISCORD_WEBHOOK_URL" ]; then
+            echo "DISCORD_WEBHOOK_URL not set — skipping notification"
+            exit 0
+          fi
+
+          # Extract the subject line (first line of commit message)
+          SUBJECT=$(echo "$COMMIT_MESSAGE" | head -n1)
+
+          # Try to parse a conventional commit subject into a human-readable description.
+          # Matches patterns like:
+          #   feat(journal): add Entry 004 — Movie Night
+          #   docs: update README
+          #   fix(site): correct broken image path
+          # Falls back to the raw subject if it doesn't match.
+          if echo "$SUBJECT" | grep -qE '^[a-z]+(\([^)]+\))?: .+'; then
+            DESCRIPTION=$(echo "$SUBJECT" | sed 's/^[a-z]*([^)]*): //' | sed 's/^[a-z]*: //')
+          else
+            DESCRIPTION="$SUBJECT"
+          fi
+
+          # Format the ISO timestamp into something readable.
+          # GitHub provides RFC 3339 — convert to "17 Mar 2026 at 14:32 UTC"
+          FORMATTED_TIME=$(date -u -d "$COMMIT_TIMESTAMP" '+%d %b %Y at %H:%M UTC' 2>/dev/null || echo "$COMMIT_TIMESTAMP")
+
+          # NoMercy brand color: dark indigo-ish (#5865F2 is Discord blurple — use NoMercy purple instead)
+          # Decimal: 0x6C5CE7 = 7,134,951
+          EMBED_COLOR=7134951
+
+          PAYLOAD=$(cat <<EOF
+          {
+            "username": "Shipping in the Dark",
+            "avatar_url": "https://journal.nomercy.tv/favicon.ico",
+            "embeds": [
+              {
+                "title": "$DESCRIPTION",
+                "url": "https://journal.nomercy.tv",
+                "description": "A new entry has been published to the NoMercy dev journal.",
+                "color": $EMBED_COLOR,
+                "fields": [
+                  {
+                    "name": "Author",
+                    "value": "$COMMIT_AUTHOR",
+                    "inline": true
+                  },
+                  {
+                    "name": "Published",
+                    "value": "$FORMATTED_TIME",
+                    "inline": true
+                  }
+                ],
+                "footer": {
+                  "text": "Shipping in the Dark — journal.nomercy.tv"
+                },
+                "timestamp": "$COMMIT_TIMESTAMP"
+              }
+            ]
+          }
+          EOF
+          )
+
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "Content-Type: application/json" \
+            -X POST \
+            -d "$PAYLOAD" \
+            "$DISCORD_WEBHOOK_URL")
+
+          if [ "$HTTP_STATUS" -ge 200 ] && [ "$HTTP_STATUS" -lt 300 ]; then
+            echo "Discord notification sent (HTTP $HTTP_STATUS)"
+          else
+            echo "Discord webhook returned HTTP $HTTP_STATUS — non-fatal, continuing"
+            # Do not exit 1 — a failed notification must never break the deploy record
+          fi
