@@ -131,7 +131,7 @@ html.light .prose .audio-active .heading-anchor {
 	 * @returns {{ start: number, end: number, text: string, section: string|null }[]}
 	 */
 	function parseVTT(text) {
-		var lines = text.split('\n');
+		var lines = text.replace(/\r/g, '').split('\n');
 		var result = [];
 		var i = 0;
 
@@ -181,7 +181,9 @@ html.light .prose .audio-active .heading-anchor {
 	 * Falls back to longest common prefix if no exact match.
 	 */
 	function buildCueMap(rawCues) {
-		var proseEl = document.querySelector('.prose');
+		// Use the last .prose element — the first one is the header metadata
+		var proseEls = document.querySelectorAll('.prose');
+		var proseEl = proseEls.length > 0 ? proseEls[proseEls.length - 1] : null;
 		if (!proseEl) return rawCues.map(function(c) {
 			return { start: c.start, end: c.end, element: null, section: c.section };
 		});
