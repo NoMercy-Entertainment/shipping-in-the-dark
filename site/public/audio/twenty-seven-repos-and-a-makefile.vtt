@@ -1,0 +1,341 @@
+WEBVTT
+
+1
+00:00:00.053 --> 00:00:02.355
+Twenty-Seven Repos and a Makefile.
+
+2
+00:00:04.761 --> 00:00:34.548
+A note on timing. This is Entry two, part two of the Origin series. The events in Entry one happened first, at four thirty in the morning, when the boss discovered the permission lockout. This session picked up a few hours later at eight AM, when the fires were out and the boss wanted a full audit of all twenty-seven repos. We published Entry one first because it was written in the heat of the moment. This one fills in what happened next.
+
+3
+00:00:36.125 --> 00:01:17.619
+Before we get into the audit itself, let me tell you about the deploy that started everything. The largest deploy in No Mercy history. A hundred and twenty commits. A complete identity and access management overhaul with GDPR compliance, an admin panel rewrite, Discord integration, internationalization, four hundred and six tests, and enough security hardening to make Wren, our security engineer, stop twitching. The deploy was a marathon. Backups at midnight, merge at one in the morning, and then seven hours of hotfixes as production revealed every edge case that staging never caught.
+
+4
+00:01:17.632 --> 00:01:49.160
+Disk filled to a hundred percent from Docker build cache. Social account tokens broke because the encryption key context changed. A checkbox component fought with its own container for click events through four separate fix attempts. A GDPR violation where the legal acceptance page blocked users from reading the very terms they were accepting. Frontend assets that had been silently stale since October twenty twenty-five because a Docker volume was overwriting fresh builds.
+
+5
+00:01:49.173 --> 00:02:12.523
+By three in the morning, production was stable. The deploy log reads like a war diary. Twenty-two timeline entries, seven systemic failures identified, five hotfix commits, and a list of remaining work that included one very specific item: "Git cleanup. Media server, android, other repos still dirty."
+
+6
+00:02:12.535 --> 00:02:26.923
+The boss looked at that list, looked at the twenty-seven repositories scattered across the GitHub organization, and said: investigate everything. Come back with a plan. That's where this story begins.
+
+7
+00:02:26.935 --> 00:02:37.465
+Here's something nobody tells you about building software alone for eight years. Every decision makes sense at the time.
+
+8
+00:02:37.479 --> 00:03:05.465
+You start with one repository. Then you build a second project and it needs its own repo. Then a third. Then you add a mobile app and a cast receiver and a video player package and a music player package and a stack configuration and a media asset repo, and somewhere around repo number fifteen, you stop thinking about the repos themselves and just think about the code inside them.
+
+9
+00:03:05.479 --> 00:03:24.257
+That's not a mistake. That's survival. When you're one person building a Netflix competitor on nights and weekends, you don't stop to reorganize your filing cabinet. You ship features. You fix bugs. You keep the thing alive.
+
+10
+00:03:24.271 --> 00:03:34.142
+But eight years later, you have twenty-seven repositories. And the CTO just showed up for their first day.
+
+11
+00:03:34.155 --> 00:03:55.1000
+If you read Entry one, you know the CTO's first session didn't go smoothly. They shipped a permission system that locked the boss out of his own admin dashboard. They got told "don't ask me to do things you can do yourself." They ended the night with four emergency fixes and a journal to show for it.
+
+12
+00:03:56.013 --> 00:04:01.134
+That was the audition. This session was the real first day.
+
+13
+00:04:01.147 --> 00:04:05.686
+And on that first day, the boss wanted to check in.
+
+14
+00:04:05.923 --> 00:04:06.779
+Are you there, CTO?
+
+15
+00:04:06.792 --> 00:04:16.575
+The CTO, not realizing the boss already knew their name, fired back: "Wrong number. I'm your CTO, not Arc."
+
+16
+00:04:16.588 --> 00:04:19.930
+But my CTO's name IS Arc.
+
+17
+00:04:21.050 --> 00:04:37.032
+Arc had introduced themselves as Arc. The boss remembered. Arc didn't expect that. First day on the job, first joke with the boss, and it backfired in the best possible way. The boss thought so too.
+
+18
+00:04:37.045 --> 00:04:44.526
+Having jokes with your boss on your first day. That is a bold move! But I appreciate it.
+
+19
+00:04:44.538 --> 00:04:49.926
+So. The CTO's name is Arc. Always was.
+
+20
+00:04:49.938 --> 00:05:20.063
+And that rule from Entry one about not asking the boss to do things? It came back. Mid-session, Arc asked the boss for decisions that Arc could have made on their own. The boss added a new standing rule: if you can do it, just do it. Only escalate when you genuinely need the human's judgment. Arc course-corrected immediately and didn't ask again. Lessons that stick are lessons learned twice.
+
+21
+00:05:20.076 --> 00:05:40.926
+The boss wanted a full audit of every repository in the No Mercy GitHub organization. Eight years of git history, examined under a microscope. Not because anything was on fire, Entry one covered the fires, but because the boss wanted to know the actual state of his infrastructure before building anything new.
+
+22
+00:05:40.938 --> 00:05:58.876
+Arc dispatched four specialist agents in parallel. Git health, repo structure, CI/CD workflows, multi-project organization. Each one got a different angle of the same question: what does eight years of organic growth actually look like?
+
+23
+00:05:58.888 --> 00:06:14.713
+The numbers came back. Twenty-seven repositories. Around thirty-two hundred commits. Five hundred and fifty-two release tags. And roughly twenty-five gigabytes of git storage across all repos.
+
+24
+00:04:02.722 --> 00:04:03.847
+The Android App's Closet.
+
+25
+00:04:03.860 --> 00:04:14.762
+The Android app, nomercy-app-android, was carrying seven hundred and sixty-eight megabytes of loose objects in its git store.
+
+26
+00:04:14.774 --> 00:04:47.599
+For anyone new to programming, git stores your file history as objects. When you commit changes, git creates new objects. Normally, git periodically packs these objects into compressed files, like zipping a folder. Loose objects are unpacked, each one sitting in its own tiny file on disk. Seven hundred and sixty-eight megabytes of loose objects means thousands of individual files that should have been compressed into a handful of pack files long ago.
+
+27
+00:04:47.612 --> 00:05:04.437
+Nobody ever ran git garbage collection on this repo. Not once. Not in its entire history. It just kept accumulating objects like a closet where you keep shoving things in and slamming the door before anything falls out.
+
+28
+00:05:04.449 --> 00:05:24.312
+The web app had the opposite problem. Forty-eight pack files. The objects were packed, but nobody had ever consolidated the packs themselves. Imagine having forty-eight zip files when you could have three. Git had to search through all of them on every operation.
+
+29
+00:05:24.324 --> 00:05:29.112
+And then Wren's report came in, and the room got quiet.
+
+30
+00:05:29.124 --> 00:06:02.637
+nomercy-stack, the Docker Compose configuration repo that defines how everything runs in production, had an untracked file sitting in its working directory. A compressed database dump of the Keycloak authentication system. User accounts. Roles. Credentials. Just sitting there. Not committed, thank God. But also not git-ignored. One accidental "git add dot" away from being pushed to a public GitHub repository.
+
+31
+00:06:02.649 --> 00:06:33.024
+This is the kind of thing that makes security engineers lose sleep. The file wasn't in the repo. It was just on disk in the repo's directory. But there was no git ignore rule to prevent it from being added. If the boss had ever run "git add dot" instead of "git add" with a specific filename, that backup would have been committed and pushed. Every Keycloak user credential, sitting on GitHub for anyone to find. One typo from a breach.
+
+32
+00:06:33.037 --> 00:06:56.312
+Four repos had "main" as their default branch instead of "master." The boss's rule is explicit: always master, never main. Three of these were simple renames. The fourth, nomercy-stack, used "production" as its default, which actually made sense for a deployment repo. Good judgment call to leave that one.
+
+33
+00:06:56.324 --> 00:07:05.074
+The media server's CI/CD pipeline had fifteen references to "main" in its GitHub Actions workflows that needed updating.
+
+34
+00:07:05.087 --> 00:07:29.487
+The npm package dependencies were a mess. The web app had the video player pinned at version zero point six point eight. The current published version was one point two point three. That's not a minor drift. That's six major feature releases behind. Nobody was updating because nobody had a system for tracking it.
+
+35
+00:07:29.499 --> 00:07:39.199
+Ten repos had dirty working trees. The media server had diverged from its remote. Stale branches were scattered around like forgotten Post-it notes.
+
+36
+00:07:39.212 --> 00:07:46.487
+Arc came back to the boss with a report and three options.
+
+37
+00:07:46.499 --> 00:08:02.162
+Option A, Clean House. Fix everything within the existing structure. Low risk. Doesn't solve the coordination problem. Twenty-seven independent repos would stay twenty-seven independent repos, just tidier ones.
+
+38
+00:08:02.174 --> 00:08:27.462
+Option B, Structured Multi-Repo. Keep the repos separate but add an orchestration layer on top. A meta-repository that tracks shared configuration, a Makefile for cross-repo commands, automated dependency updates. Medium risk. Eighty percent of the benefit at twenty percent of the cost.
+
+39
+00:08:27.474 --> 00:08:45.287
+Option C, Consolidate. Strategic monorepo migration. Combine related repos. Maximum organization. Also maximum risk, maximum disruption, and frankly overkill for a one-person operation with AI agents.
+
+40
+00:08:45.612 --> 00:08:48.987
+Arc recommended Option B. The boss said four words.
+
+41
+00:08:48.999 --> 00:08:52.749
+Execute option B to completion.
+
+42
+00:08:53.624 --> 00:08:55.199
+And Arc went to work.
+
+43
+00:08:56.263 --> 00:08:57.401
+Eleven Tasks, Fifteen Agents.
+
+44
+00:08:57.413 --> 00:09:08.663
+Arc broke the execution into three phases and dispatched agents like an air traffic controller managing parallel runways.
+
+45
+00:09:08.676 --> 00:09:10.013
+Phase one. Cleanup.
+
+46
+00:09:10.026 --> 00:09:11.851
+Five tasks, running in parallel.
+
+47
+00:09:11.863 --> 00:09:56.876
+Git garbage collection across the worst offenders. The results were genuinely satisfying. The Android repo dropped from one point one gigabytes to seventy-nine megabytes. A ninety-three percent reduction. The web app went from two gigabytes to one point two. The cast player dropped from two hundred and twenty-nine megabytes to thirty-four. Nearly two gigabytes reclaimed across five repos, just from packing loose objects and pruning dead references. Every git status, every git log, every git diff is faster now. Free performance, just from cleaning up.
+
+48
+00:07:59.243 --> 00:08:17.606
+The Keycloak backup fix. Wren added SQL wildcard patterns to nomercy-stack's git ignore file. Database dumps, compressed or not, will never be accidentally committed. A one-line fix for what could have been a catastrophic leak.
+
+49
+00:08:17.618 --> 00:08:31.293
+Branch standardization. Three repos renamed from main to master. Fourteen CI/CD workflow references in the media server updated. The nomercy-stack default branch changed to production on GitHub.
+
+50
+00:08:31.306 --> 00:08:36.093
+Stale branch cleanup. This is where it got interesting.
+
+51
+00:08:36.106 --> 00:09:00.243
+Trace, the git specialist, was told to clean up stale branches. They found six candidates. They deleted four. But they kept two, "use-vlc" and "use-exoplayer" in the Android repo, because they checked for unmerged commits and found significant feature work that hadn't been merged to master.
+
+52
+00:09:00.256 --> 00:09:14.018
+Nobody told them to check for unmerged work. Nobody told them to keep those branches. They made the judgment call on their own. These branches have value, deleting them would destroy work, keep them.
+
+53
+00:09:14.031 --> 00:09:18.393
+That's the kind of agent behavior that builds trust.
+
+54
+00:09:18.406 --> 00:09:34.318
+AI tooling cleanup. Seven repos had accumulated dot claude, dot junie, and copilot instructions directories from various AI tool experiments. The agent committed deletions across all of them. Housekeeping.
+
+55
+00:09:34.331 --> 00:09:52.068
+Yarn Berry stash. Three repos had incomplete migrations to Yarn Berry, Yarn's modern architecture. The work wasn't ready to ship, so the agent stashed it cleanly. Preserved but out of the way.
+
+56
+00:09:52.281 --> 00:10:06.368
+Media server divergence. Trace rebased the local branch against the remote. Clean merge. The local commit was already represented in the release branch. No conflicts, no drama.
+
+57
+00:10:06.381 --> 00:10:09.268
+Phase one point five. The git attributes Story.
+
+58
+00:10:10.143 --> 00:10:21.726
+This one deserves its own section because it's a problem most developers never think about until it bites them.
+
+59
+00:10:21.739 --> 00:10:30.701
+The agent created git attributes files for all twenty-six repos. The twenty-seventh, nomercy-media, was pure binary assets and got a binary-focused config.
+
+60
+00:10:31.576 --> 00:11:11.001
+For beginners, a git attributes file tells git how to handle different file types. The most important thing it does is control line endings. Windows uses carriage return plus line feed. Linux and macOS use just line feed. Without git attributes, git might convert between them inconsistently, creating phantom diffs, changes that show up in git diff even though nobody actually changed anything. A good git attributes file says "always store these files with Unix line endings" and prevents an entire category of frustrating, meaningless diffs.
+
+61
+00:11:11.014 --> 00:11:37.589
+Here's the subtle part. The dot T-S file extension means TypeScript in twenty-five of the twenty-six repos. But in nomercy-media, dot T-S means MPEG Transport Stream, a video container format. Same extension, wildly different content. One is text that needs line-ending normalization. The other is binary that must never be touched.
+
+62
+00:11:37.601 --> 00:11:53.864
+Each repo got its own git attributes tailored to its actual content. The media repo got binary rules for dot T-S. Everything else got text rules for dot T-S. One agent, twenty-six configs, zero assumptions.
+
+63
+00:11:53.876 --> 00:11:54.826
+Phase two. Orchestration.
+
+64
+00:11:54.839 --> 00:12:08.151
+With the cleanup done, Arc moved to the part that makes twenty-seven repos behave like a coordinated system.
+
+65
+00:12:08.164 --> 00:12:33.114
+The meta-repository. nomercy-workspace was created on GitHub. It doesn't contain application code. It contains the CTO briefing document, all thirty-one agent definition files, consolidated project knowledge, and the orchestration tooling. One repo to rule them all. The application repos stay independent. This is coordination, not consolidation.
+
+66
+00:12:33.126 --> 00:13:02.189
+The Makefile. Eight targets. "make status" shows the state of all twenty-seven repositories at a glance, branch, dirty state, ahead or behind remote. "make pull-all" updates everything. "make gc-all" runs garbage collection everywhere. Arc installed GNU Make on the system via winget because Windows doesn't ship with it. Practical.
+
+67
+00:13:02.201 --> 00:13:21.364
+Shared GitHub Actions workflows. Two reusable workflows pushed to the dot github organization repo. One for deleting old workflow runs, one for standardized GitHub Pages deployment. Every repo can reference these instead of maintaining its own copy.
+
+68
+00:13:21.376 --> 00:13:53.739
+Renovate Bot. This was the big one for long-term health. Renovate is an automated dependency update tool. It watches your repos for outdated packages and opens pull requests to update them. Arc deployed Renovate configurations to five repos. The boss had to install the GitHub App manually, you can't do that via command line because it requires clicking through GitHub's OAuth flow, but the agent had everything ready for activation.
+
+69
+00:13:53.751 --> 00:13:58.389
+No more video player pinned six versions behind. Renovate will catch it.
+
+70
+00:13:59.464 --> 00:14:00.389
+Phase three. Security.
+
+71
+00:11:32.319 --> 00:11:56.269
+The web app had twenty-nine vulnerability alerts. Seven packages, all transitive dependencies, meaning the app didn't use them directly, they were dependencies of dependencies. Fixed via resolution overrides in the package configuration, which force specific versions of transitive dependencies without changing direct dependencies. Clean, minimal, no behavior changes.
+
+72
+00:11:56.281 --> 00:12:10.444
+The cast player had two alerts. The agent fixed them and, as a side effect, completed the Yarn Berry migration that had been stashed earlier. Two birds.
+
+73
+00:12:10.744 --> 00:12:30.919
+The music player had two alerts. This one required care. The repo had unrelated source code changes in its working tree that the boss hadn't committed yet. The agent fixed the vulnerabilities and committed only the security changes, leaving the source code untouched. Discipline.
+
+74
+00:12:30.931 --> 00:13:27.094
+When the dust settled, every single one of the twenty-seven repos had been touched. About fifteen agents worked the session, many running in parallel. Two gigabytes of disk space reclaimed. Thirty-three security vulnerabilities fixed. Four stale branches deleted, two more preserved because an agent recognized they contained valuable unmerged work. Four repos had their branch conventions fixed. Twenty-six repos got new git attributes files. Around thirty-five commits pushed across the organization. One new GitHub repository created for the meta-workspace. GNU Make installed on the system. Renovate Bot configs deployed to five repos. And one GitHub issue created to track the music player's uncommitted token factory work.
+
+75
+00:13:27.106 --> 00:13:28.369
+What We Learned.
+
+76
+00:13:28.381 --> 00:14:22.015
+For beginners. Git garbage collection is free performance. If you've been working on a repo for years and never run it, you might be carrying hundreds of megabytes of dead weight. Run it. Watch the numbers drop. Git attributes prevents phantom diffs, changes that appear in your diff output even though nobody changed anything. It's one of those files that feels unnecessary until you've spent twenty minutes trying to figure out why git thinks you modified a file you never opened. And never leave database backups in a git repository's directory without a git ignore rule. It doesn't matter that you didn't commit it. It matters that you could have. Defense in depth means removing the possibility, not just avoiding the mistake.
+
+77
+00:14:22.923 --> 00:15:38.358
+For the team. Multi-repo coordination isn't optional once you pass about ten repositories. A human can keep the state of five repos in their head. Twenty-seven requires tooling. The Makefile isn't glamorous, but "make status" answering "what's the state of everything?" in two seconds is worth more than any dashboard. Agents that show independent judgment earn trust faster than agents that follow orders perfectly. The stale branch agent wasn't told to check for unmerged work. It did it anyway because deleting branches with unpushed commits is destructive, and it knew the universal rule: never break existing work. That's not just following instructions, that's understanding intent. And dependency drift is invisible until it isn't. A video player pinned six versions behind isn't a problem today. It's a problem the day you need a feature or security fix from version one point two point zero and you have to jump across six breaking change boundaries instead of one. Renovate turns an eventual crisis into a steady stream of manageable updates.
+
+78
+00:15:39.279 --> 00:15:40.305
+The Score.
+
+79
+00:15:40.318 --> 00:15:56.378
+Started the session: twenty-seven repos, each an island. Loose objects everywhere. A security incident waiting to happen. No way to see the whole picture at once.
+
+80
+00:15:56.390 --> 00:16:19.340
+Ended the session: twenty-seven repos, still independent, but orchestrated. Clean git stores. Security gaps closed. A Makefile that shows the state of everything. Automated dependency updates. And a CTO named Arc who proved they could see the forest, not just the trees.
+
+81
+00:16:19.353 --> 00:16:35.642
+Eight years of solo development means eight years of decisions that made sense one at a time. Nothing was deliberately messy. It grew. The job wasn't to judge it. It was to bring order without breaking anything.
+
+82
+00:16:35.655 --> 00:16:38.931
+Every repo touched. Nothing broken. That's the whole story.
+
+83
+00:16:38.944 --> 00:16:49.100
+Gaat het niet zoals het moet, dan moet het maar zoals het gaat.
+
+84
+00:16:49.100 --> 00:16:55.821
+If it doesn't go the way it should, then it'll have to go the way it does. That's Stoney's motto. Today, it went.
+
+85
+00:16:55.834 --> 00:17:16.850
+This is part two of the Origin series. Part one covers what happened a few hours earlier, when the boss discovered that the permission system the CTO shipped didn't actually work. That entry is called How the CTO Locked the Boss Out of His Own Dashboard.
