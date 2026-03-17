@@ -166,6 +166,8 @@ html.light .prose li::marker {
 .ic-prop { color: #e06c75; }    /* red — properties */
 .ic-punct { color: #abb2bf; }   /* gray — punctuation */
 .ic-ctor { color: #c678dd; }    /* purple — constructors */
+.ic-str { color: #98c379; }     /* green — strings */
+.ic-kw { color: #c678dd; }      /* purple — keywords */
 
 html.light .ic-class { color: #c18401; }
 html.light .ic-method { color: #4078f2; }
@@ -174,6 +176,8 @@ html.light .ic-var { color: #e45649; }
 html.light .ic-prop { color: #e45649; }
 html.light .ic-punct { color: #383a42; }
 html.light .ic-ctor { color: #a626a4; }
+html.light .ic-str { color: #50a14f; }
+html.light .ic-kw { color: #a626a4; }
 
 html.light .prose code {
 	background: var(--color-surface-200);
