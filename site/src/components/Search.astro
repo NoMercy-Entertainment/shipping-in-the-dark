@@ -16,15 +16,53 @@
 	</button>
 </div>
 
-<div id="search-overlay" class="fixed inset-0 z-[200] hidden items-start justify-center bg-black/60 pt-[15vh] backdrop-blur-sm">
-	<div class="mx-4 w-full max-w-xl rounded-xl border border-surface-700 bg-surface-900 p-4 shadow-2xl light:border-surface-200 light:bg-white">
+<div id="search-overlay">
+	<div class="search-backdrop"></div>
+	<div class="search-modal">
 		<div id="search-widget"></div>
 	</div>
 </div>
 
 <style is:global>
+	#search-overlay {
+		display: none;
+		position: fixed;
+		inset: 0;
+		z-index: 200;
+	}
+
 	#search-overlay.active {
-		display: flex;
+		display: block;
+	}
+
+	.search-backdrop {
+		position: fixed;
+		inset: 0;
+		background: rgba(0, 0, 0, 0.6);
+		backdrop-filter: blur(4px);
+		-webkit-backdrop-filter: blur(4px);
+	}
+
+	.search-modal {
+		position: fixed;
+		top: 10vh;
+		left: 50%;
+		transform: translateX(-50%);
+		width: calc(100% - 2rem);
+		max-width: 36rem;
+		max-height: 75vh;
+		overflow-y: auto;
+		background: var(--color-surface-900);
+		border: 1px solid var(--color-surface-700);
+		border-radius: 12px;
+		padding: 1rem;
+		box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
+	}
+
+	html.light .search-modal {
+		background: white;
+		border-color: var(--color-surface-200);
+		box-shadow: 0 16px 48px rgba(0, 0, 0, 0.15);
 	}
 
 	/* Pagefind UI overrides */
@@ -104,9 +142,7 @@
 
 	trigger.addEventListener('click', openSearch);
 
-	overlay.addEventListener('click', (e) => {
-		if (e.target === overlay) closeSearch();
-	});
+	document.querySelector('.search-backdrop')?.addEventListener('click', closeSearch);
 
 	document.addEventListener('keydown', (e) => {
 		if ((e.key === 'k' && (e.metaKey || e.ctrlKey)) || e.key === '/') {
