@@ -176,13 +176,22 @@ html.light .prose code {
 
 html.light .prose pre {
 	border-color: var(--color-surface-200);
-	background-color: var(--color-surface-100);
 }
 
 .prose pre code {
 	background: transparent;
 	padding: 0;
 	border-radius: 0;
+}
+
+/* Shiki dual theme: dark mode uses --shiki-dark variables (class-based, not media query) */
+html:not(.light) .shiki,
+html:not(.light) .shiki span {
+	color: var(--shiki-dark) !important;
+	background-color: var(--shiki-dark-bg) !important;
+	font-style: var(--shiki-dark-font-style) !important;
+	font-weight: var(--shiki-dark-font-weight) !important;
+	text-decoration: var(--shiki-dark-text-decoration) !important;
 }
 
 /* Tables */
