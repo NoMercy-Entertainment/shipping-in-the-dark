@@ -68,10 +68,18 @@
 
 		if (!loaded) {
 			try {
-				const mod = await import('/pagefind/pagefind-ui.js');
-				const PagefindUI = mod.PagefindUI || mod.default;
-				if (PagefindUI) {
-					new PagefindUI({
+				// Pagefind UI is an IIFE that sets window.PagefindUI
+				if (!window.PagefindUI) {
+					await new Promise((resolve, reject) => {
+						const script = document.createElement('script');
+						script.src = '/pagefind/pagefind-ui.js';
+						script.onload = resolve;
+						script.onerror = reject;
+						document.head.appendChild(script);
+					});
+				}
+				if (window.PagefindUI) {
+					new window.PagefindUI({
 						element: '#search-widget',
 						showSubResults: true,
 						showImages: false,
