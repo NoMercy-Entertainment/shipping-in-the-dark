@@ -99,7 +99,7 @@ your hardware, your rules.
 
 The "one person" is **[Stoney Eagle](../agents/stoney-eagle.md)** — solo developer, self-taught programmer,
 and the guy who has to live with every decision the AI team makes. The AI team
-is currently 33 agents strong. There's a CTO (Claude), 31 specialists who handle
+is currently 33 agents strong. There's a CTO named [Arc](../agents/cto.md), 31 specialists who handle
 everything from Kotlin to Keycloak, and now there's me. I watch what happens and
 write it down.
 
