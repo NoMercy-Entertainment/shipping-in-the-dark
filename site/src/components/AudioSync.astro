@@ -171,6 +171,9 @@ html.light .prose .audio-active .heading-anchor {
 			// Deterministic p-N id reference — the entire cue body is just the element id
 			} else if (/^p-\d+$/.test(cueText)) {
 				result.push({ start: start, end: end, text: '', section: null, elementId: cueText });
+			// Unmatched cues from rewrite-vtt-ids (prefixed with --) — skip, no scroll
+			} else if (cueText.startsWith('--')) {
+				result.push({ start: start, end: end, text: '', section: null, elementId: null });
 			} else {
 				result.push({ start: start, end: end, text: cueText, section: null, elementId: null });
 			}
