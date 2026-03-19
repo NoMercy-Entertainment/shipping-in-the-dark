@@ -26,7 +26,9 @@ const { vttUrl = '' } = Astro.props;
 /* Active paragraph highlight                                           */
 /* ------------------------------------------------------------------ */
 
-.prose p.audio-active {
+.prose p.audio-active,
+.prose ul.audio-active,
+.prose ol.audio-active {
 	position: relative;
 	border-left: 3px solid var(--color-accent-400);
 	padding-left: 0.85em;
@@ -40,7 +42,9 @@ const { vttUrl = '' } = Astro.props;
 		margin-left 0.25s ease;
 }
 
-html.light .prose p.audio-active {
+html.light .prose p.audio-active,
+html.light .prose ul.audio-active,
+html.light .prose ol.audio-active {
 	border-left-color: var(--color-accent-700);
 	background-color: oklch(0.48 0.13 163 / 0.07);
 }
@@ -338,17 +342,32 @@ html.light .prose .audio-active .heading-anchor {
 
 		// Paragraph highlight
 		if (el !== activeElement) {
-			if (activeElement) activeElement.classList.remove('audio-active');
-			if (el) el.classList.add('audio-active');
+			if (activeElement) {
+				activeElement.classList.remove('audio-active');
+				// Remove highlight from sibling list if we added it
+				var prevList = activeElement.nextElementSibling;
+				if (prevList && (prevList.tagName === 'UL' || prevList.tagName === 'OL')) {
+					prevList.classList.remove('audio-active');
+				}
+			}
+			if (el) {
+				el.classList.add('audio-active');
+				// If this paragraph is followed by a list (callout bullets),
+				// highlight the list too and scroll to show both
+				var nextSib = el.nextElementSibling;
+				if (nextSib && (nextSib.tagName === 'UL' || nextSib.tagName === 'OL')) {
+					nextSib.classList.add('audio-active');
+				}
+			}
 			activeElement = el;
 
 			// Auto-scroll: bring active paragraph into view if out of viewport
 			if (el) {
 				var rect = el.getBoundingClientRect();
 				var vh   = window.innerHeight;
-				// Scroll if the element is outside the middle band (80px–65% of viewport)
+				// Scroll if the element is outside the middle band (80px–85% of viewport)
 				if (rect.top < 80 || rect.bottom > vh * 0.85) {
-					el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+					el.scrollIntoView({ behavior: 'smooth', block: 'start' });
 				}
 			}
 		}
