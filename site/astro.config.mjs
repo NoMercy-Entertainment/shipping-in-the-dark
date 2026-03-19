@@ -15,7 +15,6 @@ export default defineConfig({
 	markdown: {
 		remarkPlugins: [remarkGfm, remarkCallouts],
 		rehypePlugins: [
-			rehypeParagraphIds,
 			rehypeRewriteLinks,
 			rehypeInlineCode,
 			rehypeSlug,
@@ -25,6 +24,7 @@ export default defineConfig({
 					className: ['heading-anchor'],
 				},
 			}],
+			rehypeParagraphIds,
 		],
 		shikiConfig: {
 			themes: {
