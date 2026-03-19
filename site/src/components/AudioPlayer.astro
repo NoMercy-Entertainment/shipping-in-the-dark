@@ -294,7 +294,11 @@ const { audioUrl = '', title = '' } = Astro.props;
 	/* ------------------------------------------------------------------ */
 
 	body.audio-player-visible {
-		padding-bottom: 64px;
+		padding-bottom: 80px;
+	}
+
+	html.audio-player-visible {
+		scroll-padding-bottom: 80px;
 	}
 </style>
 
@@ -337,12 +341,14 @@ const { audioUrl = '', title = '' } = Astro.props;
 		var p = document.getElementById('audio-player');
 		if (p) p.classList.add('is-visible');
 		document.body.classList.add('audio-player-visible');
+		document.documentElement.classList.add('audio-player-visible');
 	}
 
 	function hidePlayer() {
 		var p = document.getElementById('audio-player');
 		if (p) p.classList.remove('is-visible');
 		document.body.classList.remove('audio-player-visible');
+		document.documentElement.classList.remove('audio-player-visible');
 	}
 
 	function setPlayingState(playing) {

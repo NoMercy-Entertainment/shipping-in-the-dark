@@ -362,12 +362,14 @@ html.light .prose .audio-active .heading-anchor {
 			activeElement = el;
 
 			// Auto-scroll: bring active paragraph into view if out of viewport
+			// Account for the 64px audio player bar at the bottom
 			if (el) {
 				var rect = el.getBoundingClientRect();
 				var vh   = window.innerHeight;
-				// Scroll if the element is outside the middle band (80px–85% of viewport)
-				if (rect.top < 80 || rect.bottom > vh * 0.85) {
-					el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+				var playerHeight = 64;
+				var visibleBottom = vh - playerHeight;
+				if (rect.top < 80 || rect.bottom > visibleBottom) {
+					el.scrollIntoView({ behavior: 'smooth', block: 'center' });
 				}
 			}
 		}
