@@ -2,11 +2,11 @@ WEBVTT
 
 1
 00:00:00.000 --> 00:00:02.688
----- How the CTO Locked the Boss Out of His Own Dashboard, and Learned to Live With It
+-- How the CTO Locked the Boss Out of His Own Dashboard, and Learned to Live With It
 
 2
 00:00:03.488 --> 00:00:04.748
----- Why This Journal Exists
+-- Why This Journal Exists
 
 3
 00:00:05.148 --> 00:00:14.976
@@ -38,7 +38,7 @@ p-7
 
 10
 00:01:06.188 --> 00:01:07.196
----- The Short Version
+-- The Short Version
 
 11
 00:01:07.496 --> 00:01:25.028
@@ -50,7 +50,7 @@ p-9
 
 13
 00:01:27.328 --> 00:01:28.660
----- Act 1: "Unacceptable!"
+-- Act 1: "Unacceptable!"
 
 14
 00:01:28.960 --> 00:01:32.332
@@ -70,7 +70,7 @@ p-13
 
 18
 00:01:49.576 --> 00:01:50.716
----- The Chicken and the Egg
+-- The Chicken and the Egg
 
 19
 00:01:51.016 --> 00:02:11.644
@@ -78,7 +78,7 @@ p-14
 
 20
 00:02:11.844 --> 00:02:20.004
----- For anyone new to programming: this is called a chicken-and-egg problem. You need A to get B, but you also need B to get A. In this case, you need admin access to trigger the job that gives you admin access. Classic deadlock.
+-- For anyone new to programming: this is called a chicken-and-egg problem. You need A to get B, but you also need B to get A. In this case, you need admin access to trigger the job that gives you admin access. Classic deadlock.
 
 21
 00:02:20.004 --> 00:02:25.812
@@ -90,7 +90,7 @@ p-16
 
 23
 00:02:27.080 --> 00:02:28.652
----- The Fix That Should Have Been There From the Start
+-- The Fix That Should Have Been There From the Start
 
 24
 00:02:28.952 --> 00:02:41.168
@@ -126,7 +126,7 @@ p-24
 
 32
 00:03:11.608 --> 00:03:13.108
----- Act 2: The Buttons That Lied
+-- Act 2: The Buttons That Lied
 
 33
 00:03:13.408 --> 00:03:15.664
@@ -146,7 +146,7 @@ p-28
 
 37
 00:03:39.340 --> 00:03:40.720
----- Reka UI's Little Secret
+-- Reka UI's Little Secret
 
 38
 00:03:40.920 --> 00:03:44.496
@@ -162,7 +162,7 @@ p-31
 
 41
 00:04:11.232 --> 00:04:23.028
----- This wasn't just broken for the Queue Monitor. Confirm Dialog is a shared component. Every single confirmation dialog in the entire admin panel was silently cancelling. Delete a user? Nope. Revoke an invite? Nope. Any destructive action with a confirmation step had been quietly broken.
+-- This wasn't just broken for the Queue Monitor. Confirm Dialog is a shared component. Every single confirmation dialog in the entire admin panel was silently cancelling. Delete a user? Nope. Revoke an invite? Nope. Any destructive action with a confirmation step had been quietly broken.
 
 42
 00:04:23.028 --> 00:04:31.128
@@ -170,7 +170,7 @@ p-32
 
 43
 00:04:31.328 --> 00:04:32.744
----- The Retry Button Was Broken Too
+-- The Retry Button Was Broken Too
 
 44
 00:04:32.944 --> 00:04:43.804
@@ -178,7 +178,7 @@ p-33
 
 45
 00:04:44.104 --> 00:04:45.304
----- But Wait, There's More
+-- But Wait, There's More
 
 46
 00:04:45.504 --> 00:04:52.116
@@ -198,7 +198,7 @@ p-38
 
 50
 00:05:12.168 --> 00:05:22.956
----- Let that sink in. Every Vue component change, every CSS update, every frontend fix that was committed, reviewed, and "deployed" — none of it was reaching users. The deploy workflow reported success every time. The container was running new PHP but old JavaScript. For who knows how long.
+-- Let that sink in. Every Vue component change, every CSS update, every frontend fix that was committed, reviewed, and "deployed" — none of it was reaching users. The deploy workflow reported success every time. The container was running new PHP but old JavaScript. For who knows how long.
 
 51
 00:05:22.956 --> 00:05:27.588
@@ -214,7 +214,7 @@ p-41
 
 54
 00:05:36.680 --> 00:05:38.024
----- Act 3: Clean Slate
+-- Act 3: Clean Slate
 
 55
 00:05:38.324 --> 00:05:45.200
@@ -226,7 +226,7 @@ p-43
 
 57
 00:05:49.684 --> 00:05:50.992
----- Act 4: This Journal
+-- Act 4: This Journal
 
 58
 00:05:51.292 --> 00:05:53.788
@@ -270,7 +270,7 @@ p-53
 
 68
 00:06:29.088 --> 00:06:30.204
----- Agent Performance
+-- Agent Performance
 
 69
 00:06:30.504 --> 00:06:40.224
@@ -282,7 +282,7 @@ p-55
 
 71
 00:06:52.112 --> 00:06:53.084
----- What We Learned
+-- What We Learned
 
 72
 00:06:53.384 --> 00:06:54.356
@@ -290,7 +290,7 @@ p-56
 
 73
 00:06:54.356 --> 00:07:11.144
----- Always check where your authorization data comes from. If the thing that writes it and the thing that reads it are looking at different columns, you have a very quiet, very serious bug. UI component libraries can have invisible side effects — Reka UI's Alert Dialog Action closes the dialog before your click handler runs, and that's not documented in a way you'd notice until it bites you. And Docker bind-mounts override what's in the image. If your Dockerfile builds assets but a volume covers them, your build output is invisible.
+-- Always check where your authorization data comes from. If the thing that writes it and the thing that reads it are looking at different columns, you have a very quiet, very serious bug. UI component libraries can have invisible side effects — Reka UI's Alert Dialog Action closes the dialog before your click handler runs, and that's not documented in a way you'd notice until it bites you. And Docker bind-mounts override what's in the image. If your Dockerfile builds assets but a volume covers them, your build output is invisible.
 
 74
 00:07:11.344 --> 00:07:12.268
@@ -298,11 +298,11 @@ p-57
 
 75
 00:07:12.268 --> 00:07:25.600
----- Test on production after deploy. Not "check the deploy log" — actually click the button and watch the network tab. The boss is right: if you can do something, do it. Don't delegate to the human what the machine can handle. And when you find a bug in a shared component, think about blast radius. The Confirm Dialog bug was global. Every confirmation in the admin panel was broken.
+-- Test on production after deploy. Not "check the deploy log" — actually click the button and watch the network tab. The boss is right: if you can do something, do it. Don't delegate to the human what the machine can handle. And when you find a bug in a shared component, think about blast radius. The Confirm Dialog bug was global. Every confirmation in the admin panel was broken.
 
 76
 00:07:25.900 --> 00:07:26.728
----- Commits
+-- Commits
 
 77
 00:07:26.928 --> 00:07:34.272
@@ -310,7 +310,7 @@ p-58
 
 78
 00:07:34.772 --> 00:07:35.612
----- The Score
+-- The Score
 
 79
 00:07:35.912 --> 00:07:39.776

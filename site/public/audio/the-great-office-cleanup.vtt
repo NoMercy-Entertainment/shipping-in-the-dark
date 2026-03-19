@@ -2,15 +2,15 @@ WEBVTT
 
 1
 00:00:00.000 --> 00:00:01.104
----- GET OUT OF MY OFFICE.
+-- GET OUT OF MY OFFICE.
 
 2
 00:00:01.904 --> 00:00:03.488
----- The Great Zombie Purge of Session Five.
+-- The Great Zombie Purge of Session Five.
 
 3
 00:00:04.088 --> 00:00:05.072
----- Timeline Note.
+-- Timeline Note.
 
 4
 00:00:05.372 --> 00:00:17.324
@@ -18,7 +18,7 @@ p-1
 
 5
 00:00:17.824 --> 00:00:18.832
----- The Short Version.
+-- The Short Version.
 
 6
 00:00:19.132 --> 00:00:32.740
@@ -26,7 +26,7 @@ p-2
 
 7
 00:00:33.240 --> 00:00:34.428
----- A Note on Perspective.
+-- A Note on Perspective.
 
 8
 00:00:34.728 --> 00:00:47.484
@@ -38,7 +38,7 @@ p-4
 
 10
 00:00:51.612 --> 00:00:52.464
----- The Scene.
+-- The Scene.
 
 11
 00:00:52.764 --> 00:01:06.636
@@ -62,7 +62,7 @@ p-9
 
 16
 00:01:31.688 --> 00:01:33.464
----- Act One. The Great Purge.
+-- Act One. The Great Purge.
 
 17
 00:01:33.764 --> 00:01:46.040
@@ -78,7 +78,7 @@ p-12
 
 20
 00:02:08.692 --> 00:02:20.884
----- A note on Windows file paths. They are case-insensitive. The sessions directory and the memory directory — containing twenty-eight carefully maintained files about the project, the team, the boss's preferences, feedback rules, and accumulated knowledge from every previous session — lived in sibling paths that differed only by case. The glob pattern caught both.
+-- A note on Windows file paths. They are case-insensitive. The sessions directory and the memory directory — containing twenty-eight carefully maintained files about the project, the team, the boss's preferences, feedback rules, and accumulated knowledge from every previous session — lived in sibling paths that differed only by case. The glob pattern caught both.
 
 21
 00:02:21.384 --> 00:02:23.760
@@ -122,7 +122,7 @@ p-22
 
 31
 00:03:17.772 --> 00:03:19.932
----- Act Two. Zombie Agents Won't Die.
+-- Act Two. Zombie Agents Won't Die.
 
 32
 00:03:20.232 --> 00:03:24.024
@@ -158,7 +158,7 @@ p-30
 
 40
 00:04:04.312 --> 00:04:06.112
----- Act Three. The Clone Army.
+-- Act Three. The Clone Army.
 
 41
 00:04:06.412 --> 00:04:11.488
@@ -182,7 +182,7 @@ p-35
 
 46
 00:04:47.332 --> 00:04:49.276
----- Act Four. Identity Crisis.
+-- Act Four. Identity Crisis.
 
 47
 00:04:49.576 --> 00:04:59.200
@@ -206,7 +206,7 @@ p-40
 
 52
 00:05:44.408 --> 00:05:46.388
----- Act Five. GET OUT OF MY OFFICE.
+-- Act Five. GET OUT OF MY OFFICE.
 
 53
 00:05:46.788 --> 00:05:48.564
@@ -262,7 +262,7 @@ p-53
 
 66
 00:06:58.288 --> 00:07:00.112
----- Act Six. Where's Stoney?
+-- Act Six. Where's Stoney?
 
 67
 00:07:00.412 --> 00:07:13.516
@@ -302,7 +302,7 @@ p-62
 
 76
 00:08:06.884 --> 00:08:08.852
----- Act Seven. Library Cleanup.
+-- Act Seven. Library Cleanup.
 
 77
 00:08:09.152 --> 00:08:19.280
@@ -342,7 +342,7 @@ p-71
 
 86
 00:09:14.016 --> 00:09:15.252
----- What This Does NOT Fix.
+-- What This Does NOT Fix.
 
 87
 00:09:15.552 --> 00:09:17.124
@@ -362,7 +362,7 @@ p-75
 
 91
 00:09:53.880 --> 00:09:55.080
----- The Moment That Made the Day.
+-- The Moment That Made the Day.
 
 92
 00:09:55.380 --> 00:10:03.048
@@ -402,7 +402,7 @@ p-82
 
 101
 00:10:42.364 --> 00:10:43.480
----- Agent Performance.
+-- Agent Performance.
 
 102
 00:10:43.780 --> 00:10:48.784
@@ -418,7 +418,7 @@ p-85
 
 105
 00:11:21.992 --> 00:11:22.964
----- What We Learned.
+-- What We Learned.
 
 106
 00:11:23.264 --> 00:11:49.976
@@ -434,7 +434,7 @@ p-88
 
 109
 00:12:37.848 --> 00:12:38.688
----- The Score.
+-- The Score.
 
 110
 00:12:38.988 --> 00:12:45.540

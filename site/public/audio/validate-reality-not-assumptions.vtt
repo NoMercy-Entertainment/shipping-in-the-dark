@@ -6,7 +6,7 @@ p-95
 
 2
 00:00:02.456 --> 00:00:03.440
----- Timeline Note
+-- Timeline Note
 
 3
 00:00:03.440 --> 00:00:15.068
@@ -14,7 +14,7 @@ p-1
 
 4
 00:00:15.068 --> 00:00:16.076
----- The Short Version
+-- The Short Version
 
 5
 00:00:16.076 --> 00:00:36.644
@@ -22,7 +22,7 @@ p-40
 
 6
 00:00:36.644 --> 00:00:37.820
----- Act 1: The Scrub
+-- Act 1: The Scrub
 
 7
 00:00:37.820 --> 00:00:41.288
@@ -38,7 +38,7 @@ p-5
 
 10
 00:01:02.024 --> 00:01:03.644
----- For beginners: git history rewriting
+-- For beginners: git history rewriting
 
 11
 00:01:03.644 --> 00:01:17.816
@@ -66,7 +66,7 @@ p-10
 
 17
 00:02:07.288 --> 00:02:08.752
----- Act 2: Building the Stage
+-- Act 2: Building the Stage
 
 18
 00:02:08.752 --> 00:02:11.104
@@ -86,7 +86,7 @@ p-14
 
 22
 00:02:34.432 --> 00:02:35.404
----- The Foundation
+-- The Foundation
 
 23
 00:02:35.404 --> 00:02:51.004
@@ -98,7 +98,7 @@ p-16
 
 25
 00:03:02.920 --> 00:03:04.648
----- For beginners: Atkinson Hyperlegible
+-- For beginners: Atkinson Hyperlegible
 
 26
 00:03:04.648 --> 00:03:16.624
@@ -110,7 +110,7 @@ p-17
 
 28
 00:03:25.444 --> 00:03:26.500
----- What Got Forgotten
+-- What Got Forgotten
 
 29
 00:03:26.500 --> 00:03:32.092
@@ -134,7 +134,7 @@ p-22
 
 34
 00:03:59.088 --> 00:04:00.528
----- Act 3: The Light That Wasn't
+-- Act 3: The Light That Wasn't
 
 35
 00:04:00.528 --> 00:04:07.848
@@ -150,7 +150,7 @@ p-25
 
 38
 00:04:20.460 --> 00:04:21.792
----- How Do You Break an Entire Theme?
+-- How Do You Break an Entire Theme?
 
 39
 00:04:21.792 --> 00:04:31.596
@@ -162,7 +162,7 @@ p-27
 
 41
 00:04:33.624 --> 00:04:35.400
----- code block: the custom-variant declaration
+-- code block: the custom-variant declaration
 
 42
 00:04:35.400 --> 00:04:39.996
@@ -178,7 +178,7 @@ p-29
 
 45
 00:05:01.188 --> 00:05:02.580
----- Warning: the silent no-op
+-- Warning: the silent no-op
 
 46
 00:05:02.580 --> 00:05:14.448
@@ -186,7 +186,7 @@ p-29
 
 47
 00:05:14.448 --> 00:05:15.360
----- "It's Fixed"
+-- "It's Fixed"
 
 48
 00:05:15.360 --> 00:05:16.812
@@ -222,7 +222,7 @@ p-37
 
 56
 00:05:39.528 --> 00:05:40.740
----- Twenty-Seven Failures
+-- Twenty-Seven Failures
 
 57
 00:05:40.740 --> 00:05:46.344
@@ -242,7 +242,7 @@ p-41
 
 61
 00:06:09.444 --> 00:06:11.100
----- For beginners: contrast ratios
+-- For beginners: contrast ratios
 
 62
 00:06:11.100 --> 00:06:29.148
@@ -258,7 +258,7 @@ p-43
 
 65
 00:06:48.780 --> 00:06:49.644
----- The Pattern
+-- The Pattern
 
 66
 00:06:49.644 --> 00:07:00.312
@@ -278,7 +278,7 @@ p-46
 
 70
 00:07:17.612 --> 00:07:19.256
----- Act 4: Giving the Story a Voice
+-- Act 4: Giving the Story a Voice
 
 71
 00:07:19.256 --> 00:07:22.760
@@ -294,7 +294,7 @@ p-50
 
 74
 00:07:35.516 --> 00:07:36.440
----- The New Hire
+-- The New Hire
 
 75
 00:07:36.440 --> 00:07:46.736
@@ -306,7 +306,7 @@ p-52
 
 77
 00:07:52.496 --> 00:07:53.420
----- The Pipeline
+-- The Pipeline
 
 78
 00:07:53.420 --> 00:07:55.388
@@ -354,7 +354,7 @@ p-63
 
 89
 00:09:38.452 --> 00:09:39.280
----- The Wall
+-- The Wall
 
 90
 00:09:39.280 --> 00:09:47.572
@@ -374,7 +374,7 @@ p-67
 
 94
 00:10:01.552 --> 00:10:02.968
----- For beginners: SSML
+-- For beginners: SSML
 
 95
 00:10:02.968 --> 00:10:22.684
@@ -390,7 +390,7 @@ p-69
 
 98
 00:10:41.772 --> 00:10:43.476
----- Act 5: What Arc Keeps Getting Wrong
+-- Act 5: What Arc Keeps Getting Wrong
 
 99
 00:10:43.476 --> 00:10:47.292
@@ -426,7 +426,7 @@ p-77
 
 107
 00:11:38.552 --> 00:11:39.764
----- A Note From the Storyteller
+-- A Note From the Storyteller
 
 108
 00:11:39.764 --> 00:11:41.852
@@ -462,7 +462,7 @@ p-85
 
 116
 00:12:44.356 --> 00:12:45.472
----- Agent Performance
+-- Agent Performance
 
 117
 00:12:45.472 --> 00:12:57.028
@@ -474,7 +474,7 @@ p-87
 
 119
 00:13:01.744 --> 00:13:02.968
----- agent performance table
+-- agent performance table
 
 120
 00:13:02.968 --> 00:13:58.708
@@ -486,7 +486,7 @@ p-88
 
 122
 00:14:11.748 --> 00:14:12.720
----- What We Learned
+-- What We Learned
 
 123
 00:14:12.720 --> 00:14:47.532
@@ -498,7 +498,7 @@ p-88
 
 125
 00:15:17.660 --> 00:15:18.500
----- The Score
+-- The Score
 
 126
 00:15:18.500 --> 00:15:22.868
