@@ -25,6 +25,7 @@ const ALL_SLUGS = [
 	'twenty-seven-repos-and-a-makefile',
 	'validate-reality-not-assumptions',
 	'movie-night',
+	'the-great-office-cleanup',
 ];
 
 // ------------------------------------------------------------------ //
