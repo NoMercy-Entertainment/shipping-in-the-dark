@@ -1,31 +1,43 @@
 import { visit } from 'unist-util-visit';
 
 /**
- * Rehype plugin that adds sequential id attributes to all <p> elements
+ * Rehype plugin that adds sequential id attributes to prose elements
  * inside the rendered markdown body.
  *
- * IDs are 1-indexed: p-1, p-2, p-3, ...
- * Paragraphs that already carry an id are skipped (their slot in the
- * sequence is still consumed so downstream numbering stays stable).
+ * ID schemes:
+ *   p-1, p-2, ...   → <p> elements (paragraphs)
+ *   h-1, h-2, ...   → <h2>, <h3>, <h4> elements (headings)
+ *   i-1, i-2, ...   → <img> elements (images)
+ *
+ * Elements that already carry an id are skipped (headings often have
+ * auto-generated slugs). Their slot in the sequence is still consumed
+ * so downstream numbering stays stable.
  *
  * These IDs are the stable anchors used by AudioSync for deterministic
- * paragraph highlighting — VTT cues reference them directly instead of
- * relying on fuzzy text matching.
+ * highlighting — VTT cues reference them directly.
  */
 export default function rehypeParagraphIds() {
 	return (tree) => {
-		var counter = 0;
+		var pCounter = 0;
+		var hCounter = 0;
+		var iCounter = 0;
 
 		visit(tree, 'element', (node) => {
-			if (node.tagName !== 'p') return;
-
-			counter++;
-
-			// Skip paragraphs that already have an id (respect existing markup)
-			if (node.properties && node.properties.id) return;
-
-			if (!node.properties) node.properties = {};
-			node.properties.id = 'p-' + counter;
+			if (node.tagName === 'p') {
+				pCounter++;
+				if (node.properties && node.properties.id) return;
+				if (!node.properties) node.properties = {};
+				node.properties.id = 'p-' + pCounter;
+			} else if (/^h[2-4]$/.test(node.tagName)) {
+				hCounter++;
+				if (!node.properties) node.properties = {};
+				node.properties.id = node.properties.id || ('h-' + hCounter);
+				node.properties.dataAudioH = 'h-' + hCounter;
+			} else if (node.tagName === 'img') {
+				iCounter++;
+				if (!node.properties) node.properties = {};
+				node.properties.dataAudioI = 'i-' + iCounter;
+			}
 		});
 	};
 }

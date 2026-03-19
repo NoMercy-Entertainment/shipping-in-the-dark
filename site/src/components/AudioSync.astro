@@ -168,10 +168,14 @@ html.light .prose .audio-active .heading-anchor {
 			// Legacy section: prefix support
 			if (cueText.startsWith('section:')) {
 				result.push({ start: start, end: end, text: '', section: cueText.replace('section:', ''), elementId: null });
-			// Deterministic p-N id reference — the entire cue body is just the element id
+			// Deterministic element ID references: p-N (paragraph), h-N (heading), i-N (image)
 			} else if (/^p-\d+$/.test(cueText)) {
 				result.push({ start: start, end: end, text: '', section: null, elementId: cueText });
-			// Unmatched cues from rewrite-vtt-ids (prefixed with --) — skip, no scroll
+			} else if (/^h-\d+$/.test(cueText)) {
+				result.push({ start: start, end: end, text: '', section: null, elementId: cueText, isHeading: true });
+			} else if (/^i-\d+$/.test(cueText)) {
+				result.push({ start: start, end: end, text: '', section: null, elementId: cueText, isImage: true });
+			// Unmatched cues (prefixed with --) — skip, no scroll
 			} else if (cueText.startsWith('--')) {
 				result.push({ start: start, end: end, text: '', section: null, elementId: null });
 			} else {
@@ -248,9 +252,17 @@ html.light .prose .audio-active .heading-anchor {
 				return { start: cue.start, end: cue.end, element: document.getElementById(cue.section), section: cue.section };
 			}
 
-			// 2. Deterministic p-N id reference — direct getElementById, no fuzzy needed
+			// 2. Deterministic element reference — p-N, h-N, or i-N
 			if (cue.elementId) {
-				var el = document.getElementById(cue.elementId);
+				var el = null;
+				if (cue.elementId.startsWith('p-')) {
+					el = document.getElementById(cue.elementId);
+				} else if (cue.elementId.startsWith('h-')) {
+					el = document.querySelector('[data-audio-h="' + cue.elementId + '"]');
+				} else if (cue.elementId.startsWith('i-')) {
+					el = document.querySelector('[data-audio-i="' + cue.elementId + '"], [dataaudioi="' + cue.elementId + '"]');
+					if (el) el = el.closest('p') || el.parentElement || el;
+				}
 				var sectionSlug = el ? deriveSectionSlug(el) : null;
 				return { start: cue.start, end: cue.end, element: el, section: sectionSlug };
 			}
