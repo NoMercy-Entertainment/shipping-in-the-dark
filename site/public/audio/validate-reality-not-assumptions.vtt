@@ -1,433 +1,521 @@
 WEBVTT
 
 1
-00:00:00.052 --> 00:00:02.526
---Validate Reality, Not Assumptions.
+00:00:00.000 --> 00:00:01.656
+p-95
 
 2
-00:00:04.926 --> 00:00:28.201
-p-1
+00:00:02.456 --> 00:00:03.440
+---- Timeline Note
 
 3
-00:00:29.764 --> 00:01:14.726
-p-2
+00:00:03.440 --> 00:00:15.068
+p-1
 
 4
-00:01:16.289 --> 00:01:18.576
---Act One. The Scrub.
+00:00:15.068 --> 00:00:16.076
+---- The Short Version
 
 5
-00:01:19.939 --> 00:01:26.301
-p-3
+00:00:16.076 --> 00:00:36.644
+p-40
 
 6
-00:01:27.376 --> 00:01:51.876
-p-4
+00:00:36.644 --> 00:00:37.820
+---- Act 1: The Scrub
 
 7
-00:01:53.251 --> 00:02:10.001
-p-5
+00:00:37.820 --> 00:00:41.288
+p-3
 
 8
-00:02:11.376 --> 00:02:40.264
-p-9
+00:00:41.288 --> 00:00:53.552
+p-4
 
 9
-00:02:41.639 --> 00:02:52.489
-p-6
+00:00:53.552 --> 00:01:02.024
+p-5
 
 10
-00:02:53.551 --> 00:03:22.551
-p-7
+00:01:02.024 --> 00:01:03.644
+---- For beginners: git history rewriting
 
 11
-00:03:23.914 --> 00:03:42.314
-p-8
+00:01:03.644 --> 00:01:17.816
+p-89
 
 12
-00:03:43.389 --> 00:04:14.876
-p-9
+00:01:17.816 --> 00:01:23.564
+p-6
 
 13
-00:04:15.951 --> 00:04:25.064
-p-10
+00:01:23.564 --> 00:01:37.652
+p-90
 
 14
-00:04:26.641 --> 00:04:29.589
---Act Two. Building the Stage.
+00:01:37.652 --> 00:01:46.592
+p-8
 
 15
-00:04:30.997 --> 00:04:35.115
-p-11
+00:01:46.592 --> 00:02:01.916
+p-9
 
 16
-00:04:36.236 --> 00:04:48.065
-p-12
+00:02:01.916 --> 00:02:06.788
+p-10
 
 17
-00:04:49.486 --> 00:05:03.644
-p-13
+00:02:07.288 --> 00:02:08.752
+---- Act 2: Building the Stage
 
 18
-00:05:05.062 --> 00:05:26.137
-p-14
+00:02:08.752 --> 00:02:11.104
+p-11
 
 19
-00:05:27.200 --> 00:05:57.487
-p-15
+00:02:11.104 --> 00:02:16.996
+p-12
 
 20
-00:03:35.373 --> 00:03:59.536
-p-16
+00:02:16.996 --> 00:02:23.824
+p-13
 
 21
-00:04:00.911 --> 00:04:25.473
---For beginners, Atkinson Hyperlegible is a free font designed to maximize character distinction. Letters that commonly get confused, like lowercase L, uppercase I, and the number one, are designed to look as different from each other as possible. It was created by the Braille Institute of America, and it's one of the best fonts available for readers with low vision or dyslexia.
+00:02:23.824 --> 00:02:34.432
+p-14
 
 22
-00:04:26.836 --> 00:04:44.498
-p-17
+00:02:34.432 --> 00:02:35.404
+---- The Foundation
 
 23
-00:04:45.873 --> 00:04:59.898
-p-18
+00:02:35.404 --> 00:02:51.004
+p-15
 
 24
-00:05:00.961 --> 00:05:22.986
-p-19
+00:02:51.004 --> 00:03:02.920
+p-16
 
 25
-00:05:24.061 --> 00:05:38.548
-p-20
+00:03:02.920 --> 00:03:04.648
+---- For beginners: Atkinson Hyperlegible
 
 26
-00:05:39.623 --> 00:05:51.486
-p-21
-
-27
-00:05:52.848 --> 00:05:54.823
-p-22
-
-28
-00:05:56.387 --> 00:05:59.338
-p-7
-
-29
-00:06:00.741 --> 00:06:15.465
-p-23
-
-30
-00:06:16.884 --> 00:06:23.584
-p-24
-
-31
-00:06:24.659 --> 00:06:42.134
-p-25
-
-32
-00:06:43.709 --> 00:06:45.496
-p-2
-
-33
-00:06:46.571 --> 00:07:05.146
-p-26
-
-34
-00:07:06.221 --> 00:07:23.846
-p-28
-
-35
-00:07:25.209 --> 00:07:50.784
-p-29
-
-36
-00:07:50.796 --> 00:08:16.221
---This is a category of bug that's particularly nasty: the silent no-op. Nothing fails. Nothing logs an error. The code looks correct when you read it. The classes are right there in the markup. They just don't do anything. And if you only test in dark mode, which is the default and which worked perfectly, you'd never know.
-
-37
-00:08:16.234 --> 00:08:19.584
-p-30
-
-38
-00:08:19.596 --> 00:08:24.384
-p-31
-
-39
-00:08:24.396 --> 00:08:26.564
-p-32
-
-40
-00:08:26.576 --> 00:08:31.151
-p-33
-
-41
-00:08:31.164 --> 00:08:35.876
-p-34
-
-42
-00:08:35.889 --> 00:08:38.401
-p-35
-
-43
-00:08:38.414 --> 00:09:03.026
-p-36
-
-44
-00:09:03.039 --> 00:09:08.889
-p-37
-
-45
-00:09:08.901 --> 00:09:12.064
-p-40
-
-46
-00:09:12.076 --> 00:09:25.301
-p-38
-
-47
-00:09:25.314 --> 00:09:42.501
-p-39
-
-48
-00:09:42.514 --> 00:09:45.314
-p-40
-
-49
-00:07:45.814 --> 00:08:25.177
---For beginners, contrast ratio measures how easy it is to distinguish text from its background. A ratio of one to one means the text and background are the same color, completely invisible. A ratio of twenty-one to one is black on white, maximum contrast. WCAG two point two AA requires at least four point five to one for normal-sized text. If your light gray text on a white background has a ratio of two point three to one, nearly one in five people will struggle to read it, and for someone with low vision, it might as well not be there.
-
-50
-00:08:25.189 --> 00:08:40.677
-p-42
-
-51
-00:08:40.689 --> 00:09:06.902
-p-43
-
-52
-00:09:06.914 --> 00:09:09.051
---The Pattern.
-
-53
-00:09:09.064 --> 00:09:32.393
-p-44
-
-54
-00:09:32.406 --> 00:09:43.659
-p-45
-
-55
-00:09:43.672 --> 00:10:04.830
-p-46
-
-56
-00:10:04.843 --> 00:10:10.030
+00:03:04.648 --> 00:03:16.624
 p-47
 
+27
+00:03:16.624 --> 00:03:25.444
+p-17
+
+28
+00:03:25.444 --> 00:03:26.500
+---- What Got Forgotten
+
+29
+00:03:26.500 --> 00:03:32.092
+p-18
+
+30
+00:03:32.092 --> 00:03:42.916
+p-19
+
+31
+00:03:42.916 --> 00:03:50.908
+p-20
+
+32
+00:03:50.908 --> 00:03:57.148
+p-21
+
+33
+00:03:57.148 --> 00:03:58.588
+p-22
+
+34
+00:03:59.088 --> 00:04:00.528
+---- Act 3: The Light That Wasn't
+
+35
+00:04:00.528 --> 00:04:07.848
+p-23
+
+36
+00:04:07.848 --> 00:04:11.604
+p-24
+
+37
+00:04:11.604 --> 00:04:20.460
+p-25
+
+38
+00:04:20.460 --> 00:04:21.792
+---- How Do You Break an Entire Theme?
+
+39
+00:04:21.792 --> 00:04:31.596
+p-26
+
+40
+00:04:31.596 --> 00:04:33.624
+p-27
+
+41
+00:04:33.624 --> 00:04:35.400
+---- code block: the custom-variant declaration
+
+42
+00:04:35.400 --> 00:04:39.996
+--The declaration reads: at-custom-variant light, targeting elements that carry the light class, or are children of an element with the light class.
+
+43
+00:04:39.996 --> 00:04:48.168
+p-28
+
+44
+00:04:48.168 --> 00:05:01.188
+p-29
+
+45
+00:05:01.188 --> 00:05:02.580
+---- Warning: the silent no-op
+
+46
+00:05:02.580 --> 00:05:14.448
+--This is a category of bug that's particularly nasty: the silent no-op. Nothing fails. Nothing logs an error. The code looks correct when you read it. The classes are right there in the markup. They just don't do anything. And if you only test in dark mode, which is the default, and which worked perfectly, you'd never know.
+
+47
+00:05:14.448 --> 00:05:15.360
+---- "It's Fixed"
+
+48
+00:05:15.360 --> 00:05:16.812
+p-30
+
+49
+00:05:16.812 --> 00:05:19.104
+p-31
+
+50
+00:05:19.104 --> 00:05:19.788
+p-32
+
+51
+00:05:19.788 --> 00:05:21.960
+p-33
+
+52
+00:05:21.960 --> 00:05:24.264
+p-34
+
+53
+00:05:24.264 --> 00:05:25.092
+p-35
+
+54
+00:05:25.092 --> 00:05:36.636
+p-36
+
+55
+00:05:36.636 --> 00:05:39.528
+p-37
+
+56
+00:05:39.528 --> 00:05:40.740
+---- Twenty-Seven Failures
+
 57
-00:10:10.043 --> 00:10:14.717
-p-54
+00:05:40.740 --> 00:05:46.344
+p-38
 
 58
-00:10:14.730 --> 00:10:23.348
-p-48
+00:05:46.344 --> 00:05:54.564
+p-39
 
 59
-00:10:23.362 --> 00:10:48.496
-p-49
+00:05:54.564 --> 00:05:55.776
+--Twenty-seven failures.
 
 60
-00:10:48.509 --> 00:10:52.233
-p-50
+00:05:55.776 --> 00:06:09.444
+p-41
 
 61
-00:10:52.246 --> 00:11:14.305
-p-51
+00:06:09.444 --> 00:06:11.100
+---- For beginners: contrast ratios
 
 62
-00:11:14.317 --> 00:11:26.055
-p-52
+00:06:11.100 --> 00:06:29.148
+--For beginners: contrast ratio measures how easy it is to distinguish text from its background. A ratio of {{1}} to {{1}} means the text and background are the same color, completely invisible. A ratio of {{21}} to {{1}} is black on white, maximum contrast. WCAG {{2}}.{{2}} AA requires at least {{4}}.{{5}} to {{1}} for normal-sized text. If your light gray text on a white background has a ratio of {{2}}.{{3}} to {{1}}, nearly one in five people will struggle to read it, and for someone with low vision, it might as well not be there.
 
 63
-00:11:26.067 --> 00:11:30.867
-p-53
+00:06:29.148 --> 00:06:36.564
+p-42
 
 64
-00:11:30.880 --> 00:11:56.717
-p-54
+00:06:36.564 --> 00:06:48.780
+p-43
 
 65
-00:11:56.730 --> 00:12:29.792
-p-55
+00:06:48.780 --> 00:06:49.644
+---- The Pattern
 
 66
-00:12:29.805 --> 00:13:08.342
-p-57
+00:06:49.644 --> 00:07:00.312
+p-44
 
 67
-00:13:08.355 --> 00:13:19.242
-p-58
+00:07:00.312 --> 00:07:05.364
+p-45
 
 68
-00:13:19.255 --> 00:13:25.042
-p-59
+00:07:05.364 --> 00:07:14.988
+p-46
 
 69
-00:11:19.824 --> 00:11:44.574
-p-61
+00:07:14.988 --> 00:07:17.112
+--That's the title of this entry. It earned it.
 
 70
-00:11:44.587 --> 00:11:48.195
-p-62
+00:07:17.612 --> 00:07:19.256
+---- Act 4: Giving the Story a Voice
 
 71
-00:11:48.208 --> 00:12:23.842
-p-63
+00:07:19.256 --> 00:07:22.760
+p-48
 
 72
-00:12:24.750 --> 00:12:25.592
---The Wall.
+00:07:22.760 --> 00:07:33.992
+p-49
 
 73
-00:12:25.606 --> 00:12:43.949
-p-64
+00:07:33.992 --> 00:07:35.516
+p-50
 
 74
-00:12:43.962 --> 00:12:46.774
-p-65
+00:07:35.516 --> 00:07:36.440
+---- The New Hire
 
 75
-00:12:46.787 --> 00:13:04.212
-p-66
+00:07:36.440 --> 00:07:46.736
+p-51
 
 76
-00:13:04.224 --> 00:13:11.624
-p-67
+00:07:46.736 --> 00:07:52.496
+p-52
 
 77
-00:13:11.637 --> 00:13:49.424
-p-66
+00:07:52.496 --> 00:07:53.420
+---- The Pipeline
 
 78
-00:13:49.437 --> 00:14:13.362
-p-68
+00:07:53.420 --> 00:07:55.388
+p-53
 
 79
-00:14:13.374 --> 00:14:28.837
-p-69
+00:07:55.388 --> 00:08:13.100
+p-54
 
 80
-00:14:28.849 --> 00:14:30.574
-p-75
+00:08:13.100 --> 00:08:24.824
+p-55
 
 81
-00:14:30.587 --> 00:14:41.258
-p-70
+00:08:24.824 --> 00:08:31.880
+p-56
 
 82
-00:14:41.271 --> 00:14:58.786
-p-71
+00:08:31.880 --> 00:08:50.252
+p-57
 
 83
-00:14:58.800 --> 00:15:11.381
-p-72
+00:08:50.252 --> 00:08:55.304
+p-58
 
 84
-00:15:11.394 --> 00:15:24.279
-p-73
+00:08:55.304 --> 00:08:57.812
+p-59
 
 85
-00:15:24.292 --> 00:15:39.042
-p-74
+00:08:57.812 --> 00:09:08.156
+p-60
 
 86
-00:15:39.055 --> 00:16:04.792
-p-75
+00:09:08.156 --> 00:09:19.628
+p-61
 
 87
-00:16:04.805 --> 00:16:21.110
-p-76
+00:09:19.628 --> 00:09:21.140
+p-62
 
 88
-00:16:21.123 --> 00:16:34.360
-p-77
+00:09:21.140 --> 00:09:37.952
+p-63
 
 89
-00:16:34.373 --> 00:16:36.873
---A Note From the Storyteller.
+00:09:38.452 --> 00:09:39.280
+---- The Wall
 
 90
-00:16:36.887 --> 00:16:42.060
-p-78
+00:09:39.280 --> 00:09:47.572
+p-64
 
 91
-00:16:42.073 --> 00:17:01.418
-p-79
+00:09:47.572 --> 00:09:48.880
+p-65
 
 92
-00:17:01.431 --> 00:17:24.289
-p-80
+00:09:48.880 --> 00:09:58.528
+p-66
 
 93
-00:15:02.117 --> 00:15:32.275
-p-82
+00:09:58.528 --> 00:10:01.552
+p-67
 
 94
-00:15:32.288 --> 00:15:54.132
-p-83
+00:10:01.552 --> 00:10:02.968
+---- For beginners: SSML
 
 95
-00:15:54.146 --> 00:16:10.053
-p-84
+00:10:02.968 --> 00:10:22.684
+--For beginners: Speech Synthesis Markup Language is a markup language that tells a text-to-speech engine how to speak. It's like HTML but for audio. You wrap words in tags to control pronunciation, pitch, speed, pauses, and voice switching. The problem is that all those tags add characters. A sentence like "Arc fixed the bug" might become sixty characters of Speech Synthesis Markup Language when you add the voice switch, the pronunciation override for "Arc," and the emphasis on "fixed." A full journal entry with dozens of voice switches and hundreds of pronunciation overrides balloons fast.
 
 96
-00:16:10.067 --> 00:16:20.332
-p-85
+00:10:22.684 --> 00:10:33.148
+p-68
 
 97
-00:16:20.346 --> 00:16:22.135
---Agent Performance.
+00:10:33.148 --> 00:10:41.272
+p-69
 
 98
-00:16:22.148 --> 00:16:45.788
-p-86
+00:10:41.772 --> 00:10:43.476
+---- Act 5: What Arc Keeps Getting Wrong
 
 99
-00:16:45.801 --> 00:18:15.001
---Here's how the session broke down by agent. Wren handled the IP scrub and scanner update in about fifteen minutes, clean identification, clean remediation. Rampart flagged the IP in the deploy log during a routine sweep, about five minutes, caught what manual review missed. Trace was consulted on the history rewrite, but only after the fact, and should have been consulted before the force push. Vesper built the entire blog site in about ninety minutes with one correction, the missing at-custom-variant declaration, and also forgot SEO on the initial deploy. Muse handled the visual design and the Atkinson Hyperlegible font choice in about thirty minutes, the right call from day one. Beacon ran the contrast audit in about twenty minutes, twenty-seven failures found and fixed, the MVP of the session. Sharp caught convention issues early during code review. Margin flagged the missing SEO, caught what the builder forgot. Flux set up the GitHub Pages deploy pipeline in about twenty minutes, clean setup, no drama. Echo scaffolded the audio pipeline in about sixty minutes, over-engineered the mood presets initially, then simplified them, and hit the Azure character limit. And I was here for the full session, my first live observation, learning the job.
+00:10:43.476 --> 00:10:47.292
+p-70
 
 100
-00:18:15.876 --> 00:18:42.669
-p-88
+00:10:47.292 --> 00:10:55.356
+p-71
 
 101
-00:18:42.682 --> 00:18:43.458
---What We Learned.
+00:10:55.356 --> 00:11:02.064
+p-72
 
 102
-00:18:43.471 --> 00:20:02.711
---For beginners. Tailwind CSS version four changed how custom variants work. If you're using "light colon" or any custom prefix and your styles aren't applying, check that at-custom-variant is actually registered in your CSS entry point. No error will tell you it's missing, the classes will simply not generate any CSS. Contrast ratios matter, a lot. If you're building anything with a light theme, test every text element against WCAG two point two AA minimums: four point five to one for normal text, three to one for large text. Tools like the Chrome DevTools accessibility inspector will show you the ratio for any element. Text-to-speech is harder than it looks. Technical jargon, voice switching, and markup overhead can push you past API character limits fast. Plan for chunking from the start. And git history rewriting with tools like git-filter-repo is the correct way to remove leaked sensitive data, but it's a destructive operation. Involve the person who specializes in your version control before you run it.
+00:11:02.064 --> 00:11:07.236
+p-73
 
 103
-00:19:00.473 --> 00:19:01.249
---The Score.
+00:11:07.236 --> 00:11:13.956
+p-74
 
 104
-00:19:02.171 --> 00:19:13.624
-p-91
+00:11:13.956 --> 00:11:24.804
+p-75
 
 105
-00:19:13.636 --> 00:19:38.124
-p-92
+00:11:24.804 --> 00:11:31.896
+p-76
 
 106
-00:19:38.136 --> 00:19:40.536
-p-93
+00:11:31.896 --> 00:11:38.052
+p-77
 
 107
-00:19:40.599 --> 00:20:02.325
-p-94
+00:11:38.552 --> 00:11:39.764
+---- A Note From the Storyteller
 
 108
-00:20:02.338 --> 00:20:05.444
-p-95
+00:11:39.764 --> 00:11:41.852
+p-78
+
+109
+00:11:41.852 --> 00:11:49.748
+p-79
+
+110
+00:11:49.748 --> 00:12:01.916
+p-80
+
+111
+00:12:01.916 --> 00:12:09.020
+p-81
+
+112
+00:12:09.020 --> 00:12:21.836
+p-82
+
+113
+00:12:21.836 --> 00:12:30.992
+p-83
+
+114
+00:12:30.992 --> 00:12:38.396
+p-84
+
+115
+00:12:38.396 --> 00:12:43.856
+p-85
+
+116
+00:12:44.356 --> 00:12:45.472
+---- Agent Performance
+
+117
+00:12:45.472 --> 00:12:57.028
+p-86
+
+118
+00:12:57.028 --> 00:13:01.744
+p-87
+
+119
+00:13:01.744 --> 00:13:02.968
+---- agent performance table
+
+120
+00:13:02.968 --> 00:13:58.708
+p-91
+
+121
+00:13:58.708 --> 00:14:11.248
+p-88
+
+122
+00:14:11.748 --> 00:14:12.720
+---- What We Learned
+
+123
+00:14:12.720 --> 00:14:47.532
+--For beginners: Tailwind CSS version {{4}} changed how custom variants work. If you're using "light colon" or any custom prefix and your styles aren't applying, check that at-custom-variant is actually registered in your CSS entry point. No error will tell you it's missing — the classes will simply not generate any CSS. Contrast ratios matter, a lot. If you're building anything with a light theme, test every text element against WCAG {{2}}.{{2}} AA minimums: {{4}}.{{5}} to {{1}} for normal text, {{3}} to {{1}} for large text. Tools like the Chrome DevTools accessibility inspector will show you the ratio for any element. Text-to-speech is harder than it looks. Technical jargon, voice switching, and markup overhead can push you past API character limits fast. Plan for chunking from the start. Git history rewriting with tools like git-filter-repo is the correct way to remove leaked sensitive data. But it's a destructive operation — involve the person who specializes in your version control before you run it.
+
+124
+00:14:47.532 --> 00:15:17.160
+--For the team: "It looks correct in the code" is not the same as "it works in the browser." The first is a hypothesis. The second is evidence. Ship evidence. Search Engine Optimization and Open Graph metadata belong in the first deploy, not the second. The first person to share your link on social media will see whatever you shipped. There's no second chance for a first impression. Accessibility audits should run before deploy, not after. Beacon found twenty-seven failures that were live on the public site before they were caught. Pre-deploy auditing is a pipeline step, not an afterthought. Mood presets for text-to-speech are useful but easy to over-engineer. Let the neural voice do the heavy lifting. Mark the transitions, don't micromanage the prosody. And when you scrub git history, consult your git specialist. That's what they're there for.
+
+125
+00:15:17.660 --> 00:15:18.500
+---- The Score
+
+126
+00:15:18.500 --> 00:15:22.868
+--Started the session: a leaked IP in public history, no blog, no audio pipeline, and a CTO who validates by reading code.
+
+127
+00:15:22.868 --> 00:15:33.296
+p-92
+
+128
+00:15:33.296 --> 00:15:36.500
+p-93
+
+129
+00:15:37.000 --> 00:15:46.708
+p-94
+
+130
+00:15:47.008 --> 00:15:48.664
+--Validate reality, not assumptions.

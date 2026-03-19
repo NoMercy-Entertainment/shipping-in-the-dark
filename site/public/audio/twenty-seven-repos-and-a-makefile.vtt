@@ -1,341 +1,477 @@
 WEBVTT
 
 1
-00:00:00.053 --> 00:00:02.355
+00:00:00.000 --> 00:00:01.536
 --Twenty-Seven Repos and a Makefile.
 
 2
-00:00:04.761 --> 00:00:34.548
-p-1
+00:00:02.336 --> 00:00:03.872
+---- ## Timeline Note
 
 3
-00:00:36.125 --> 00:01:17.619
-p-2
+00:00:03.872 --> 00:00:19.940
+p-1
 
 4
-00:01:17.632 --> 00:01:49.160
-p-3
+00:00:20.440 --> 00:00:22.828
+---- ## Before We Start: The Deploy That Started It All
 
 5
-00:01:49.173 --> 00:02:12.523
-p-4
+00:00:22.828 --> 00:00:39.640
+p-2
 
 6
-00:02:12.535 --> 00:02:26.923
-p-6
+00:00:39.640 --> 00:00:54.868
+p-3
 
 7
-00:02:26.935 --> 00:02:37.465
-p-8
+00:00:54.868 --> 00:01:02.968
+p-4
 
 8
-00:02:37.479 --> 00:03:05.465
-p-9
+00:01:03.168 --> 00:01:05.700
+p-5
 
 9
-00:03:05.479 --> 00:03:24.257
-p-10
+00:01:06.000 --> 00:01:11.460
+p-6
 
 10
-00:03:24.271 --> 00:03:34.142
-p-11
+00:01:11.660 --> 00:01:12.992
+p-7
 
 11
-00:03:34.155 --> 00:03:55.1000
-p-12
+00:01:13.592 --> 00:01:15.308
+---- ## The Shape of Eight Years
 
 12
-00:03:56.013 --> 00:04:01.134
-p-13
+00:01:15.308 --> 00:01:18.872
+p-8
 
 13
-00:04:01.147 --> 00:04:05.686
-p-14
+00:01:19.072 --> 00:01:31.384
+p-9
 
 14
-00:04:05.923 --> 00:04:06.779
-p-15
+00:01:31.584 --> 00:01:40.692
+p-10
 
 15
-00:04:06.792 --> 00:04:16.575
-p-16
+00:01:40.892 --> 00:01:44.768
+p-11
 
 16
-00:04:16.588 --> 00:04:19.930
-p-17
+00:01:45.368 --> 00:01:47.240
+---- ## The New CTO Gets a Name
 
 17
-00:04:21.050 --> 00:04:37.032
-p-18
+00:01:47.240 --> 00:01:57.272
+p-12
 
 18
-00:04:37.045 --> 00:04:44.526
-p-19
+00:01:57.472 --> 00:01:59.980
+p-13
 
 19
-00:04:44.538 --> 00:04:49.926
-p-20
+00:02:00.180 --> 00:02:02.064
+p-14
 
 20
-00:04:49.938 --> 00:05:20.063
-p-21
+00:02:02.264 --> 00:02:02.972
+p-15
 
 21
-00:05:20.076 --> 00:05:40.926
-p-22
+00:02:02.972 --> 00:02:07.448
+p-16
 
 22
-00:05:40.938 --> 00:05:58.876
-p-23
+00:02:07.448 --> 00:02:08.612
+p-17
 
 23
-00:05:58.888 --> 00:06:14.713
-p-69
+00:02:08.612 --> 00:02:16.604
+p-18
 
 24
-00:04:02.722 --> 00:04:03.847
---The Android App's Closet.
+00:02:16.604 --> 00:02:19.136
+p-19
 
 25
-00:04:03.860 --> 00:04:14.762
-p-26
+00:02:19.136 --> 00:02:21.584
+p-20
 
 26
-00:04:14.774 --> 00:04:47.599
---For anyone new to programming, git stores your file history as objects. When you commit changes, git creates new objects. Normally, git periodically packs these objects into compressed files, like zipping a folder. Loose objects are unpacked, each one sitting in its own tiny file on disk. Seven hundred and sixty-eight megabytes of loose objects means thousands of individual files that should have been compressed into a handful of pack files long ago.
+00:02:21.884 --> 00:02:35.924
+p-21
 
 27
-00:04:47.612 --> 00:05:04.437
-p-27
+00:02:36.524 --> 00:02:38.000
+---- ## The Assignment
 
 28
-00:05:04.449 --> 00:05:24.312
-p-28
+00:02:38.000 --> 00:02:48.200
+p-22
 
 29
-00:05:24.324 --> 00:05:29.112
-p-29
+00:02:48.400 --> 00:02:58.264
+p-23
 
 30
-00:05:29.124 --> 00:06:02.637
-p-31
+00:02:58.864 --> 00:03:00.592
+---- ## What Eight Years Looks Like
 
 31
-00:06:02.649 --> 00:06:33.024
---This is the kind of thing that makes security engineers lose sleep. The file wasn't in the repo. It was just on disk in the repo's directory. But there was no git ignore rule to prevent it from being added. If the boss had ever run "git add dot" instead of "git add" with a specific filename, that backup would have been committed and pushed. Every Keycloak user credential, sitting on GitHub for anyone to find. One typo from a breach.
+00:03:00.592 --> 00:03:01.720
+p-24
 
 32
-00:06:33.037 --> 00:06:56.312
-p-32
+00:03:01.920 --> 00:03:02.820
+---- [bullet list]
 
 33
-00:06:56.324 --> 00:07:05.074
-p-33
+00:03:02.820 --> 00:03:09.552
+--Twenty-seven repositories. Around thirty-two hundred commits. Five hundred and fifty-two release tags. And roughly twenty-five gigabytes of git storage across all repos.
 
 34
-00:07:05.087 --> 00:07:29.487
-p-34
+00:03:09.852 --> 00:03:18.876
+p-25
 
 35
-00:07:29.499 --> 00:07:39.199
-p-35
+00:03:19.376 --> 00:03:21.440
+---- ### The Android App's Closet
 
 36
-00:07:39.212 --> 00:07:46.487
-p-36
+00:03:21.440 --> 00:03:25.076
+p-26
 
 37
-00:07:46.499 --> 00:08:02.162
-p-37
+00:03:25.376 --> 00:03:26.636
+---- [callout: for beginners]
 
 38
-00:08:02.174 --> 00:08:27.462
-p-38
+00:03:26.636 --> 00:03:41.960
+--For anyone new to how git works: git stores your file history as objects. When you commit changes, git creates new objects. Normally, git periodically packs these objects into compressed files, like zipping a folder. Loose objects are unpacked — each one sitting in its own tiny file on disk. Seven hundred and sixty-eight megabytes of loose objects means thousands of individual files that should have been compressed into a handful of pack files long ago.
 
 39
-00:08:27.474 --> 00:08:45.287
-p-39
+00:03:42.260 --> 00:03:50.264
+p-27
 
 40
-00:08:45.612 --> 00:08:48.987
-p-40
+00:03:50.764 --> 00:03:52.888
+---- ### The Web App's Filing System
 
 41
-00:08:48.999 --> 00:08:52.749
-p-41
+00:03:52.888 --> 00:04:01.672
+p-28
 
 42
-00:08:53.624 --> 00:08:55.199
-p-42
+00:04:02.172 --> 00:04:04.056
+---- ### The Bomb in the Stack
 
 43
-00:08:56.263 --> 00:08:57.401
---Eleven Tasks, Fifteen Agents.
+00:04:04.056 --> 00:04:06.672
+p-29
 
 44
-00:08:57.413 --> 00:09:08.663
-p-43
+00:04:06.972 --> 00:04:12.096
+p-30
 
 45
-00:09:08.676 --> 00:09:10.013
---Phase one. Cleanup.
+00:04:12.396 --> 00:04:13.296
+---- [code block]
 
 46
-00:09:10.026 --> 00:09:11.851
-p-44
+00:04:13.296 --> 00:04:15.120
+--A compressed Keycloak database backup file.
 
 47
-00:09:11.863 --> 00:09:56.876
-p-45
+00:04:15.420 --> 00:04:26.832
+p-31
 
 48
-00:07:59.243 --> 00:08:17.606
-p-46
+00:04:27.132 --> 00:04:28.536
+---- [callout: security danger]
 
 49
-00:08:17.618 --> 00:08:31.293
-p-47
+00:04:28.536 --> 00:04:42.768
+p-71
 
 50
-00:08:31.306 --> 00:08:36.093
-p-48
+00:04:43.268 --> 00:04:45.392
+---- ### The Convention Violations
 
 51
-00:08:36.106 --> 00:09:00.243
-p-49
+00:04:45.392 --> 00:04:56.312
+p-32
 
 52
-00:09:00.256 --> 00:09:14.018
-p-50
+00:04:56.512 --> 00:05:00.640
+p-33
 
 53
-00:09:14.031 --> 00:09:18.393
-p-51
+00:05:01.140 --> 00:05:03.168
+---- ### The Cross-Project Drift
 
 54
-00:09:18.406 --> 00:09:34.318
-p-52
+00:05:03.168 --> 00:05:14.040
+p-34
 
 55
-00:09:34.331 --> 00:09:52.068
-p-53
+00:05:14.240 --> 00:05:19.724
+p-35
 
 56
-00:09:52.281 --> 00:10:06.368
-p-54
+00:05:20.324 --> 00:05:21.800
+---- ## Three Doors
 
 57
-00:10:06.381 --> 00:10:09.268
---Phase one point five. The git attributes Story.
+00:05:21.800 --> 00:05:23.828
+p-36
 
 58
-00:10:10.143 --> 00:10:21.726
-p-55
+00:05:24.028 --> 00:05:32.272
+p-37
 
 59
-00:10:21.739 --> 00:10:30.701
-p-56
+00:05:32.472 --> 00:05:43.284
+p-38
 
 60
-00:10:31.576 --> 00:11:11.001
---For beginners, a git attributes file tells git how to handle different file types. The most important thing it does is control line endings. Windows uses carriage return plus line feed. Linux and macOS use just line feed. Without git attributes, git might convert between them inconsistently, creating phantom diffs, changes that show up in git diff even though nobody actually changed anything. A good git attributes file says "always store these files with Unix line endings" and prevents an entire category of frustrating, meaningless diffs.
+00:05:43.484 --> 00:05:52.736
+p-39
 
 61
-00:11:11.014 --> 00:11:37.589
-p-57
+00:05:53.036 --> 00:05:55.568
+p-40
 
 62
-00:11:37.601 --> 00:11:53.864
-p-58
+00:05:55.768 --> 00:05:56.980
+p-41
 
 63
-00:11:53.876 --> 00:11:54.826
---Phase two. Orchestration.
+00:05:56.980 --> 00:05:58.108
+p-42
 
 64
-00:11:54.839 --> 00:12:08.151
-p-59
+00:05:58.708 --> 00:06:00.820
+---- ## Eleven Tasks, Fifteen Agents
 
 65
-00:12:08.164 --> 00:12:33.114
-p-60
+00:06:00.820 --> 00:06:04.756
+p-43
 
 66
-00:12:33.126 --> 00:13:02.189
-p-61
+00:06:05.256 --> 00:06:07.332
+---- ### Phase 1: Cleanup
 
 67
-00:13:02.201 --> 00:13:21.364
-p-62
+00:06:07.332 --> 00:06:08.940
+p-44
 
 68
-00:13:21.376 --> 00:13:53.739
-p-63
+00:06:09.140 --> 00:06:28.280
+p-45
 
 69
-00:13:53.751 --> 00:13:58.389
-p-64
+00:06:28.580 --> 00:06:29.840
+---- [callout: for beginners]
 
 70
-00:13:59.464 --> 00:14:00.389
---Phase three. Security.
+00:06:29.840 --> 00:06:44.132
+--For anyone new to this: "git gc" stands for garbage collection. It packs loose objects, removes unreachable objects, and compresses pack files. It's like defragmenting a hard drive — your data is the same, but the storage is organized so everything runs faster. Most git interfaces and hosting services do this automatically, but if you're working from the command line on a repo that's been around for years, it might never have happened.
 
 71
-00:11:32.319 --> 00:11:56.269
-p-66
+00:06:44.432 --> 00:06:52.988
+p-46
 
 72
-00:11:56.281 --> 00:12:10.444
-p-67
+00:06:53.288 --> 00:07:01.124
+p-47
 
 73
-00:12:10.744 --> 00:12:30.919
-p-68
+00:07:01.324 --> 00:07:03.844
+p-48
 
 74
-00:12:30.931 --> 00:13:27.094
-p-69
+00:07:04.044 --> 00:07:14.160
+p-49
 
 75
-00:13:27.106 --> 00:13:28.369
---What We Learned.
+00:07:14.360 --> 00:07:21.080
+p-50
 
 76
-00:13:28.381 --> 00:14:22.015
---For beginners. Git garbage collection is free performance. If you've been working on a repo for years and never run it, you might be carrying hundreds of megabytes of dead weight. Run it. Watch the numbers drop. Git attributes prevents phantom diffs, changes that appear in your diff output even though nobody changed anything. It's one of those files that feels unnecessary until you've spent twenty minutes trying to figure out why git thinks you modified a file you never opened. And never leave database backups in a git repository's directory without a git ignore rule. It doesn't matter that you didn't commit it. It matters that you could have. Defense in depth means removing the possibility, not just avoiding the mistake.
+00:07:21.280 --> 00:07:23.116
+p-51
 
 77
-00:14:22.923 --> 00:15:38.358
---For the team. Multi-repo coordination isn't optional once you pass about ten repositories. A human can keep the state of five repos in their head. Twenty-seven requires tooling. The Makefile isn't glamorous, but "make status" answering "what's the state of everything?" in two seconds is worth more than any dashboard. Agents that show independent judgment earn trust faster than agents that follow orders perfectly. The stale branch agent wasn't told to check for unmerged work. It did it anyway because deleting branches with unpushed commits is destructive, and it knew the universal rule: never break existing work. That's not just following instructions, that's understanding intent. And dependency drift is invisible until it isn't. A video player pinned six versions behind isn't a problem today. It's a problem the day you need a feature or security fix from version one point two point zero and you have to jump across six breaking change boundaries instead of one. Renovate turns an eventual crisis into a steady stream of manageable updates.
+00:07:23.316 --> 00:07:31.368
+p-52
 
 78
-00:15:39.279 --> 00:15:40.305
---The Score.
+00:07:31.568 --> 00:07:38.600
+p-53
 
 79
-00:15:40.318 --> 00:15:56.378
-p-72
+00:07:38.800 --> 00:07:45.760
+p-54
 
 80
-00:15:56.390 --> 00:16:19.340
-p-73
+00:07:46.360 --> 00:07:49.324
+---- ### Phase 1.5: The .gitattributes Story
 
 81
-00:16:19.353 --> 00:16:35.642
-p-74
+00:07:49.324 --> 00:07:52.648
+p-55
 
 82
-00:16:35.655 --> 00:16:38.931
-p-75
+00:07:52.848 --> 00:07:58.956
+p-56
 
 83
-00:16:38.944 --> 00:16:49.100
-p-76
+00:07:59.256 --> 00:08:00.516
+---- [callout: for beginners]
 
 84
-00:16:49.100 --> 00:16:55.821
-p-76
+00:08:00.516 --> 00:08:18.444
+--A git attributes file tells git how to handle different file types. The most important thing it does is control line endings. Windows uses carriage return plus line feed. Linux and macOS use just line feed. Without a git attributes file, git might convert between them inconsistently, creating phantom diffs — changes that show up in the diff even though nobody actually changed anything. A good git attributes file says "always store these files with Unix line endings" and prevents an entire category of frustrating, meaningless diffs.
 
 85
-00:16:55.834 --> 00:17:16.850
+00:08:18.744 --> 00:08:30.900
+p-57
+
+86
+00:08:31.100 --> 00:08:39.572
+p-58
+
+87
+00:08:40.172 --> 00:08:42.392
+---- ### Phase 2: Orchestration
+
+88
+00:08:42.392 --> 00:08:45.824
+p-59
+
+89
+00:08:46.024 --> 00:08:59.584
+p-60
+
+90
+00:08:59.784 --> 00:09:12.312
+p-61
+
+91
+00:09:12.512 --> 00:09:21.272
+p-62
+
+92
+00:09:21.472 --> 00:09:36.088
+p-63
+
+93
+00:09:36.288 --> 00:09:39.336
+p-64
+
+94
+00:09:39.936 --> 00:09:42.084
+---- ### Phase 3: Security
+
+95
+00:09:42.084 --> 00:09:44.868
+p-65
+
+96
+00:09:45.068 --> 00:09:57.860
+p-66
+
+97
+00:09:58.060 --> 00:10:03.832
+p-67
+
+98
+00:10:04.032 --> 00:10:14.040
+p-68
+
+99
+00:10:14.640 --> 00:10:16.056
+---- ## The Numbers
+
+100
+00:10:16.056 --> 00:10:41.952
+p-69
+
+101
+00:10:42.552 --> 00:10:44.028
+---- ## What We Learned
+
+102
+00:10:44.028 --> 00:10:45.000
+p-70
+
+103
+00:10:45.200 --> 00:10:46.100
+---- [bullet list]
+
+104
+00:10:46.100 --> 00:10:53.060
+--Git garbage collection is free performance. If you've been working on a repo for years and never run it, you might be carrying hundreds of megabytes of dead weight. Run it. Watch the numbers drop.
+
+105
+00:10:53.060 --> 00:11:01.028
+--Git attributes prevents phantom diffs — changes that appear in your diff output even though nobody changed anything. It's one of those files that feels unnecessary until you've spent twenty minutes trying to figure out why git thinks you modified a file you never opened.
+
+106
+00:11:01.028 --> 00:11:09.344
+--Never leave database backups in a git repository's directory without a git ignore rule. It doesn't matter that you didn't commit it. It matters that you could have. Defense in depth means removing the possibility, not just avoiding the mistake.
+
+107
+00:11:09.644 --> 00:11:10.568
+--For the team:
+
+108
+00:11:10.768 --> 00:11:11.668
+---- [bullet list]
+
+109
+00:11:11.668 --> 00:11:21.844
+--Multi-repo coordination isn't optional once you pass around ten repositories. A human can keep the state of five repos in their head. Twenty-seven requires tooling. The Makefile isn't glamorous, but "make status" answering "what's the state of everything?" in two seconds is worth more than any dashboard.
+
+110
+00:11:21.844 --> 00:11:33.676
+--Agents that show independent judgment earn trust faster than agents that follow orders perfectly. The stale branch agent wasn't told to check for unmerged work. It did it anyway because deleting branches with unpushed commits is destructive, and it knew the universal rule: never break existing work. That's not just following instructions — that's understanding intent.
+
+111
+00:11:33.676 --> 00:11:45.316
+--Dependency drift is invisible until it isn't. A video player pinned six versions behind isn't a problem today. It's a problem the day you need a feature or security fix from version one point two point zero and you have to jump across six breaking change boundaries instead of one. Renovate turns an eventual crisis into a steady stream of manageable updates.
+
+112
+00:11:45.916 --> 00:11:47.284
+---- ## The Score
+
+113
+00:11:47.284 --> 00:11:53.776
+p-72
+
+114
+00:11:53.976 --> 00:12:04.704
+p-73
+
+115
+00:12:05.004 --> 00:12:12.264
+p-74
+
+116
+00:12:12.464 --> 00:12:15.620
+p-75
+
+117
+00:12:16.220 --> 00:12:18.392
+p-76
+
+118
+00:12:18.392 --> 00:12:22.856
+--If it doesn't go the way it should, then it'll have to go the way it does. That's Stoney's motto. Today, it went.
+
+119
+00:12:23.256 --> 00:12:30.948
 p-77

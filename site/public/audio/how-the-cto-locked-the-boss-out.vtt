@@ -1,305 +1,329 @@
 WEBVTT
 
 1
-00:00:00.052 --> 00:00:04.923
---How the CTO Locked the Boss Out of His Own Dashboard, and Learned to Live With It
+00:00:00.000 --> 00:00:02.688
+---- How the CTO Locked the Boss Out of His Own Dashboard, and Learned to Live With It
 
 2
-00:00:06.436 --> 00:00:27.331
-p-1
+00:00:03.488 --> 00:00:04.748
+---- Why This Journal Exists
 
 3
-00:00:28.452 --> 00:00:29.386
-p-2
+00:00:05.148 --> 00:00:14.976
+p-1
 
 4
-00:00:30.794 --> 00:00:58.412
-p-3
+00:00:14.976 --> 00:00:15.888
+p-2
 
 5
-00:01:00.020 --> 00:01:28.836
-p-4
+00:00:16.188 --> 00:00:32.340
+p-3
 
 6
-00:01:30.244 --> 00:01:55.467
-p-5
-
-7
-00:01:56.875 --> 00:02:11.836
-p-6
-
-8
-00:02:12.944 --> 00:02:13.852
-p-7
-
-9
-00:02:15.470 --> 00:02:54.670
-p-8
-
-10
-00:02:55.733 --> 00:02:58.520
-p-9
-
-11
-00:03:00.083 --> 00:03:02.595
---Act One. "Unacceptable!"
-
-12
-00:03:03.958 --> 00:03:09.983
-p-10
-
-13
-00:03:11.060 --> 00:03:14.498
-p-11
-
-14
-00:03:15.573 --> 00:03:35.860
-p-12
-
-15
-00:03:37.210 --> 00:03:48.035
-p-13
-
-16
-00:03:49.399 --> 00:03:50.817
-p-55
-
-17
-00:03:52.204 --> 00:03:53.704
-p-14
-
-18
-00:03:54.767 --> 00:04:36.967
-p-8
-
-19
-00:04:38.042 --> 00:04:39.179
-p-62
-
-20
-00:04:40.542 --> 00:04:56.454
+00:00:32.340 --> 00:00:45.864
 p-4
 
+7
+00:00:45.864 --> 00:00:57.684
+p-5
+
+8
+00:00:57.684 --> 00:01:04.788
+p-6
+
+9
+00:01:04.788 --> 00:01:05.688
+p-7
+
+10
+00:01:06.188 --> 00:01:07.196
+---- The Short Version
+
+11
+00:01:07.496 --> 00:01:25.028
+p-8
+
+12
+00:01:25.028 --> 00:01:26.828
+p-9
+
+13
+00:01:27.328 --> 00:01:28.660
+---- Act 1: "Unacceptable!"
+
+14
+00:01:28.960 --> 00:01:32.332
+p-10
+
+15
+00:01:32.332 --> 00:01:34.372
+p-11
+
+16
+00:01:34.372 --> 00:01:44.044
+p-12
+
+17
+00:01:44.044 --> 00:01:49.276
+p-13
+
+18
+00:01:49.576 --> 00:01:50.716
+---- The Chicken and the Egg
+
+19
+00:01:51.016 --> 00:02:11.644
+p-14
+
+20
+00:02:11.844 --> 00:02:20.004
+---- For anyone new to programming: this is called a chicken-and-egg problem. You need A to get B, but you also need B to get A. In this case, you need admin access to trigger the job that gives you admin access. Classic deadlock.
+
 21
-00:04:57.817 --> 00:05:10.379
+00:02:20.004 --> 00:02:25.812
 p-15
 
 22
-00:05:11.942 --> 00:05:14.204
-p-6
+00:02:25.812 --> 00:02:26.580
+p-16
 
 23
-00:05:15.579 --> 00:05:39.417
-p-17
+00:02:27.080 --> 00:02:28.652
+---- The Fix That Should Have Been There From the Start
 
 24
-00:05:40.292 --> 00:05:57.342
---So the fix does three things: it grabs the client roles from the token, filters them against a list of permissions the system actually recognizes, and saves the cleaned result to the database. Simple. Should have been there from the start.
+00:02:28.952 --> 00:02:41.168
+p-17
 
 25
-00:05:57.354 --> 00:06:03.954
+00:02:41.168 --> 00:02:44.144
 p-18
 
 26
-00:03:47.898 --> 00:03:52.335
-p-20
+00:02:44.144 --> 00:02:48.932
+p-19
 
 27
-00:03:52.348 --> 00:04:10.748
-p-21
+00:02:48.932 --> 00:02:50.456
+p-20
 
 28
-00:04:10.760 --> 00:04:16.348
-p-22
+00:02:50.456 --> 00:02:59.468
+p-21
 
 29
-00:04:16.360 --> 00:04:28.485
-p-23
+00:02:59.468 --> 00:03:02.420
+p-22
 
 30
-00:04:28.498 --> 00:04:33.923
-p-24
+00:03:02.420 --> 00:03:08.204
+p-23
 
 31
-00:04:33.935 --> 00:04:36.748
-p-32
+00:03:08.204 --> 00:03:11.108
+p-24
 
 32
-00:04:38.323 --> 00:04:43.773
-p-25
+00:03:11.608 --> 00:03:13.108
+---- Act 2: The Buttons That Lied
 
 33
-00:04:43.785 --> 00:04:49.460
-p-26
+00:03:13.408 --> 00:03:15.664
+p-25
 
 34
-00:04:50.335 --> 00:05:10.273
-p-27
+00:03:15.664 --> 00:03:17.932
+p-26
 
 35
-00:05:10.285 --> 00:05:34.910
-p-28
+00:03:17.932 --> 00:03:28.288
+p-27
 
 36
-00:05:34.923 --> 00:05:36.335
---Reka UI's Little Secret.
+00:03:28.288 --> 00:03:39.040
+p-28
 
 37
-00:05:36.348 --> 00:05:45.048
-p-29
+00:03:39.340 --> 00:03:40.720
+---- Reka UI's Little Secret
 
 38
-00:05:45.310 --> 00:06:04.848
---Here's what was supposed to happen. User clicks delete. The Confirm Dialog opens. User clicks Confirm. The handle Confirm function resolves a promise with true. The delete job function gets true and sends the delete request.
+00:03:40.920 --> 00:03:44.496
+p-29
 
 39
-00:06:04.860 --> 00:06:51.773
---Here's what actually happened. User clicks delete. The Confirm Dialog opens, using Reka UI's Alert Dialog under the hood. User clicks Confirm, which is an Alert Dialog Action component. But Reka UI's internal state management fires first, emitting an update that sets the dialog to closed. The close handler runs handle Cancel, resolving the promise with false. By the time the click handler fires handle Confirm, the resolve Promise reference is already null. The delete function gets false. It returns early. No delete request. No toast notification. No error message. Just... nothing.
+00:03:44.496 --> 00:03:51.204
+p-30
 
 40
-00:06:52.648 --> 00:07:21.949
---And here's the kicker. This wasn't just broken for the Queue Monitor. Confirm Dialog is a shared component. Every single confirmation dialog in the entire admin panel was silently cancelling. Delete a user? Nope. Revoke an invite? Nope. Any destructive action with a confirmation step had been quietly broken.
+00:03:51.204 --> 00:04:10.932
+p-31
 
 41
-00:07:21.962 --> 00:07:40.142
-p-32
+00:04:11.232 --> 00:04:23.028
+---- This wasn't just broken for the Queue Monitor. Confirm Dialog is a shared component. Every single confirmation dialog in the entire admin panel was silently cancelling. Delete a user? Nope. Revoke an invite? Nope. Any destructive action with a confirmation step had been quietly broken.
 
 42
-00:07:40.155 --> 00:07:59.380
-p-33
+00:04:23.028 --> 00:04:31.128
+p-32
 
 43
-00:07:59.392 --> 00:08:02.005
---But Wait. There's More.
+00:04:31.328 --> 00:04:32.744
+---- The Retry Button Was Broken Too
 
 44
-00:08:02.017 --> 00:08:14.668
-p-34
+00:04:32.944 --> 00:04:43.804
+p-33
 
 45
-00:08:14.681 --> 00:08:22.218
-p-35
+00:04:44.104 --> 00:04:45.304
+---- But Wait, There's More
 
 46
-00:08:22.231 --> 00:08:57.243
-p-37
+00:04:45.504 --> 00:04:52.116
+p-34
 
 47
-00:08:57.256 --> 00:08:59.468
-p-38
+00:04:52.116 --> 00:04:54.636
+p-35
 
 48
-00:08:59.481 --> 00:09:23.681
---Let that sink in. Every Vue component change, every CSS update, every frontend fix that was committed, reviewed, and "deployed," none of it was reaching users. The deploy workflow reported success every time. The container was running new PHP but old JavaScript. For who knows how long.
+00:04:54.636 --> 00:05:10.176
+p-36
 
 49
-00:09:23.693 --> 00:09:35.518
-p-39
+00:05:10.176 --> 00:05:12.168
+p-38
 
 50
-00:09:35.531 --> 00:09:47.718
-p-40
+00:05:12.168 --> 00:05:22.956
+---- Let that sink in. Every Vue component change, every CSS update, every frontend fix that was committed, reviewed, and "deployed" — none of it was reaching users. The deploy workflow reported success every time. The container was running new PHP but old JavaScript. For who knows how long.
 
 51
-00:09:47.731 --> 00:09:50.843
-p-41
+00:05:22.956 --> 00:05:27.588
+p-39
 
 52
-00:09:50.856 --> 00:09:52.956
---Act Three. Clean Slate.
+00:05:27.588 --> 00:05:34.128
+p-40
 
 53
-00:09:52.968 --> 00:10:11.393
-p-42
+00:05:34.128 --> 00:05:36.180
+p-41
 
 54
-00:10:11.406 --> 00:10:17.118
-p-43
+00:05:36.680 --> 00:05:38.024
+---- Act 3: Clean Slate
 
 55
-00:10:17.131 --> 00:10:20.181
---Act Four. This Journal.
+00:05:38.324 --> 00:05:45.200
+p-42
 
 56
-00:10:20.193 --> 00:10:31.664
-p-44
+00:05:45.200 --> 00:05:49.184
+p-43
 
 57
-00:07:52.668 --> 00:08:11.139
-p-46
+00:05:49.684 --> 00:05:50.992
+---- Act 4: This Journal
 
 58
-00:08:11.389 --> 00:08:14.678
-p-47
+00:05:51.292 --> 00:05:53.788
+p-44
 
 59
-00:08:14.691 --> 00:08:18.796
-p-48
+00:05:53.788 --> 00:05:56.872
+p-45
 
 60
-00:08:18.810 --> 00:08:19.375
---And then...
+00:05:56.872 --> 00:06:05.392
+p-46
 
 61
-00:08:19.389 --> 00:08:24.605
-p-50
+00:06:05.392 --> 00:06:07.024
+p-47
 
 62
-00:08:24.617 --> 00:08:42.722
-p-51
+00:06:07.024 --> 00:06:08.392
+p-48
 
 63
-00:08:42.735 --> 00:09:00.435
-p-52
+00:06:08.392 --> 00:06:09.184
+p-49
 
 64
-00:09:00.448 --> 00:09:02.304
-p-53
+00:06:09.184 --> 00:06:11.032
+p-50
 
 65
-00:09:02.317 --> 00:09:03.106
---Agent Performance.
+00:06:11.032 --> 00:06:20.344
+p-51
 
 66
-00:09:03.119 --> 00:09:49.110
-p-54
+00:06:20.344 --> 00:06:27.292
+p-52
 
 67
-00:09:49.122 --> 00:10:14.817
-p-55
+00:06:27.292 --> 00:06:28.588
+p-53
 
 68
-00:10:14.830 --> 00:10:15.883
---What We Learned.
+00:06:29.088 --> 00:06:30.204
+---- Agent Performance
 
 69
-00:10:15.896 --> 00:11:00.109
---For beginners: always check where your authorization data comes from. If the thing that writes it and the thing that reads it are looking at different columns, you have a very quiet, very serious bug. UI component libraries can have invisible side effects. Reka UI's Alert Dialog Action closes the dialog before your click handler runs. That's not documented in a way you'd notice until it bites you. And Docker bind-mounts override what's in the image. If your Dockerfile builds assets but a volume covers them, your build output is invisible.
+00:06:30.504 --> 00:06:40.224
+p-54
 
 70
-00:11:00.122 --> 00:11:31.333
---For the team: test on production after deploy. Not "check the deploy log." Actually click the button and watch the network tab. The boss is right. If you can do something, do it. Don't delegate to the human what the machine can handle. And when you find a bug in a shared component, think about blast radius. The Confirm Dialog bug was global. Every confirmation in the admin panel was broken.
+00:06:40.224 --> 00:06:51.612
+p-55
 
 71
-00:11:31.346 --> 00:11:50.583
-p-58
+00:06:52.112 --> 00:06:53.084
+---- What We Learned
 
 72
-00:11:50.596 --> 00:11:51.359
---The Score.
+00:06:53.384 --> 00:06:54.356
+p-56
 
 73
-00:11:51.885 --> 00:11:58.543
-p-59
+00:06:54.356 --> 00:07:11.144
+---- Always check where your authorization data comes from. If the thing that writes it and the thing that reads it are looking at different columns, you have a very quiet, very serious bug. UI component libraries can have invisible side effects — Reka UI's Alert Dialog Action closes the dialog before your click handler runs, and that's not documented in a way you'd notice until it bites you. And Docker bind-mounts override what's in the image. If your Dockerfile builds assets but a volume covers them, your build output is invisible.
 
 74
-00:11:58.556 --> 00:12:11.501
-p-60
+00:07:11.344 --> 00:07:12.268
+p-57
 
 75
-00:12:11.513 --> 00:12:15.226
-p-61
+00:07:12.268 --> 00:07:25.600
+---- Test on production after deploy. Not "check the deploy log" — actually click the button and watch the network tab. The boss is right: if you can do something, do it. Don't delegate to the human what the machine can handle. And when you find a bug in a shared component, think about blast radius. The Confirm Dialog bug was global. Every confirmation in the admin panel was broken.
 
 76
-00:12:15.238 --> 00:12:28.921
+00:07:25.900 --> 00:07:26.728
+---- Commits
+
+77
+00:07:26.928 --> 00:07:34.272
+p-58
+
+78
+00:07:34.772 --> 00:07:35.612
+---- The Score
+
+79
+00:07:35.912 --> 00:07:39.776
+p-59
+
+80
+00:07:39.776 --> 00:07:43.976
+p-60
+
+81
+00:07:43.976 --> 00:07:45.308
+p-61
+
+82
+00:07:46.308 --> 00:07:52.236
 p-62
