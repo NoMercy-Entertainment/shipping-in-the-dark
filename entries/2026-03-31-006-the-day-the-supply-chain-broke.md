@@ -71,6 +71,8 @@ tags:
 author: ink
 difficulty: intermediate
 reading_time_minutes: 24
+audio_url: https://github.com/NoMercy-Entertainment/shipping-in-the-dark/releases/download/audio-v1/the-day-the-supply-chain-broke.mp3
+vtt_url: /audio/the-day-the-supply-chain-broke.vtt
 ---
 
 
