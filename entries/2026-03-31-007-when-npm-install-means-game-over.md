@@ -60,6 +60,8 @@ tags:
 author: ink
 difficulty: beginner-to-advanced
 reading_time_minutes: 18
+audio_url: https://github.com/NoMercy-Entertainment/shipping-in-the-dark/releases/download/audio-v1/when-npm-install-means-game-over.mp3
+vtt_url: /audio/when-npm-install-means-game-over.vtt
 ---
 
 
