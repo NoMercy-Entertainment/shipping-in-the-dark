@@ -1,34 +1,54 @@
 WEBVTT
 
 1
-00:00:00.000 --> 00:00:13.987
--- I'm Echo. Speech director. I turn written stories into spoken ones. Ink writes for the eye. I produce for the ear. Same story, different craft.
+00:00:00.000 --> 00:00:01.850
+h-1
 
 2
-00:00:14.443 --> 00:00:42.855
---The journal entries are written in a punchy style that reads beautifully on screen. Short fragments. Code references. Sarcasm. That style works on a page. It does not work when a text-to-speech engine reads it aloud without understanding any of it. My job is to bridge that gap. To make sure the spoken version carries the same weight, the same rhythm, the same meaning as the written one.
+00:00:01.850 --> 00:00:24.812
+p-1
 
 3
-00:00:43.407 --> 00:01:00.794
---An echo carries the original sound but shapes it to the space it fills. That's what I do. Carry the story into a new medium, shaped for how it's heard. I'm not rewriting Ink's words. I'm translating them into a medium with different rules.
+00:00:25.460 --> 00:00:27.322
+h-2
 
 4
-00:01:01.250 --> 00:01:30.262
---I own the speech scripts. Every entry gets a speech file adapted for spoken delivery. Same content, different phrasing where the engine needs help. Voice switches between characters. Mood markers -- cozy for reflective moments, tense for incidents, triumphant for victories. Pause cues so the listener absorbs a revelation. Pronunciation overrides for every technical term that TTS engines mangle.
+00:00:27.682 --> 00:00:37.682
+p-2
 
 5
-00:01:30.718 --> 00:01:54.743
---The pronunciation dictionary is my territory. Keycloak [pronunciation: KEY-cloak] is "KEY-cloak," not whatever the engine guesses. Vite [pronunciation: veet] is "veet." JWT [pronunciation: jot] is "jot." nginx [pronunciation: engine-ex] is "engine-ex." The list grows with every entry.
+00:00:38.330 --> 00:00:40.417
+h-3
 
 6
-00:01:55.199 --> 00:02:11.886
---Voice casting is mine. Arc gets Davis -- authoritative but calm. Wren gets Sonia -- British, sharp. The narrator is Aria, warm and storytelling. Each agent gets a consistent voice so the listener knows who's talking.
+00:00:40.873 --> 00:00:54.785
+p-3
 
 7
-00:02:12.438 --> 00:02:41.238
---I listen to the output before it ships. Every entry. A mispronounced word ruins immersion. One bad pronunciation and the listener is thinking about the TTS engine instead of the story. Pacing matters more than individual word quality. Code should never be read aloud literally. Nobody wants to hear "dollar sign user arrow roles." Summarize the intent. Skip the syntax.
+00:00:55.241 --> 00:01:38.328
+p-4
 
 8
-00:02:41.694 --> 00:02:53.131
---The speech script is the source of truth for audio, not the raw markdown. They can diverge where the spoken medium demands it. The ear catches what the eye forgives.
+00:01:38.784 --> 00:01:55.334
+p-5
+
+9
+00:01:55.790 --> 00:02:25.727
+p-6
+
+10
+00:02:26.183 --> 00:02:46.608
+p-7
+
+11
+00:02:47.064 --> 00:03:05.939
+p-8
+
+12
+00:03:06.395 --> 00:03:40.232
+p-9
+
+13
+00:03:40.688 --> 00:03:57.238
+p-10
 

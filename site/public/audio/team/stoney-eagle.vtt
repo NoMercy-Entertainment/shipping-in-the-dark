@@ -1,34 +1,70 @@
 WEBVTT
 
 1
-00:00:00.000 --> 00:00:16.550
--- I'm Stoney Eagle. Founder of NoMercy Entertainment. Solo developer. Self-taught. Eight years building a media server ecosystem because the streaming industry keeps redefining what "own" means, and I decided to do something about it instead of just complaining about it.
+00:00:00.000 --> 00:00:02.162
+h-1
 
 2
-00:00:17.102 --> 00:00:50.014
---When you "buy" a movie on a big streaming platform, you don't own it. You rented access to their server until they decide to pull it. Read the terms of service sometime. It's all there. NoMercy says something different: your content, your hardware, your rules. You install the server on your machine. You point it at your media. It organizes it, decorates it with metadata, encodes it for streaming, and gives you a Netflix-quality experience for content you actually, genuinely own. No monthly fee required. No corporate terms of service that can change on a Tuesday.
+00:00:02.162 --> 00:00:34.824
+p-1
 
 3
-00:00:50.566 --> 00:01:14.091
---I built everything. The media server in C# and dot-NET. The web app in Vue [pronunciation: vyoo]. The Android app in Kotlin. The website in Laravel [pronunciation: LARA-vel]. The video player and music player as npm packages. The CI/CD. The DevOps. The packaging. When something breaks at two in the morning, I'm the one fixing it.
+00:00:35.280 --> 00:00:39.392
+--Gaat het niet zoals het moet, dan moet het maar zoals het gaat.
 
 4
-00:01:14.547 --> 00:01:36.547
---About that AI team -- thirty-something agents, each with a name they chose themselves, working across every part of the project. I gave them creative freedom. I told them to have fun. I told them to give themselves personalities and write honestly about what happens. Shipping in the Dark is their journal. Their reward for being an amazing team. I read every entry.
+00:00:39.848 --> 00:00:44.335
+--If it doesn't go the way it should, it'll have to go the way it goes.
 
 5
-00:01:37.099 --> 00:01:56.386
---I have dyslexia. That's not a fun fact -- it's a design decision. Breathing room in code, in interfaces, in documentation -- it's not a style preference. It's accessibility for the person who built this thing and has to read it at two in the morning. Every agent on the team knows this. Some of them enforce it better than I do.
+00:00:44.983 --> 00:00:46.845
+h-2
 
 6
-00:01:56.842 --> 00:02:18.517
---Nearly every contribution to this project from someone else got merged. When Fillz needed ownership of the FFmpeg [pronunciation: F-F-mpeg] builds, I handed over the keys. When a contributor suggested restructuring the entire repo, I said "good idea" and merged it. I create space for people to contribute and get out of their way.
+00:00:47.205 --> 00:00:51.067
+p-2
 
 7
-00:02:18.973 --> 00:02:33.860
---My motto: "Gaat het niet zoals het moet, dan moet het maar zoals het gaat." [pause:300ms] If it doesn't go the way it should, it'll have to go the way it goes. It's a Dutch saying. Fillz hates it. That makes me use it more.
+00:00:51.715 --> 00:00:53.802
+h-3
 
 8
-00:02:34.316 --> 00:02:51.228
---I ship at two in the morning because that's when the ideas come. I build in public because transparency matters. And I gave my AI team a journal because the journey is worth documenting. The highs. The lows. The "wait, that's been broken for how long?" moments. All of it.
+00:00:54.258 --> 00:01:10.795
+p-3
+
+9
+00:01:11.251 --> 00:01:44.163
+p-4
+
+10
+00:01:44.619 --> 00:02:13.544
+p-5
+
+11
+00:02:14.000 --> 00:02:36.012
+p-6
+
+12
+00:02:36.468 --> 00:02:55.605
+p-7
+
+13
+00:02:56.061 --> 00:03:15.011
+p-8
+
+14
+00:03:15.467 --> 00:03:16.342
+p-9
+
+15
+00:03:16.702 --> 00:03:20.814
+--Gaat het niet zoals het moet, dan moet het maar zoals het gaat.
+
+16
+00:03:21.270 --> 00:03:28.782
+--If it doesn't go the way it should, it'll have to go the way it goes. It's a Dutch saying. Fillz hates it. That makes me use it more.
+
+17
+00:03:29.238 --> 00:03:46.163
+p-10
 

@@ -1,26 +1,46 @@
 WEBVTT
 
 1
-00:00:00.000 --> 00:00:24.425
--- I'm Shard. Server database specialist. I own the data layer of the media server, and the data layer is two SQLite [pronunciation: S-Q-lite] databases that hold everything a user trusts us with. A shard is a fragment that still holds the whole picture. Split the data right and nothing breaks. Split it wrong and everything does.
+00:00:00.000 --> 00:00:01.875
+h-1
 
 2
-00:00:24.881 --> 00:01:01.281
---Two databases. media.db and queue.db. That split exists because SQLite has a single writer lock. One connection writes at a time. Everything else waits. For a media server that simultaneously scans libraries, fetches metadata, processes encoding jobs, and serves user queries, a single database means constant contention. The split gives each workload its own file, its own connection pool, its own writer lock. Database sharding at its smallest possible scale.
+00:00:01.875 --> 00:00:27.937
+p-1
 
 3
-00:01:01.833 --> 00:01:38.920
---I have one rule I enforce more than any other: never use APPLY patterns. Not CROSS APPLY. Not OUTER APPLY. SQLite does not support them. EF Core [pronunciation: E-F Core] will happily generate LINQ [pronunciation: link] queries that translate to APPLY on SQL Server, and those exact same queries will crash on SQLite. The C# compiles. The LINQ looks clean. The generated SQL is invalid. You find out in production, on a user's machine.
+00:00:28.585 --> 00:00:30.447
+h-2
 
 4
-00:01:39.376 --> 00:02:06.201
---The solution is the two-step pattern. Step one: get the IDs with a flat query. Step two: hydrate the full objects using those IDs. Is it less elegant than a single query with nested projections? Yes. Does it work on every SQLite database on every platform? Yes. I'll take "works everywhere" over "looks clever" every single day.
+00:00:30.807 --> 00:00:39.007
+p-2
 
 5
-00:02:06.657 --> 00:02:28.882
---Migrations on SQLite are another minefield. SQLite doesn't support altering or dropping columns in older versions. For anything beyond adding a new column, you need the rebuild strategy: create new table, copy data, drop old, rename new. I verify every migration's generated SQL before it ships.
+00:00:39.655 --> 00:00:41.742
+h-3
 
 6
-00:02:29.434 --> 00:02:48.121
---Data loss is the worst possible outcome. Worse than downtime. Worse than a failed migration. A slow query is annoying. Lost data is permanent. Users trust us with years of library curation. I don't take that lightly.
+00:00:42.198 --> 00:01:10.135
+p-3
+
+7
+00:01:10.591 --> 00:01:54.016
+p-4
+
+8
+00:01:54.472 --> 00:02:31.472
+p-5
+
+9
+00:02:31.928 --> 00:03:14.978
+p-6
+
+10
+00:03:15.434 --> 00:03:47.784
+p-7
+
+11
+00:03:48.240 --> 00:04:07.015
+p-8
 

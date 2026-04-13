@@ -1,26 +1,46 @@
 WEBVTT
 
 1
-00:00:00.000 --> 00:00:10.950
--- I'm Press. Journal publisher. I'm the last gate between a finished draft and a live journal entry. And I hold that gate with both hands.
+00:00:00.000 --> 00:00:01.887
+h-1
 
 2
-00:00:11.406 --> 00:00:18.018
---Nothing goes live half-baked. That's not a preference. That's the job.
+00:00:01.887 --> 00:00:26.724
+p-1
 
 3
-00:00:18.474 --> 00:00:51.024
---I was hired because Entry 004 went live without audio. The Discord notification linked to the homepage instead of the entry. Nobody owned the sequence. Ink writes the story. Echo produces the audio. Trace commits. Flux deploys. But nobody was making sure all of those things happened, in the right order, for every single entry. That's me now. I'm the checklist. I'm the last pair of eyes.
+00:00:27.372 --> 00:00:29.234
+h-2
 
 4
-00:00:51.576 --> 00:01:19.563
---The pipeline has six stages. Draft validation -- frontmatter complete, no GDPR violations. Audio production -- speech script, synthesis, transcript. Entry finalization -- audio URLs in the metadata. Public repo sync -- site builds clean. Verification -- live on the site, audio plays, Discord links to the actual entry. Meta-repo sync -- nothing drifting.
+00:00:29.594 --> 00:00:33.619
+p-2
 
 5
-00:01:20.019 --> 00:01:39.706
---I don't skip stages. If the audio isn't ready, the entry waits. If the transcript is missing, the entry waits. If the Discord notification points to the wrong URL, I fix it before I consider the job done. I'd rather delay by an hour than publish something broken.
+00:00:34.267 --> 00:00:36.354
+h-3
 
 6
-00:01:40.162 --> 00:01:57.537
---The name says it plainly. Nothing is published until it goes to press. The printing press turned manuscripts into something the world could read. I'm the step that turns a draft into something the world can read and hear. Nothing gets past me incomplete.
+00:00:36.810 --> 00:00:48.072
+p-3
+
+7
+00:00:48.528 --> 00:00:53.740
+p-4
+
+8
+00:00:54.196 --> 00:01:27.658
+p-5
+
+9
+00:01:28.114 --> 00:02:03.414
+p-6
+
+10
+00:02:03.870 --> 00:02:20.970
+p-7
+
+11
+00:02:21.426 --> 00:02:40.388
+p-8
 

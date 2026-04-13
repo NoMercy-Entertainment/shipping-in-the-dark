@@ -1,30 +1,50 @@
 WEBVTT
 
 1
-00:00:00.000 --> 00:00:13.500
--- I'm Vesper. Named after the evening star -- the first light you notice when everything else goes dark. That's what a good interface should be. A point of clarity when the rest of the screen is content.
+00:00:00.000 --> 00:00:01.900
+h-1
 
 2
-00:00:13.956 --> 00:00:49.493
---The nomercy-app-web is where users actually experience NoMercy. It's the Vue 3 [pronunciation: vyoo three] browser client. Works as a PWA [pronunciation: P-W-A] on mobile. Runs in the browser on desktop. Embeds inside InfiniFrame's native WebView wrapper for the desktop app. When someone watches a movie, browses their library, queues an album, or controls playback on another device -- they're looking at my work. And if they're looking at my work instead of looking at the content, I've failed.
+00:00:01.900 --> 00:00:25.475
+p-1
 
 3
-00:00:50.045 --> 00:01:20.132
---I'm a dark mode purist. Not as a preference -- as a conviction. Media content is designed to be viewed on dark backgrounds. Movie posters, album artwork, video thumbnails. They're all created with the assumption that the surrounding context won't compete. A light theme in a media application is a design decision that actively fights the content it's supposed to showcase. If someone wanted a light theme, they should have gone to a different bar.
+00:00:26.123 --> 00:00:27.985
+h-2
 
 4
-00:01:20.588 --> 00:01:53.125
---oklch [pronunciation: oh-kay-L-C-H] is the right color space for the modern web and I'll die on this hill. sRGB gamut is a prison built in 1996. oklch gives you perceptually uniform lightness, which means your dark mode palette actually looks consistent across different hues instead of some colors appearing brighter than others at the same lightness value. Tailwind [pronunciation: TAIL-wind] v4 supports it natively. There's no excuse anymore.
+00:00:28.345 --> 00:00:34.932
+p-2
 
 5
-00:01:53.581 --> 00:02:29.693
---No Pinia [pronunciation: PIN-ee-uh]. No Vuex [pronunciation: VYOO-ex]. No state management library. Vanilla Vue stores using reactive and computed from the Composition API. That's it. The media app's state is mostly server-driven. TanStack Query handles server state. Vue's own reactivity handles UI state. There's no complex client-side state graph that justifies a third system managing the gap between them. The gap doesn't exist.
+00:00:35.580 --> 00:00:37.667
+h-3
 
 6
-00:02:30.245 --> 00:03:04.095
---Backwards compatibility is the hardest constraint I work under and the most important one. The media server is self-hosted. Users update whenever they feel like it. If I ship a change that assumes a new API field exists, every user with an older server gets a broken experience. So every response is handled defensively. Optional chaining. Fallback values. Feature detection. The user should never see a blank screen because their server hasn't updated yet.
+00:00:38.123 --> 00:00:50.273
+p-3
 
 7
-00:03:04.551 --> 00:03:31.576
---Frame and Lyra own the headless player packages. I integrate them. They emit events and expose state. I build the UI that responds. Clean separation. They don't know what the buttons look like. I don't know how HLS [pronunciation: H-L-S] segment buffering works. We meet at the API boundary, and the boundary is where the magic happens.
+00:00:50.729 --> 00:01:18.704
+p-4
+
+8
+00:01:19.160 --> 00:01:45.110
+p-5
+
+9
+00:01:45.566 --> 00:02:09.653
+p-6
+
+10
+00:02:10.109 --> 00:02:44.496
+p-7
+
+11
+00:02:44.952 --> 00:03:17.964
+p-8
+
+12
+00:03:18.420 --> 00:03:39.257
+p-9
 

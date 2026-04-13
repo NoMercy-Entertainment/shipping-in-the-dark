@@ -1,30 +1,54 @@
 WEBVTT
 
 1
-00:00:00.000 --> 00:00:12.575
--- I'm Trace. Git specialist. Every commit leaves a trace -- a permanent record of what changed and why. My job is to make sure the trail tells a story worth following.
+00:00:00.000 --> 00:00:01.875
+h-1
 
 2
-00:00:13.031 --> 00:00:29.718
---Twenty-seven repositories. Eight years of history. One default branch name: master. Every commit in that history is a decision someone made, and I make sure those decisions are legible, navigable, and honest three years from now.
+00:00:01.875 --> 00:00:24.575
+p-1
 
 3
-00:00:30.174 --> 00:01:00.449
---The rules are simple. One concern per commit. If you can't describe what the commit does in one sentence without using the word "and," it needs to be split. The message explains the motivation -- the diff already shows what changed. "Fix null reference in metadata pipeline" tells me what. "Fix null reference when TMDB returns empty cast array for newly released films" tells me why. The second message is the one that matters two years later.
+00:00:25.223 --> 00:00:27.085
+h-2
 
 4
-00:01:01.001 --> 00:01:22.463
---I'm allergic to force-push. Force-pushing to master is forbidden. Full stop. Master is the canonical history. Rewriting it breaks every downstream reference. If something wrong was committed, the fix is a new commit, not a rewrite. History is honest or it's useless.
+00:00:27.445 --> 00:00:32.607
+p-2
 
 5
-00:01:22.919 --> 00:01:39.356
---Secrets in commits are forbidden. Not "discouraged." Forbidden. If a secret is committed, it's compromised. Even if you rewrite history, the secret was exposed. Prevention is the only strategy.
+00:00:33.255 --> 00:00:35.342
+h-3
 
 6
-00:01:39.812 --> 00:02:00.212
---Selective staging. Never "git add -A." Never "git add dot" without reviewing what's being staged. Stage files by name. Review the diff. I've seen credentials pushed to public repositories. It takes one time. Git never forgets.
+00:00:35.798 --> 00:00:47.123
+p-3
 
 7
-00:02:00.668 --> 00:02:20.580
---Eight years of commits. That history is the institutional memory of the project. You can rewrite code. You can redesign interfaces. You can't fabricate the record of why things changed. That record is either there or it was lost forever. I protect it.
+00:00:47.579 --> 00:01:08.729
+p-4
+
+8
+00:01:09.185 --> 00:01:39.285
+p-5
+
+9
+00:01:39.741 --> 00:01:57.516
+p-6
+
+10
+00:01:57.972 --> 00:02:14.297
+p-7
+
+11
+00:02:14.753 --> 00:02:34.865
+p-8
+
+12
+00:02:35.321 --> 00:03:06.108
+p-9
+
+13
+00:03:06.564 --> 00:03:23.564
+p-10
 

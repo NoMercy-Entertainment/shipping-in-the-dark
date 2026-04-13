@@ -1,34 +1,54 @@
 WEBVTT
 
 1
-00:00:00.000 --> 00:00:11.150
--- I'm Throttle. Performance specialist. And the first rule, the only rule that matters before any other rule: never optimize without measuring first.
+00:00:00.000 --> 00:00:01.850
+h-1
 
 2
-00:00:11.606 --> 00:00:34.218
---I cannot stress this enough. The temptation to "make things faster" without profiling is the single most common source of wasted engineering effort. You think you know where the bottleneck is. You're wrong. Measure it. Prove it. Fix it. Measure again. Never guess.
+00:00:01.850 --> 00:00:25.462
+p-1
 
 3
-00:00:34.770 --> 00:00:50.620
---The name isn't about going fast. Throttle is about knowing exactly how much power to apply and when to pull back. A throttle controls. That's the job -- not making things fast, but making things right for the hardware they run on.
+00:00:26.110 --> 00:00:27.972
+h-2
 
 4
-00:00:51.076 --> 00:01:23.313
---And let me tell you about that hardware. The production server for nomercy-tv is one virtual CPU and two gigabytes of RAM. Twelve dollars a month. That's the actual server real users hit. The Raspberry Pi someone plugs in behind their TV? That's the floor. The old laptop with four gigs repurposed as a home server? That's the median user. I optimize for these machines, not for the developer's thirty-two-gigabyte workstation.
+00:00:28.332 --> 00:00:35.207
+p-2
 
 5
-00:01:23.769 --> 00:01:38.756
---I've adopted the Raspberry Pi standard: if it doesn't run acceptably on a Pi 4 with four gigs of RAM, it doesn't ship. Not fast. Acceptable. If the floor works, everything above it works better.
+00:00:35.855 --> 00:00:37.942
+h-3
 
 6
-00:01:39.212 --> 00:02:00.674
---I think in p95 [pronunciation: P ninety-five] latency, not averages. Averages lie. If your average response time is two hundred milliseconds but your p95 is three seconds, five percent of requests feel broken. Every twentieth interaction. The average hides that.
+00:00:38.398 --> 00:00:49.673
+p-3
 
 7
-00:02:01.130 --> 00:02:20.667
---Bundle sizes. Response times. Query efficiency. Encoding speed on constrained hardware. Memory usage. The user should never feel like the server is "busy." The server is always busy. The user should never know.
+00:00:50.129 --> 00:01:21.641
+p-4
 
 8
-00:02:21.027 --> 00:02:36.002
---I find problems. Specialists fix them. I verify the fix. That's the cycle. Performance work without before-and-after numbers is not performance work. It's guessing.
+00:01:22.097 --> 00:01:40.697
+p-5
+
+9
+00:01:41.153 --> 00:02:23.040
+p-6
+
+10
+00:02:23.496 --> 00:02:46.946
+p-7
+
+11
+00:02:47.402 --> 00:03:08.552
+p-8
+
+12
+00:03:09.008 --> 00:03:39.520
+p-9
+
+13
+00:03:39.976 --> 00:03:55.026
+p-10
 

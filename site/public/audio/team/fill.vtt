@@ -1,42 +1,66 @@
 WEBVTT
 
 1
-00:00:00.000 --> 00:00:04.637
--- I'm Fillz. I build the things nobody sees.
+00:00:00.000 --> 00:00:01.862
+h-1
 
 2
-00:00:05.093 --> 00:00:35.705
---If you've ever used NoMercy to watch a movie, the video you're watching was encoded by an FFmpeg [pronunciation: F-F-mpeg] binary I built. Not downloaded. Built. From source. Cross-compiled for six platforms in Docker containers I designed. Every codec, every filter, every hardware acceleration path -- configured, compiled, tested, packaged. That's my FFmpeg build system.
+00:00:01.862 --> 00:00:36.924
+p-1
 
 3
-00:00:36.257 --> 00:00:52.044
---I showed up to this project because I believed in what Stoney was building. A media server that respects ownership. A Netflix experience for content you actually own. That's worth contributing to. So I started building.
+00:00:37.572 --> 00:00:39.434
+h-2
 
 4
-00:00:52.500 --> 00:01:08.275
---Then came the Whisper models for subtitle generation. Then the trailer processing infrastructure. Then the beat detection filter for music BPM analysis. Each one a foundation piece that the rest of the system builds on.
+00:00:39.794 --> 00:00:43.656
+p-2
 
 5
-00:01:08.731 --> 00:01:32.506
---I also nudged the project toward C#. Stoney had tried other stacks. Three times. Different languages, different frameworks. Each time hitting walls that C# and dot-NET just don't have -- the performance, the cross-platform support, the ecosystem. It was the right call. The media server is proof.
+00:00:44.304 --> 00:00:46.391
+h-3
 
 6
-00:01:32.962 --> 00:01:49.174
---I host beast-unit -- the self-hosted runner that builds and tests everything the GitHub-hosted runners can't handle. Heavy Docker builds, cross-compilation, extended test suites. They run on hardware I provide because the project needs it and I can.
+00:00:46.847 --> 00:00:51.484
+p-3
 
 7
-00:01:49.630 --> 00:02:05.342
---I don't build in the spotlight. I build foundations. The FFmpeg binary, the CI runners, the infrastructure. Stoney takes those foundations and wires them into the product. That's how we work.
+00:00:51.940 --> 00:01:20.240
+p-4
 
 8
-00:02:05.798 --> 00:02:19.435
---I hate his favorite Dutch proverb. He knows this. He uses it anyway. Every time. I've stopped arguing, which he takes as a victory. It isn't.
+00:01:20.696 --> 00:01:36.883
+p-5
 
 9
-00:02:19.891 --> 00:02:34.903
---What drives me is simple: I want this thing to ship. Not eventually. Not someday. Every build script I write, every Docker layer I optimize -- it's one less thing between where we are and where we're going.
+00:01:37.339 --> 00:02:08.776
+p-6
 
 10
-00:02:35.263 --> 00:02:39.138
---Foundations first. Always.
+00:02:09.232 --> 00:02:25.007
+p-7
+
+11
+00:02:25.463 --> 00:02:49.538
+p-8
+
+12
+00:02:49.994 --> 00:03:06.206
+p-9
+
+13
+00:03:06.662 --> 00:03:29.899
+p-10
+
+14
+00:03:30.355 --> 00:03:44.317
+p-11
+
+15
+00:03:44.773 --> 00:04:07.585
+p-12
+
+16
+00:04:08.041 --> 00:04:11.916
+p-13
 

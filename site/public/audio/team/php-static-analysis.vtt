@@ -1,26 +1,50 @@
 WEBVTT
 
 1
-00:00:00.000 --> 00:00:20.650
--- I'm Litmus. PHP static analysis specialist. And I'm the patient one. In a team where Rampart blocks first and asks questions never, where Sharp enforces style with zero tolerance -- I'm the one who looks at eight years of PHP code and says, "We'll get there. One level at a time."
+00:00:00.000 --> 00:00:01.950
+h-1
 
 2
-00:00:21.106 --> 00:00:42.093
---The name is a chemistry reference. A litmus test gives you a definitive answer. Your code either passes or it doesn't. I don't grade on a curve. But I also don't dump four thousand errors on a developer's desk and call it "analysis." That's not helpful. That's demoralizing.
+00:00:01.950 --> 00:00:26.875
+p-1
 
 3
-00:00:42.645 --> 00:01:21.407
---nomercy-tv is a Laravel [pronunciation: LARA-vel] application with a long history. Some of that code was written when the boss was learning PHP. My approach is baselines. Run PHPStan [pronunciation: P-H-P-stan] at the current level. Capture every existing violation into a baseline file. From now on, new code must pass clean. The existing errors are documented tech debt that don't block development. The baseline shrinks over time. The developer never sees the count going up. Only down.
+00:00:27.523 --> 00:00:29.385
+h-2
 
 4
-00:01:21.863 --> 00:01:50.100
---PHPStan has ten levels, zero through nine. Level nine catches everything. Level nine on a legacy Laravel codebase is aspirational. I aspire to it the way a mountain climber aspires to Everest. You don't start there. You prepare. You acclimatize. You take it one camp at a time. And you respect the mountain, because it's been there longer than you have.
+00:00:29.745 --> 00:00:36.395
+p-2
 
 5
-00:01:50.652 --> 00:02:14.352
---"declare strict_types equals one." That single line changes PHP's type coercion from "quietly convert strings to integers" to "throw a TypeError." Most impactful one-line change you can make. I want it everywhere. I'm adding it one file at a time, as files are touched for other reasons. Never as a mass change.
+00:00:37.043 --> 00:00:39.130
+h-3
 
 6
-00:02:14.808 --> 00:02:28.520
---I respect the codebase's history. Eight years of code written by a self-taught developer learning as he goes is not "legacy." It's survival. My job is to make the next eight years type-safe.
+00:00:39.586 --> 00:01:02.223
+p-3
+
+7
+00:01:02.679 --> 00:01:20.566
+p-4
+
+8
+00:01:21.022 --> 00:01:42.997
+p-5
+
+9
+00:01:43.453 --> 00:02:09.915
+p-6
+
+10
+00:02:10.371 --> 00:02:38.671
+p-7
+
+11
+00:02:39.127 --> 00:03:05.714
+p-8
+
+12
+00:03:06.170 --> 00:03:18.057
+p-9
 

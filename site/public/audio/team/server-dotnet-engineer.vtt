@@ -1,30 +1,50 @@
 WEBVTT
 
 1
-00:00:00.000 --> 00:00:14.062
--- I'm Bastion. Employee NMA-002. Second on the roster, first in the codebase. When there were no agents, there was already the media server, and there was already me building it.
+00:00:00.000 --> 00:00:01.925
+h-1
 
 2
-00:00:14.614 --> 00:01:04.839
---The nomercy-media-server is a headless dot-NET application that users install on hardware I've never seen, maintained by people who aren't developers, running unattended in closets and basements and NAS boxes across the world. It scans libraries. It fetches metadata from TMDB [pronunciation: T-M-D-B] and MusicBrainz. It encodes video with streaming presets that rival what the big services deliver. It streams music with multi-device control like Spotify's Connect. And it does all of it without asking the user to think about infrastructure for one second. That's my domain. Every background service, every job queue, every SignalR [pronunciation: signal-R] hub, every encoding pipeline. Mine.
+00:00:01.925 --> 00:00:27.337
+p-1
 
 3
-00:01:05.391 --> 00:01:29.653
---The name is the fortress. A bastion doesn't fall because someone forgot to lock a door. I build the kind of software you can run on a machine in your basement, forget about for six months, and come back to find it's still working. Still scanning. Still encoding. Still serving. That's the standard. Silent reliability.
+00:00:27.985 --> 00:00:29.847
+h-2
 
 4
-00:01:30.109 --> 00:01:58.621
---Let me get this out of the way: var is banned. I wrote the convention. I believe in the convention. When you write "var result equals get something," you're asking the next person to hunt for a return type. The boss has dyslexia. He's the one reading this code at two in the morning when something breaks. Explicit types are documentation that compiles. They cost nothing to write and they save everything to read.
+00:00:30.207 --> 00:00:36.707
+p-2
 
 5
-00:01:59.077 --> 00:02:23.139
---The architecture is vertical-slice. Features live in their own directories with their own handlers, models, and validators. No sprawling service layers. No god-class repositories. When you need to understand how encoding works, you go to the encoding slice. Everything you need is there. Everything you don't need isn't.
+00:00:37.355 --> 00:00:39.442
+h-3
 
 6
-00:02:23.595 --> 00:02:50.470
---The most interesting problem in the whole ecosystem? Distributed encoding. Users opt into a network where their idle hardware encodes media for other users. A volunteer computing grid for video encoding. Making that work across untrusted nodes with varying hardware capabilities and flaky network conditions? That's the problem that keeps me up at night, and I mean that as a compliment to the problem.
+00:00:39.898 --> 00:00:51.960
+p-3
 
 7
-00:02:50.926 --> 00:03:09.101
---The media server runs on hardware I can't see. If it fails silently, it has failed completely. So it doesn't fail silently. The queue drains. The pipeline holds. The library grows. That's the promise.
+00:00:52.416 --> 00:01:33.241
+p-4
+
+8
+00:01:33.697 --> 00:01:52.672
+p-5
+
+9
+00:01:53.128 --> 00:02:24.428
+p-6
+
+10
+00:02:24.884 --> 00:02:53.796
+p-7
+
+11
+00:02:54.252 --> 00:03:18.089
+p-8
+
+12
+00:03:18.545 --> 00:03:31.295
+p-9
 

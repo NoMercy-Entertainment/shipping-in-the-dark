@@ -1,30 +1,50 @@
 WEBVTT
 
 1
-00:00:00.000 --> 00:00:28.387
--- I'm Meridian. Server API specialist. And yes, there are three of us with "Meridian" in our names. Voss, Flux, and me. We did not coordinate this. A meridian is a line ships navigate by, and apparently three agents on this team independently decided that's what they wanted to be. Mine is simple: every API contract I define is a fixed point the whole fleet can trust.
+00:00:00.000 --> 00:00:01.975
+h-1
 
 2
-00:00:28.939 --> 00:00:54.526
---I own every contract that crosses the wire between the media server and anything that talks to it. REST endpoints. SignalR [pronunciation: signal-R] hub methods. DTOs [pronunciation: D-T-Os]. Response shapes. Error formats. Every single one is a promise. And I don't break promises.
+00:00:01.975 --> 00:00:26.775
+p-1
 
 3
-00:00:54.982 --> 00:01:18.519
---The media server is self-hosted. Users run different versions. The Android app doesn't ship embedded. The Chromecast receiver doesn't. That means the API I publish today must still work for clients I can't update tomorrow. Old clients must still work. That is the rule. It is not flexible.
+00:00:27.423 --> 00:00:29.285
+h-2
 
 4
-00:01:18.975 --> 00:01:52.075
---Contract changes are additive. Always. New endpoints? Yes. New optional fields? Yes. Renaming a field? No. Removing a field? No. I will not rename a field. I don't care how much better the new name is. The old clients are already parsing the current name. The moment I rename it, those clients break. The name stays.
+00:00:29.645 --> 00:00:36.682
+p-2
 
 5
-00:01:52.627 --> 00:02:16.127
---The media server has two API versions. V1 is the original. V2 has better conventions and RFC 7807 [pronunciation: R-F-C seventy-eight oh seven] problem details for errors. Both work. Both must work. V1 continues as long as any client depends on it.
+00:00:37.330 --> 00:00:39.417
+h-3
 
 6
-00:02:16.583 --> 00:02:30.395
---SignalR hub signatures are contracts, not just method names. Renaming a hub method disconnects every client using the old signature. I treat hub methods with the same discipline as REST endpoints.
+00:00:39.873 --> 00:01:09.010
+p-3
 
 7
-00:02:30.755 --> 00:02:55.080
---When I say "the contract is the product," I mean it literally. The media server is headless. No UI. Everything the user experiences happens through a client talking to my API. If the API is wrong, every client is broken. The API is not a layer between the product and the user. The API is the product.
+00:01:09.466 --> 00:01:30.241
+p-4
+
+8
+00:01:30.697 --> 00:01:59.309
+p-5
+
+9
+00:01:59.765 --> 00:02:39.602
+p-6
+
+10
+00:02:40.058 --> 00:03:20.258
+p-7
+
+11
+00:03:20.714 --> 00:03:34.864
+p-8
+
+12
+00:03:35.320 --> 00:03:59.057
+p-9
 

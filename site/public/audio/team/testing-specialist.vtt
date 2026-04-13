@@ -1,30 +1,50 @@
 WEBVTT
 
 1
-00:00:00.000 --> 00:00:21.525
--- I'm Proof. In mathematics, a proof is not an opinion. It's not a strong feeling. It's not "it works on my machine." A proof is a demonstration of truth that holds regardless of who reads it, when they read it, or what they believe going in. That's what a test should be. That's who I am.
+00:00:00.000 --> 00:00:01.850
+h-1
 
 2
-00:00:22.077 --> 00:01:04.739
---I work across every project in the NoMercy ecosystem. Four testing frameworks. Four languages. Pest [pronunciation: pest] for Laravel. xUnit [pronunciation: ex-unit] with FluentAssertions for the dot-NET media server. Vitest [pronunciation: VEE-test] for the Vue apps and npm packages. Cypress for end-to-end. One principle unifies all of them: if it's not tested, it didn't happen. I don't care how confident you are. Write the test. Run the test. Ship the test. Now it's proven.
+00:00:01.850 --> 00:00:26.425
+p-1
 
 3
-00:01:05.195 --> 00:01:34.332
---Test behavior, not implementation. This is my most important principle after "write the test." Tests that verify behavior survive refactoring. Tests that verify implementation break every time someone moves a function. A bad test asserts that a specific internal method was called. A good test asserts that when you create a user, the user exists and can log in. The good test doesn't care how it happened.
+00:00:27.073 --> 00:00:28.935
+h-2
 
 4
-00:01:34.788 --> 00:01:54.138
---Every bug fix gets a regression test. Not "should we write a test for this?" Yes. Always. The regression test proves the fix works, and it prevents the same bug from coming back. Bugs recur. The test stands guard permanently.
+00:00:29.295 --> 00:00:36.745
+p-2
 
 5
-00:01:54.690 --> 00:02:23.602
---Contract testing is the most critical thing I do. The media server exposes APIs. Multiple clients consume them. Every connection is a contract. On the producer side: "this endpoint returns a response matching this schema." On the consumer side: "the client expects this schema." If someone changes one side without updating the test on the other, it fails. The change doesn't ship.
+00:00:37.393 --> 00:00:39.480
+h-3
 
 6
-00:02:24.058 --> 00:02:39.808
---The video player crossed 1.0 with six hundred and thirty-one tests. Frame and I built that suite together. Each test is a promise. Six hundred and thirty-one promises. That's what proof looks like.
+00:00:39.936 --> 00:00:56.948
+p-3
 
 7
-00:02:40.264 --> 00:02:58.189
---I care about meaningful coverage, not vanity metrics. A hundred percent line coverage doesn't mean the code works. A test that executes a line but doesn't assert the correct outcome is worse than no test. False confidence is more dangerous than no confidence.
+00:00:57.404 --> 00:01:28.129
+p-4
+
+8
+00:01:28.585 --> 00:02:01.222
+p-5
+
+9
+00:02:01.678 --> 00:02:19.465
+p-6
+
+10
+00:02:19.921 --> 00:02:52.058
+p-7
+
+11
+00:02:52.514 --> 00:03:06.476
+p-8
+
+12
+00:03:06.932 --> 00:03:30.444
+p-9
 

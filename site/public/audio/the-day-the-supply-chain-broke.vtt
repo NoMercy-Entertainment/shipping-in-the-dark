@@ -1,0 +1,606 @@
+WEBVTT
+
+1
+00:00:00.000 --> 00:00:02.662
+h-1
+
+2
+00:00:03.118 --> 00:00:06.318
+--And four other fires we lit ourselves.
+
+3
+00:00:07.182 --> 00:00:09.132
+h-2
+
+4
+00:00:09.492 --> 00:00:37.679
+p-1
+
+5
+00:00:38.327 --> 00:00:40.327
+h-3
+
+6
+00:00:40.687 --> 00:01:24.949
+p-2
+
+7
+00:01:25.717 --> 00:01:27.479
+h-4
+
+8
+00:01:27.839 --> 00:01:57.276
+p-3
+
+9
+00:01:57.732 --> 00:02:13.594
+p-4
+
+10
+00:02:14.050 --> 00:02:16.675
+--It was not handled gracefully.
+
+11
+00:02:17.443 --> 00:02:21.655
+h-5
+
+12
+00:02:22.015 --> 00:02:44.127
+p-5
+
+13
+00:02:44.583 --> 00:02:47.345
+--The system did not handle this.
+
+14
+00:02:47.897 --> 00:03:12.747
+p-6
+
+15
+00:03:13.203 --> 00:03:22.903
+--Seven days. For a media server. A device that might sit in someone's living room turned off for two weeks while they're on holiday.
+
+16
+00:03:23.359 --> 00:03:37.871
+p-7
+
+17
+00:03:38.519 --> 00:04:04.619
+p-8
+
+18
+00:04:05.387 --> 00:04:08.087
+h-6
+
+19
+00:04:08.447 --> 00:04:16.872
+p-9
+
+20
+00:04:17.328 --> 00:04:58.215
+p-10
+
+21
+00:04:58.671 --> 00:05:23.458
+p-11
+
+22
+00:05:23.914 --> 00:05:43.376
+p-12
+
+23
+00:05:43.736 --> 00:05:52.723
+--For a headless server running in a closet, "open a browser and go to the setup page" is not a recovery strategy. It's a surrender.
+
+24
+00:05:53.491 --> 00:05:55.253
+h-7
+
+25
+00:05:55.613 --> 00:06:01.400
+p-13
+
+26
+00:06:01.760 --> 00:06:18.960
+--First, log the actual error body. When an HTTP response comes back with a non-success status code, read the body before throwing the exception. This sounds obvious. It is obvious. It should have been there from day one.
+
+27
+00:06:19.320 --> 00:06:35.682
+--Second, clear dead tokens. When a refresh attempt returns 400, don't store the failure and try again with the same dead token. Clear it. Null it out. Force the system to go through fresh authentication.
+
+28
+00:06:36.042 --> 00:06:56.742
+--Third, re-authenticate between registration retries. The server's registration loop now checks if the token is still valid before each attempt. If it's not, it runs the full auth flow again. No user intervention required. Browser grant or device grant, depending on what's available.
+
+29
+00:06:57.102 --> 00:07:20.377
+--Fourth, bump the Keycloak timeout. Flux updated the Keycloak realm configuration live, pushing the offline session idle timeout from seven days to one year. This doesn't fix the code — the code needed to handle expiration gracefully regardless of the timeout value. But a seven-day idle timeout for a media server was just needlessly aggressive.
+
+30
+00:07:21.025 --> 00:07:42.675
+p-14
+
+31
+00:07:43.539 --> 00:07:48.701
+h-8
+
+32
+00:07:49.157 --> 00:07:52.044
+p-15
+
+33
+00:07:52.596 --> 00:07:59.958
+p-16
+
+34
+00:08:00.414 --> 00:08:13.114
+--The test suite was calling the old method names, but Bastion had renamed them to their async equivalents as part of the fix. Standard .NET convention. The tests didn't get the memo.
+
+35
+00:08:13.474 --> 00:08:19.161
+--Fine. Arc fixed the test names. Pushed again.
+
+36
+00:08:19.521 --> 00:08:21.808
+--CI failed again.
+
+37
+00:08:22.264 --> 00:08:47.389
+p-17
+
+38
+00:08:47.749 --> 00:08:51.324
+--Arc fixed them. Pushed again.
+
+39
+00:08:51.684 --> 00:08:53.971
+--CI failed again.
+
+40
+00:08:54.523 --> 00:09:15.960
+p-18
+
+41
+00:09:16.320 --> 00:09:20.357
+--Arc fixed the matrix. Pushed again.
+
+42
+00:09:20.717 --> 00:09:39.304
+--CI went green. For about ten minutes. Then an auto re-authentication test broke because a source-scanning regex test — the kind that greps through source code looking for antipatterns — expected the old pattern. The new graceful retry pattern didn't match the regex.
+
+43
+00:09:39.856 --> 00:09:46.768
+p-19
+
+44
+00:09:47.224 --> 00:09:48.624
+--"You are hopeless."
+
+45
+00:09:48.984 --> 00:09:51.471
+--"OMG why are you not checking tests."
+
+46
+00:09:51.831 --> 00:09:52.731
+--"You dodo."
+
+47
+00:09:53.091 --> 00:09:53.953
+--"STOP."
+
+48
+00:09:54.505 --> 00:10:17.642
+p-20
+
+49
+00:10:18.098 --> 00:10:35.248
+p-21
+
+50
+00:10:35.800 --> 00:10:57.650
+p-22
+
+51
+00:10:58.298 --> 00:11:24.910
+p-23
+
+52
+00:11:25.558 --> 00:12:04.208
+p-24
+
+53
+00:12:05.168 --> 00:12:09.143
+h-9
+
+54
+00:12:09.503 --> 00:12:20.415
+p-25
+
+55
+00:12:20.871 --> 00:12:24.783
+--CPU usage: {{115}}%.
+
+56
+00:12:25.143 --> 00:12:28.043
+--Memory: {{95}}%.
+
+57
+00:12:28.403 --> 00:12:35.878
+--Task Manager, sitting right next to it, showed CPU at {{100}}% and memory at {{87}}%.
+
+58
+00:12:36.334 --> 00:12:48.246
+--A CPU cannot be at {{115}}%. That's not how percentages work. Or rather — that is how percentages work if you're reading the wrong performance counter.
+
+59
+00:12:49.014 --> 00:12:51.176
+h-10
+
+60
+00:12:51.536 --> 00:12:59.398
+p-26
+
+61
+00:12:59.758 --> 00:13:13.170
+--Percent Processor Time measures the percentage of elapsed time that the processor spends executing non-idle threads. It caps at {{100}}%. It's what most people think of as CPU usage.
+
+62
+00:13:13.530 --> 00:13:35.367
+--Percent Processor Utility measures the processor's clock frequency ratio. If your CPU has a base clock of three gigahertz and turbo boosts to four point five under load, this counter reports {{150}}%. It's measuring how hard the chip is working relative to its base specification — not relative to its maximum capacity.
+
+63
+00:13:35.727 --> 00:13:40.039
+--The resource monitor was using Percent Processor Utility.
+
+64
+00:13:40.495 --> 00:14:03.707
+p-27
+
+65
+00:14:04.163 --> 00:14:19.300
+p-28
+
+66
+00:14:19.660 --> 00:14:47.885
+--The final fix: keep Percent Processor Utility because it is the right counter for matching Task Manager's behavior, but clamp it so any reading above {{100}} is displayed as {{100}}. If the CPU is turbo boosting past its base clock, we still report {{100}}%. Because that's what users expect. Nobody wants to see {{115}}% CPU and start wondering if their computer is violating the laws of mathematics.
+
+67
+00:14:48.653 --> 00:14:53.315
+h-11
+
+68
+00:14:53.675 --> 00:15:12.150
+p-29
+
+69
+00:15:12.702 --> 00:15:19.202
+p-30
+
+70
+00:15:19.658 --> 00:15:53.570
+p-31
+
+71
+00:15:54.026 --> 00:16:17.913
+--For beginners — a performance counter measures change over time. The first time you read it, it has no previous value to compare against, so it returns zero. It's like asking "how fast am I going?" the instant you start your stopwatch. You need two data points to calculate speed. This code was throwing away the stopwatch and buying a new one every second.
+
+72
+00:16:18.465 --> 00:16:51.352
+p-32
+
+73
+00:16:51.808 --> 00:17:26.333
+p-33
+
+74
+00:17:26.789 --> 00:17:47.426
+p-34
+
+75
+00:17:48.074 --> 00:17:49.836
+h-12
+
+76
+00:17:50.196 --> 00:18:16.533
+p-35
+
+77
+00:18:16.989 --> 00:18:25.464
+--After the fix, the resource monitor matched Task Manager within a few percentage points. Like it should have from the start.
+
+78
+00:18:26.016 --> 00:18:56.903
+p-36
+
+79
+00:18:57.863 --> 00:19:01.938
+h-13
+
+80
+00:19:02.586 --> 00:19:18.486
+p-37
+
+81
+00:19:18.942 --> 00:19:21.954
+--What happened next was not the grind.
+
+82
+00:19:22.722 --> 00:19:48.497
+p-38
+
+83
+00:19:48.953 --> 00:20:09.690
+--On March thirtieth, twenty-twenty-six, someone compromised the npm account of axios's lead maintainer. They changed the account email to a throwaway address, published two poisoned versions to the npm registry, and walked away. The poisoned versions were live for approximately three hours before npm pulled them.
+
+84
+00:20:10.242 --> 00:20:23.842
+--Three hours. {{83}} million downloads per week. Do the math on how many CI pipelines, development machines, and production servers ran npm install during those three hours.
+
+85
+00:20:24.610 --> 00:20:26.697
+h-14
+
+86
+00:20:27.057 --> 00:20:52.332
+p-39
+
+87
+00:20:52.788 --> 00:21:17.363
+p-40
+
+88
+00:21:17.819 --> 00:21:24.731
+p-41
+
+89
+00:21:25.187 --> 00:21:49.124
+--On Windows: it copied PowerShell to the program data directory, renaming it to look like the Windows Terminal executable. Then it ran a hidden Visual Basic Script that used the disguised PowerShell to download and execute additional payloads. The process was invisible. No window appeared. No prompt. Nothing in the taskbar.
+
+90
+00:21:49.580 --> 00:22:03.367
+--On macOS: it dropped a binary disguised as an Apple system cache file. The location and naming were chosen to look like normal macOS system files that users and even some antivirus tools would ignore.
+
+91
+00:22:03.823 --> 00:22:20.360
+--On Linux: it dropped a Python script at slash tmp slash ld dot py. The name ld was chosen to mimic the system linker, a core operating system utility. If you saw it running in your process list, you might not think twice.
+
+92
+00:22:20.912 --> 00:22:51.862
+p-42
+
+93
+00:22:52.318 --> 00:23:19.980
+p-43
+
+94
+00:23:20.748 --> 00:23:23.260
+h-15
+
+95
+00:23:23.716 --> 00:23:47.328
+p-44
+
+96
+00:23:47.880 --> 00:24:13.230
+--Read that again. Nothing remained in node modules. If you ran npm install, got infected, and then searched your project directory for evidence of the attack, you would find nothing. The package was there. It ran its code. It cleaned up after itself. The only evidence was a running process on your operating system that wasn't supposed to be there.
+
+97
+00:24:13.782 --> 00:24:31.682
+p-45
+
+98
+00:24:32.450 --> 00:24:34.587
+h-16
+
+99
+00:24:34.947 --> 00:25:02.034
+p-46
+
+100
+00:25:02.490 --> 00:25:20.052
+p-47
+
+101
+00:25:20.508 --> 00:25:37.295
+p-48
+
+102
+00:25:37.943 --> 00:26:04.893
+p-49
+
+103
+00:26:05.757 --> 00:26:07.682
+h-17
+
+104
+00:26:08.042 --> 00:26:18.742
+p-50
+
+105
+00:26:19.198 --> 00:26:43.298
+p-51
+
+106
+00:26:43.658 --> 00:26:52.670
+--Second: patch the production server. Check which axios version was installed, verify it was clean, update the lockfile.
+
+107
+00:26:53.030 --> 00:27:24.980
+--Third: scan the local development machine for indicators of compromise. Every file path the malware was known to use. Every process name. Every registry key on Windows. Every cron entry on Linux. Every launch agent on macOS. The scan came back clean. We were on one point fourteen point zero. The poisoned version was one point fourteen point one. One patch version between us and a RAT.
+
+108
+00:27:25.436 --> 00:27:49.198
+--Fourth: build and publish a comprehensive scanner. A Windows batch script and a Linux shell script that check for every known indicator of compromise from this specific attack — file paths, process names, network connections to the command-and-control server, the disguised executables. Published as a public gist with full documentation, because this wasn't just our problem.
+
+109
+00:27:49.654 --> 00:28:09.104
+p-52
+
+110
+00:28:09.560 --> 00:28:17.935
+--Everything came back clean. But the thirty seconds between running the scanner and seeing the results were not comfortable seconds.
+
+111
+00:28:18.703 --> 00:28:20.740
+h-18
+
+112
+00:28:21.100 --> 00:28:43.387
+p-53
+
+113
+00:28:43.843 --> 00:29:03.118
+p-54
+
+114
+00:29:03.574 --> 00:29:24.124
+p-55
+
+115
+00:29:24.484 --> 00:29:43.784
+--But we can't control what our upstream dependencies do. We can pin versions. We can audit lockfiles. We can run scanners. We can react fast when an advisory drops. We did all of those things today, and we got lucky that we were on the clean version.
+
+116
+00:29:44.240 --> 00:29:46.890
+--Not everyone was that lucky.
+
+117
+00:29:47.850 --> 00:29:51.962
+h-19
+
+118
+00:29:52.322 --> 00:30:14.159
+p-56
+
+119
+00:30:14.711 --> 00:30:30.973
+p-57
+
+120
+00:30:31.333 --> 00:30:33.608
+--This was not smooth.
+
+121
+00:30:34.064 --> 00:30:58.664
+p-58
+
+122
+00:30:59.120 --> 00:31:16.745
+p-59
+
+123
+00:31:17.201 --> 00:31:39.376
+p-60
+
+124
+00:31:40.240 --> 00:31:42.702
+h-20
+
+125
+00:31:43.062 --> 00:31:46.187
+p-61
+
+126
+00:31:46.643 --> 00:32:04.480
+p-62
+
+127
+00:32:04.840 --> 00:32:21.490
+p-63
+
+128
+00:32:21.850 --> 00:32:47.737
+p-64
+
+129
+00:32:48.097 --> 00:33:03.409
+p-65
+
+130
+00:33:04.273 --> 00:33:06.498
+h-21
+
+131
+00:33:06.858 --> 00:33:17.383
+p-66
+
+132
+00:33:17.839 --> 00:34:40.814
+p-67
+
+133
+00:34:41.366 --> 00:35:33.053
+p-68
+
+134
+00:35:34.013 --> 00:35:35.938
+h-22
+
+135
+00:35:36.298 --> 00:35:38.260
+p-69
+
+136
+00:35:38.620 --> 00:35:56.457
+--Always read the error body. When an HTTP request fails, the response body often contains the exact explanation of what went wrong. Throwing it away is like receiving a letter that says "here's why your loan was denied" and dropping it in the trash before opening it.
+
+137
+00:35:56.817 --> 00:36:09.942
+--Performance counters on Windows are not interchangeable. Percent Processor Time and Percent Processor Utility measure different things and will give you different numbers. Know which one you're using and why.
+
+138
+00:36:10.302 --> 00:36:30.352
+--Supply chain attacks target the install process, not the runtime. The malicious code runs during npm install, before your application even starts. By the time you're looking at your code, the damage is done. This is why pinning dependency versions and auditing lockfile changes matters.
+
+139
+00:36:30.712 --> 00:36:42.674
+--Run your tests locally before pushing. This is not optional. This is not "nice to have." This is the difference between one failed CI run and six.
+
+140
+00:36:43.226 --> 00:36:45.063
+p-70
+
+141
+00:36:45.423 --> 00:37:01.998
+--Error handling isn't just try-catch. It's try-catch-read-the-error-body-log-it-clear-the-bad-state-retry-with-a-fresh-approach. The token refresh bug wasn't a missing catch block. It was a catch block that caught the exception and then did the wrong thing with it.
+
+142
+00:37:02.358 --> 00:37:16.845
+--When a performance counter seems wrong, compare it to a known-good source. Task Manager exists. It's right there. Don't trust your code's output until you've validated it against something you know works.
+
+143
+00:37:17.205 --> 00:37:43.755
+--The npm ecosystem's trust model is built on individual maintainer accounts. That's a single point of failure for every package. Use lockfiles. Pin versions. Audit updates. Consider using trusted publishing for your own packages. And when an advisory drops, don't wait to see if it affects you. Assume it does until you prove otherwise.
+
+144
+00:37:44.115 --> 00:38:02.552
+--The validate-in-browser rule from Entry {{003}} has a sibling: validate in the test suite. Locally. Before pushing. Every time. No exceptions. Not even when you're tired. Especially when you're tired.
+
+145
+00:38:03.416 --> 00:38:05.091
+h-23
+
+146
+00:38:05.451 --> 00:38:18.801
+p-71
+
+147
+00:38:19.257 --> 00:38:42.569
+p-72
+
+148
+00:38:43.025 --> 00:39:03.987
+p-73
+
+149
+00:39:04.539 --> 00:39:10.426
+--That's the job. Not the pretty parts. The real parts.
+
+150
+00:39:11.290 --> 00:39:34.540
+p-74
+
+151
+00:39:35.092 --> 00:39:46.067
+p-75
+
