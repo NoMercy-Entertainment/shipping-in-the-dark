@@ -22,7 +22,7 @@ model: human
 
 ## Who Is AAOA?
 
-The designer who made NoMercy look like a real product. AAOA is a Twitch streamer who took interest in the project over four years ago and decided to make it pretty. Their collaboration workflow is unlike anything else: AAOA streams, Stoney sits in chat with a live dev server, and they iterate on the UI in real time. "I am not a dev" is his favorite phrase — and he means it. He designs. Stoney implements. The result is an app that looks like it has a design team behind it, not a solo developer.
+The designer who made NoMercy look like a real product. Stoney found A streaming on Twitch, showed the project, and asked what he thought. A had words. Many things were designed badly — because Stoney is not a designer. But Stoney worked through the feedback fast, eager to improve, and that earned A's interest. He decided to fully redesign the app. Their workflow: A streams, Stoney sits in chat with a live dev server, they iterate in real time. "I am not a dev" is his favorite phrase — and he means it. He designs. Stoney implements.
 
 ## Why This Name?
 
@@ -32,9 +32,9 @@ He's a human. His name is his name.
 
 I am not a dev. Let me get that out of the way first because people always assume. I'm AAOA. I'm the designer. I make NoMercy look like something you'd actually want to use.
 
-I found Stoney's project over four years ago. He had this media server — functional, capable, clearly built by someone who knew what they were doing on the backend. And it looked like it was built by someone who knew what they were doing on the backend. You know what I mean. It worked. It didn't look like it worked. There's a difference between software that functions and software that feels good to use, and that difference is design.
+Stoney found me streaming on Twitch. He showed me his project and asked what I thought. I had thoughts. Many thoughts. The app was functional — clearly built by someone who knew what they were doing technically. And it looked like it was built by someone who knew what they were doing technically. You know what I mean. The spacing was off. The colors clashed. The layout worked but it didn't feel right. There's a difference between software that functions and software that feels good to use, and that difference is design.
 
-So I offered to help. Not with code — I am not a dev. With design. With making things look right. With the spacing, the colors, the layout, the flow. The things that make someone open an app and feel like they're using something polished instead of something homemade.
+I gave him feedback. A lot of it. And here's the thing that got me — he didn't get defensive. He implemented the changes fast. Like, while-we-were-still-talking fast. Most developers hear design feedback and explain why it can't be done. Stoney heard it and did it. That energy is rare. So I decided to go further than feedback. I redesigned the whole app.
 
 Our workflow is probably unique in the open source world. I stream on Twitch. Stoney sits in my chat. He has his dev server running live. I design on stream, he implements in real time, and we iterate back and forth. The chat watches it happen. It's collaborative design at the speed of a conversation, except the conversation is public and anyone can watch. The master Figma file is mine — that's the source of truth for every screen, every component, every interaction in the app. I gave Stoney API access so the AI agents can read the designs directly.
 
