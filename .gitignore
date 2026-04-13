@@ -1,5 +1,3 @@
 node_modules/
 dist/
 .astro/
-site/src/content/entries/
-site/src/content/agents/

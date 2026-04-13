@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://journal.nomercy.tv/sitemap-index.xml

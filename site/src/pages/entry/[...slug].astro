@@ -15,14 +15,19 @@ const { Content, headings } = await render(entry);
 
 const ogImage = new URL(`/og/${entry.data.slug}.png`, Astro.site).toString();
 
-const descriptionParts: string[] = [entry.data.title];
-if (entry.data.series) {
-	descriptionParts.push(`${entry.data.series.name}, Part ${entry.data.series.part}`);
+let description: string;
+if (entry.data.excerpt) {
+	description = entry.data.excerpt;
+} else {
+	const descriptionParts: string[] = [entry.data.title];
+	if (entry.data.series) {
+		descriptionParts.push(`${entry.data.series.name}, Part ${entry.data.series.part}`);
+	}
+	if (entry.data.type) {
+		descriptionParts.push(entry.data.type);
+	}
+	description = descriptionParts.join(' — ');
 }
-if (entry.data.type) {
-	descriptionParts.push(entry.data.type);
-}
-const description = descriptionParts.join(' — ');
 ---
 
 <EntryLayout

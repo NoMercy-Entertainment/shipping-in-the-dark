@@ -29,7 +29,7 @@ export async function getStaticPaths() {
 const { tag, entries, agentMap } = Astro.props;
 ---
 
-<BaseLayout title={`#${tag}`} ogImage={new URL('/og/default.png', Astro.site).toString()}>
+<BaseLayout title={`#${tag}`} ogImage={new URL('/og/default.png', Astro.site).toString()} noindex={true}>
 	<Header />
 
 	<main class="mx-auto max-w-4xl px-4 py-12 sm:px-6">

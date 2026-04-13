@@ -5,12 +5,25 @@ import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
 import EntryCard from '../../components/EntryCard.astro';
 
+function slugify(str: string): string {
+	return str
+		.toLowerCase()
+		.replace(/[^a-z0-9]+/g, '-')
+		.replace(/^-+|-+$/g, '');
+}
+
 export async function getStaticPaths() {
 	const entries = await getCollection('entries');
 	const seriesNames = [...new Set(entries.filter((e) => e.data.series).map((e) => e.data.series!.name))];
+
 	return seriesNames.map((name) => ({
-		params: { name: name.toLowerCase() },
-		props: { name, entries: entries.filter((e) => e.data.series?.name === name).sort((a, b) => (a.data.series?.part || 0) - (b.data.series?.part || 0)) },
+		params: { name: slugify(name) },
+		props: {
+			name,
+			entries: entries
+				.filter((e) => e.data.series?.name === name)
+				.sort((a, b) => (a.data.series?.part || 0) - (b.data.series?.part || 0)),
+		},
 	}));
 }
 

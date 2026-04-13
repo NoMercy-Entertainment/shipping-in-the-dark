@@ -5,6 +5,7 @@ import Footer from '../components/Footer.astro';
 import AgentTooltip from '../components/AgentTooltip.astro';
 import TableOfContents from '../components/TableOfContents.astro';
 import TagList from '../components/TagList.astro';
+import ShareButtons from '../components/ShareButtons.astro';
 import AudioPlayer from '../components/AudioPlayer.astro';
 import AudioSync from '../components/AudioSync.astro';
 
@@ -53,18 +54,26 @@ const jsonLd = {
 	'@type': 'BlogPosting',
 	headline: title,
 	datePublished: date.toISOString(),
-	author: {
-		'@type': 'Organization',
-		name: 'NoMercy Entertainment',
+	mainEntityOfPage: {
+		'@type': 'WebPage',
+		'@id': canonicalUrl,
 	},
+	author: author
+		? { '@type': 'Person', name: author }
+		: { '@type': 'Organization', name: 'NoMercy Entertainment' },
 	publisher: {
 		'@type': 'Organization',
 		name: 'NoMercy Entertainment',
 		url: 'https://nomercy.tv',
+		logo: {
+			'@type': 'ImageObject',
+			url: 'https://journal.nomercy.tv/favicon.svg',
+		},
 	},
 	url: canonicalUrl,
 	...(description ? { description } : {}),
 	...(ogImage ? { image: ogImage } : {}),
+	...(readingTime ? { wordCount: readingTime * 250 } : {}),
 };
 
 const formattedDate = date.toLocaleDateString('en-US', {
@@ -87,8 +96,11 @@ const difficultyLabels: Record<string, string> = {
 };
 ---
 
-<BaseLayout title={title} description={description} ogImage={ogImage}>
-	<script type="application/ld+json" set:html={JSON.stringify(jsonLd)} slot="head" />
+<BaseLayout title={title} description={description} ogImage={ogImage} ogType="article">
+	<script is:inline type="application/ld+json" set:html={JSON.stringify(jsonLd)} slot="head" />
+	<meta property="article:published_time" content={date.toISOString()} slot="head" />
+	<meta property="article:author" content={author || 'NoMercy Entertainment'} slot="head" />
+	{tags.map((tag) => <meta property="article:tag" content={tag} slot="head" />)}
 
 	<div id="reading-progress" class="fixed top-0 left-0 h-1 bg-accent-400 z-[100] transition-none" style="width: 0%"></div>
 
@@ -96,7 +108,7 @@ const difficultyLabels: Record<string, string> = {
 
 	<main class="mx-auto max-w-4xl px-4 py-12 sm:px-6">
 		<article>
-			<header class="prose mb-12">
+			<header class="prose mb-8">
 				{series && (
 					<a href={`/series/${series.name.toLowerCase()}`} class="mb-4 inline-flex items-center rounded-full bg-accent-400/10 px-3 py-1 text-sm font-medium text-accent-400 no-underline transition-colors hover:bg-accent-400/20 light:bg-accent-600/10 light:text-accent-700">
 						{series.name} · Part {series.part}
@@ -121,6 +133,10 @@ const difficultyLabels: Record<string, string> = {
 					)}
 					{author && <span>by {author}</span>}
 				</div>
+
+				<div class="mt-4">
+					<ShareButtons title={title} url={canonicalUrl} />
+				</div>
 			</header>
 
 			<TableOfContents headings={headings} />
@@ -130,6 +146,10 @@ const difficultyLabels: Record<string, string> = {
 			</div>
 
 			<TagList tags={tags} />
+
+			<div class="mt-6">
+				<ShareButtons title={title} url={canonicalUrl} prominent={true} />
+			</div>
 		</article>
 		<AgentTooltip />
 	</main>

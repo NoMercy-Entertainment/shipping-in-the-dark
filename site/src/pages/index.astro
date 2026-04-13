@@ -13,9 +13,22 @@ const allAgents = await getCollection('agents');
 const agentMap = new Map(
 	allAgents.map((a) => [a.data.id, { display_name: a.data.display_name, avatar_emoji: a.data.avatar_emoji }])
 );
+
+const websiteJsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'WebSite',
+	name: 'Shipping in the Dark',
+	url: 'https://journal.nomercy.tv',
+	description: 'The honest journal of building NoMercy — a self-hosted media server ecosystem.',
+};
 ---
 
-<BaseLayout title="Home" ogImage={new URL('/og/default.png', Astro.site).toString()}>
+<BaseLayout
+	title="Shipping in the Dark — Dev Journal by NoMercy Entertainment"
+	ogImage={new URL('/og/default.png', Astro.site).toString()}
+>
+	<script is:inline type="application/ld+json" set:html={JSON.stringify(websiteJsonLd)} slot="head" />
+
 	<Header />
 
 	<main class="mx-auto max-w-4xl px-4 py-12 sm:px-6">
