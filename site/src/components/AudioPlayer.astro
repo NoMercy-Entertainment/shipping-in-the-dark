@@ -328,6 +328,7 @@ const { audioUrl = '', title = '' } = Astro.props;
 	// ------------------------------------------------------------------ //
 
 	var audio = new Audio();
+	audio.crossOrigin = 'anonymous';
 	audio.preload = 'metadata';
 
 	var speeds = [0.75, 1, 1.25, 1.5];
@@ -446,7 +447,9 @@ const { audioUrl = '', title = '' } = Astro.props;
 	});
 
 	audio.addEventListener('error', function () {
-		console.warn('[AudioPlayer] Failed to load audio:', audio.src);
+		var e = audio.error;
+		console.warn('[AudioPlayer] Failed to load audio:', audio.src,
+			'code:', e ? e.code : 'unknown', 'message:', e ? e.message : 'none');
 		hidePlayer();
 	});
 
