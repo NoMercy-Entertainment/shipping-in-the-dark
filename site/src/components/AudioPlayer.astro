@@ -328,7 +328,6 @@ const { audioUrl = '', title = '' } = Astro.props;
 	// ------------------------------------------------------------------ //
 
 	var audio = new Audio();
-	audio.crossOrigin = 'anonymous';
 	audio.preload = 'metadata';
 
 	var speeds = [0.75, 1, 1.25, 1.5];
