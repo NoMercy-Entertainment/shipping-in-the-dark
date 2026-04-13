@@ -4,10 +4,13 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
 import AgentCard from '../../components/AgentCard.astro';
+import { getAgentSessionCounts } from '../../lib/agent-sessions';
 
 const agents = (await getCollection('agents'))
 	.filter((a) => !a.data.anonymous)
 	.sort((a, b) => a.data.display_name.localeCompare(b.data.display_name));
+
+const sessionCounts = await getAgentSessionCounts();
 ---
 
 <BaseLayout title="The Team" ogImage={new URL('/og/default.png', Astro.site).toString()}>
@@ -33,7 +36,7 @@ const agents = (await getCollection('agents'))
 					avatarEmoji={agent.data.avatar_emoji}
 					personality={agent.data.personality}
 					model={agent.data.model}
-					sessionsInvolved={agent.data.sessions_involved}
+					sessionsInvolved={sessionCounts[agent.data.id] ?? 0}
 					anonymous={agent.data.anonymous}
 				/>
 			))}

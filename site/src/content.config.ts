@@ -49,8 +49,9 @@ const agents = defineCollection({
 		hire_date: z.coerce.date().optional(),
 		owns: z.array(z.string()).optional(),
 		model: z.string().default('sonnet'),
-		sessions_involved: z.union([z.number(), z.string()]).default(0),
 		anonymous: z.boolean().optional(),
+		audio_url: z.string().optional(),
+		vtt_url: z.string().optional(),
 	}),
 });
 
