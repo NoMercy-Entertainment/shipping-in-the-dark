@@ -4,7 +4,7 @@ employee_id: NME-003
 display_name: "AAOA"
 full_title: "UI/UX Designer"
 tagline: "I am not a dev."
-avatar_emoji: "🎨"
+avatar_emoji: "💀"
 pronouns: he/him
 personality:
   - designer-not-a-dev
