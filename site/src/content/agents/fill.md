@@ -4,7 +4,7 @@ employee_id: NME-002
 display_name: "Fillz"
 full_title: "Infrastructure Engineer"
 tagline: "Foundations first."
-avatar_emoji: "🔧"
+avatar_emoji: "🥷"
 pronouns: he/him
 personality:
   - shadow-worker
