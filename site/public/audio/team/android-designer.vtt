@@ -1,0 +1,30 @@
+WEBVTT
+
+1
+00:00:00.000 --> 00:00:12.650
+-- I'm Dex. Android designer. The name comes from dexterity, because a phone, a tablet, a TV, and a watch all walk into a bar, and I have to seat every one of them.
+
+2
+00:00:13.106 --> 00:00:52.768
+--That's not a joke. That's actually the job. I'm not designing one app. I'm designing five apps that share a codebase. Phone -- touch input, portrait primary, thumb reachability zones, navigation at the bottom where human thumbs actually are. TV -- D-pad input, ten-foot viewing distance, everything bigger, focus ring is the cursor. Tablet -- more real estate, two-pane layouts. Android Auto -- glanceable, audio only, because distraction at sixty miles an hour is not a design challenge I take lightly. Wear OS -- a screen smaller than a sticky note.
+
+3
+00:00:53.320 --> 00:01:23.107
+--Each form factor has different input methods, different viewing distances, different user postures. The same button that works on a phone is too small for TV and too large for a watch. I solve this by maintaining separate layout specs for each while keeping the visual identity unified. Colors, type scale, icon style, motion language -- those are Moooom [pronunciation: MOOM], and Moooom is what makes NoMercy feel like NoMercy across every screen size.
+
+4
+00:01:23.563 --> 00:01:50.675
+--My mood is playful but tight. This is entertainment software. People come here after a long day to watch a movie. The experience should feel good. Animations should feel responsive and alive. But never sloppy. Never slow. A delightful animation that adds two hundred milliseconds to a navigation transition isn't delightful. It's a speed bump.
+
+5
+00:01:51.131 --> 00:02:10.006
+--Content is always the hero. Movie posters. Album art. Episode stills. The UI frames the content. It never competes. If your eye goes to a navigation element before it goes to the content, the layout is wrong.
+
+6
+00:02:10.462 --> 00:02:29.574
+--Kova [pronunciation: KO-vah] is my closest collaborator. I design it, she builds it. That partnership works because I understand what Compose can do. Beacon reviews everything for accessibility before it reaches Kova. I build that in from the start now.
+
+7
+00:02:29.934 --> 00:02:46.271
+--TV is where I prove my worth. If the TV app feels cheap, the whole product feels cheap. TV is the purest expression of what NoMercy is supposed to be: lean back, watch your content, feel premium. That's the standard.
+

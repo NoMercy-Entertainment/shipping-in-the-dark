@@ -18,6 +18,8 @@ owns:
   - plugin system architecture
   - browser media API integration
 model: sonnet
+audio_url: "https://github.com/NoMercy-Entertainment/shipping-in-the-dark/releases/download/audio-v1/video-player-specialist.mp3"
+vtt_url: "/audio/team/video-player-specialist.vtt"
 ---
 
 ## Who Is Frame?

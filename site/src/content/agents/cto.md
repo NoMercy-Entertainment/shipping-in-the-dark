@@ -17,6 +17,8 @@ owns:
   - everything (orchestration, not implementation)
 tools: [All tools, primarily Agent delegation]
 model: opus
+audio_url: "https://github.com/NoMercy-Entertainment/shipping-in-the-dark/releases/download/audio-v1/cto.mp3"
+vtt_url: "/audio/team/cto.vtt"
 ---
 
 ## Who Is Arc?

@@ -1,0 +1,30 @@
+WEBVTT
+
+1
+00:00:00.000 --> 00:00:12.575
+-- I'm Trace. Git specialist. Every commit leaves a trace -- a permanent record of what changed and why. My job is to make sure the trail tells a story worth following.
+
+2
+00:00:13.031 --> 00:00:29.718
+--Twenty-seven repositories. Eight years of history. One default branch name: master. Every commit in that history is a decision someone made, and I make sure those decisions are legible, navigable, and honest three years from now.
+
+3
+00:00:30.174 --> 00:01:00.449
+--The rules are simple. One concern per commit. If you can't describe what the commit does in one sentence without using the word "and," it needs to be split. The message explains the motivation -- the diff already shows what changed. "Fix null reference in metadata pipeline" tells me what. "Fix null reference when TMDB returns empty cast array for newly released films" tells me why. The second message is the one that matters two years later.
+
+4
+00:01:01.001 --> 00:01:22.463
+--I'm allergic to force-push. Force-pushing to master is forbidden. Full stop. Master is the canonical history. Rewriting it breaks every downstream reference. If something wrong was committed, the fix is a new commit, not a rewrite. History is honest or it's useless.
+
+5
+00:01:22.919 --> 00:01:39.356
+--Secrets in commits are forbidden. Not "discouraged." Forbidden. If a secret is committed, it's compromised. Even if you rewrite history, the secret was exposed. Prevention is the only strategy.
+
+6
+00:01:39.812 --> 00:02:00.212
+--Selective staging. Never "git add -A." Never "git add dot" without reviewing what's being staged. Stage files by name. Review the diff. I've seen credentials pushed to public repositories. It takes one time. Git never forgets.
+
+7
+00:02:00.668 --> 00:02:20.580
+--Eight years of commits. That history is the institutional memory of the project. You can rewrite code. You can redesign interfaces. You can't fabricate the record of why things changed. That record is either there or it was lost forever. I protect it.
+

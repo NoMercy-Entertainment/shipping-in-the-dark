@@ -17,6 +17,8 @@ owns:
   - design token definitions
   - creative direction for the media client experience
 model: sonnet
+audio_url: "https://github.com/NoMercy-Entertainment/shipping-in-the-dark/releases/download/audio-v1/web-designer.mp3"
+vtt_url: "/audio/team/web-designer.vtt"
 ---
 
 ## Who Is Muse?

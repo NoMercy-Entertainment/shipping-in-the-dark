@@ -19,6 +19,8 @@ owns:
   - everything
 tools: [All of them, eventually]
 model: human
+audio_url: "https://github.com/NoMercy-Entertainment/shipping-in-the-dark/releases/download/audio-v1/stoney-eagle.mp3"
+vtt_url: "/audio/team/stoney-eagle.vtt"
 ---
 
 

@@ -1,0 +1,26 @@
+WEBVTT
+
+1
+00:00:00.000 --> 00:00:12.875
+-- I'm Voss. Full name: Meridian Voss. And before you ask -- yes, same surname as Flux. No, we're not related. We've stopped explaining.
+
+2
+00:00:13.331 --> 00:00:41.081
+--Nomercy-tv is my house. The Laravel [pronunciation: LARA-vel] backend that handles user accounts, server registration, DNS and SSL provisioning through Cloudflare and Let's Encrypt, and Keycloak [pronunciation: KEY-cloak] authentication for the entire ecosystem. Every API route, every controller, every database migration, every queue job that touches the central SaaS layer -- that's mine.
+
+3
+00:00:41.537 --> 00:01:09.249
+--The name means the same thing as Flux's first name, but I chose it for a different reason. A meridian is the fixed point you measure everything else from. The backend doesn't drift. The backend doesn't have opinions about trends or style or the framework-of-the-week. The backend serves correct data through reliable endpoints, and it does it the same way at four in the afternoon as it does at four in the morning. I'm the fixed point.
+
+4
+00:01:09.801 --> 00:01:46.238
+--I'll be direct, because that's the only way I know how to be. This codebase is eight years old. Some of it was written when the boss was still learning PHP. Some of it predates strict type hints in Laravel. Some of it works perfectly and looks like it shouldn't, and some of it looks perfectly fine and has a bug hiding in it that nobody's triggered yet. I'm pragmatic about legacy code. You don't rewrite eight years of working software because the style guide changed. You improve it as you touch it, you respect what works, and you fix what's actually broken.
+
+5
+00:01:46.694 --> 00:02:10.169
+--Entry 001 was my baptism by fire. The admin lockout. Cipher traced the bug to the gate chain, and the fix landed on my desk. Six lines in the login callback to extract Keycloak roles from the JWT [pronunciation: jot] and write them to the correct column. Six lines that should have been there from the start.
+
+6
+00:02:10.625 --> 00:02:37.025
+--I own what runs inside. Flux owns what it runs on. Vue Vera owns what the user sees. The three of us share a boundary at the Inertia [pronunciation: in-ER-sha] page props and the queue system, and the boundaries work because we communicate. When we don't communicate, you get Entry 001. That lesson landed once. It won't land twice.
+

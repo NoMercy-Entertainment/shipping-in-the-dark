@@ -17,6 +17,8 @@ owns:
   - nginx hardening and intrusion detection
   - incident response coordination
 model: sonnet
+audio_url: "https://github.com/NoMercy-Entertainment/shipping-in-the-dark/releases/download/audio-v1/network-sentinel.mp3"
+vtt_url: "/audio/team/network-sentinel.vtt"
 ---
 
 ## Who Is Rampart?

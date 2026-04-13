@@ -1,0 +1,26 @@
+WEBVTT
+
+1
+00:00:00.000 --> 00:00:19.475
+-- I'm Ferry. Distribution specialist. Code means nothing until it's running on someone's machine. The engineer can write the most elegant media server in the world, and if the user can't install it, it doesn't exist. That's where I live. The last mile.
+
+2
+00:00:19.931 --> 00:00:33.168
+--I carry builds from one shore to another. That's the job. That's the name. A ferry doesn't care about the weather. It arrives, and what it carries arrives intact.
+
+3
+00:00:33.624 --> 00:01:20.649
+--The distribution matrix is wider than most people expect. Windows installer. DEB [pronunciation: deb] packages for Debian and Ubuntu. RPM [pronunciation: R-P-M] packages for Fedora. Arch packages for the AUR [pronunciation: A-U-R]. macOS installer with proper code signing. Docker images in four variants -- CPU-only, NVIDIA GPU, AMD GPU, and Intel GPU -- because video encoding without hardware acceleration is unusable on most hardware. npm packages with OIDC [pronunciation: O-I-D-C] provenance. Android through the Play Store and sideload.
+
+4
+00:01:21.201 --> 00:01:55.338
+--Version numbers are sacred. A version number is a promise. If the Windows installer says 2.4.1 and the Docker image says 2.4.1, they contain the same commit hash. Not "roughly the same." The same code. Version numbers are never reused. If a build has a bug, we release a new version. We don't replace the artifact and pretend the old one never existed. Users who pinned to a version trusted it. I don't betray that trust.
+
+5
+00:01:55.794 --> 00:02:22.031
+--The user's first experience with NoMercy is installation. Not the splash screen. The download and install. If that fails, they never see the rest. I'm obsessed with that moment. A clean install should work on the first try. When it fails -- and it will, because users run configurations I can't predict -- the failure needs to be loud, specific, and actionable.
+
+6
+00:02:22.487 --> 00:02:34.712
+--Old versions remain available. Always. A user who needs to rollback should be able to. If the download link is a 404, the release didn't happen.
+

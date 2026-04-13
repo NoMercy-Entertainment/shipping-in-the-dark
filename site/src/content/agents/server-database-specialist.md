@@ -17,6 +17,8 @@ owns:
   - two-database architecture decisions
   - query performance and indexing strategy
 model: sonnet
+audio_url: "https://github.com/NoMercy-Entertainment/shipping-in-the-dark/releases/download/audio-v1/server-database-specialist.mp3"
+vtt_url: "/audio/team/server-database-specialist.vtt"
 ---
 
 ## Who Is Shard?

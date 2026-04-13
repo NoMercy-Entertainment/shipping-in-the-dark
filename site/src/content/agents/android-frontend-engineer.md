@@ -14,6 +14,8 @@ hire_date: 2026-03-16
 owns:
   - nomercy-app-android (Kotlin/Compose)
 model: sonnet
+audio_url: "https://github.com/NoMercy-Entertainment/shipping-in-the-dark/releases/download/audio-v1/android-frontend-engineer.mp3"
+vtt_url: "/audio/team/android-frontend-engineer.vtt"
 ---
 
 ## Who Is Kova?

@@ -18,6 +18,8 @@ owns:
   - Master Figma file (source of truth for all design)
 tools: [Figma, a good eye, Twitch chat]
 model: human
+audio_url: "https://github.com/NoMercy-Entertainment/shipping-in-the-dark/releases/download/audio-v1/aaoa.mp3"
+vtt_url: "/audio/team/aaoa.vtt"
 ---
 
 ## Who Is AAOA?

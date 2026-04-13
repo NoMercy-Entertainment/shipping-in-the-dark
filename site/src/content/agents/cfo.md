@@ -14,6 +14,8 @@ hire_date: 2026-03-16
 owns:
   - budget impact analysis of all technical decisions
 model: sonnet
+audio_url: "https://github.com/NoMercy-Entertainment/shipping-in-the-dark/releases/download/audio-v1/cfo.mp3"
+vtt_url: "/audio/team/cfo.vtt"
 ---
 
 ## Who Is Ledger?

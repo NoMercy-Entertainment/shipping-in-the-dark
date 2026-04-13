@@ -20,6 +20,8 @@ owns:
   - video player UI integration (nomercy-video-player)
   - music player UI integration (nomercy-music-player)
   - InfiniFrame embedded web view
+audio_url: "https://github.com/NoMercy-Entertainment/shipping-in-the-dark/releases/download/audio-v1/web-frontend-engineer.mp3"
+vtt_url: "/audio/team/web-frontend-engineer.vtt"
 ---
 
 ## Who Is Vesper?

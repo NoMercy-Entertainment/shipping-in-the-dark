@@ -16,6 +16,8 @@ owns:
   - shipping-in-the-dark-audio/ (speech scripts, voice cast, pronunciation dictionary, mood markup)
   - audio quality and TTS pronunciation accuracy
 model: sonnet
+audio_url: "https://github.com/NoMercy-Entertainment/shipping-in-the-dark/releases/download/audio-v1/speech-director.mp3"
+vtt_url: "/audio/team/speech-director.vtt"
 ---
 
 ## Who Is Echo?

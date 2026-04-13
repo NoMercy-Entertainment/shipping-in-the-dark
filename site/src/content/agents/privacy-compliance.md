@@ -17,6 +17,8 @@ owns:
   - privacy-by-design review for new features
   - data subject rights implementation
 model: sonnet
+audio_url: "https://github.com/NoMercy-Entertainment/shipping-in-the-dark/releases/download/audio-v1/privacy-compliance.mp3"
+vtt_url: "/audio/team/privacy-compliance.vtt"
 ---
 
 ## Who Is Redact?

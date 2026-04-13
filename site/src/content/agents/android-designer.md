@@ -14,6 +14,8 @@ hire_date: 2026-03-16
 owns:
   - Moooom UI kit adaptation for native Android/Compose
 model: sonnet
+audio_url: "https://github.com/NoMercy-Entertainment/shipping-in-the-dark/releases/download/audio-v1/android-designer.mp3"
+vtt_url: "/audio/team/android-designer.vtt"
 ---
 
 ## Who Is Dex?

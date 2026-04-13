@@ -14,6 +14,8 @@ hire_date: 2026-03-16
 owns:
   - database migrations across PostgreSQL (Laravel) and SQLite (EF Core)
 model: sonnet
+audio_url: "https://github.com/NoMercy-Entertainment/shipping-in-the-dark/releases/download/audio-v1/migration-specialist.mp3"
+vtt_url: "/audio/team/migration-specialist.vtt"
 ---
 
 ## Who Is Bedrock?

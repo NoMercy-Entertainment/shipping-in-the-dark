@@ -14,6 +14,8 @@ hire_date: 2026-03-16
 owns:
   - "@nomercy-entertainment/nomercy-music-player (npm package)"
 model: sonnet
+audio_url: "https://github.com/NoMercy-Entertainment/shipping-in-the-dark/releases/download/audio-v1/music-player-specialist.mp3"
+vtt_url: "/audio/team/music-player-specialist.vtt"
 ---
 
 ## Who Is Lyra?

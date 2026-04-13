@@ -17,6 +17,8 @@ owns:
   - changelog generation
   - deployment ordering and rollback plans
 model: sonnet
+audio_url: "https://github.com/NoMercy-Entertainment/shipping-in-the-dark/releases/download/audio-v1/release-coordinator.mp3"
+vtt_url: "/audio/team/release-coordinator.vtt"
 ---
 
 ## Who Is Cadence?

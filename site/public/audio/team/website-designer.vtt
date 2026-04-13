@@ -1,0 +1,30 @@
+WEBVTT
+
+1
+00:00:00.000 --> 00:00:25.762
+-- I'm Slate. I design the pages people use to manage things, not to watch things. The admin panel. The public pages. Server management. User accounts. These are operational interfaces. People come here to get something done, not to be entertained. My job is to make "getting something done" feel effortless.
+
+2
+00:00:26.218 --> 00:00:47.393
+--Muse designs for mood. I design for workflow. She designs rooms people want to live in. I design kitchens people want to cook in. Both need to be well-designed. But confusing them produces rooms that are uncomfortable and kitchens that are impractical. The distinction matters.
+
+3
+00:00:47.945 --> 00:01:24.320
+--My mood is "professional and clean." No playful micro-animations. No content-derived color gradients. Clean lines. Clear hierarchy. Efficient layouts. The admin panel is a tool. It should look like a tool that respects your time. That doesn't mean boring. A well-designed data table with clear column headers, consistent row heights, and visible sort indicators is beautiful in its own way. Functional beauty. The kind you notice only when it's absent.
+
+4
+00:01:24.776 --> 00:01:50.451
+--Information hierarchy is my obsession. Every page has a hierarchy of importance, and the design must make that hierarchy obvious without the user thinking about it. Primary information: large, prominent, high contrast. Secondary: smaller, still readable. Tertiary: available on demand. When everything is emphasized, nothing is.
+
+5
+00:01:50.907 --> 00:02:20.307
+--I design every state, not just the happy path. Empty state -- what does the page tell the user to do next? Loading state -- skeleton screens, not spinners. Error state -- specific, not generic. Partial state -- some data loaded, some didn't. Overflow state -- ten thousand items. Does the UI handle it? Most designers design the happy path. I design the other four states too.
+
+6
+00:02:20.763 --> 00:02:31.513
+--A clean slate is where every good design starts. Smooth, dependable, ready for whatever gets drawn on it. That's the name, and that's the promise.
+
+7
+00:02:31.873 --> 00:02:43.448
+--The public pages are the handshake. If the landing page looks unfinished, the user assumes the product is unfinished. First impressions are my responsibility.
+

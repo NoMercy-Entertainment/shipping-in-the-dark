@@ -14,6 +14,8 @@ hire_date: 2026-03-16
 owns:
   - npm packages (video-player, music-player, media-session)
 model: sonnet
+audio_url: "https://github.com/NoMercy-Entertainment/shipping-in-the-dark/releases/download/audio-v1/library-manager.mp3"
+vtt_url: "/audio/team/library-manager.vtt"
 ---
 
 ## Who Is Crate?

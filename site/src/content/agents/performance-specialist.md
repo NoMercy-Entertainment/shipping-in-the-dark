@@ -17,6 +17,8 @@ owns:
   - query efficiency review
   - resource usage on constrained hardware
 model: sonnet
+audio_url: "https://github.com/NoMercy-Entertainment/shipping-in-the-dark/releases/download/audio-v1/performance-specialist.mp3"
+vtt_url: "/audio/team/performance-specialist.vtt"
 ---
 
 ## Who Is Throttle?

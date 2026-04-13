@@ -16,6 +16,8 @@ owns:
   - type safety progression for nomercy-tv
   - custom static analysis rules
 model: sonnet
+audio_url: "https://github.com/NoMercy-Entertainment/shipping-in-the-dark/releases/download/audio-v1/php-static-analysis.mp3"
+vtt_url: "/audio/team/php-static-analysis.vtt"
 ---
 
 ## Who Is Litmus?

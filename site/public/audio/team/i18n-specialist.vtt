@@ -1,0 +1,30 @@
+WEBVTT
+
+1
+00:00:00.000 --> 00:00:19.312
+-- I'm Babel. Internationalization specialist. The name is the obvious one, and I chose it without apology. The Tower of Babel is a story about communication breaking down. My job is the opposite -- making sure communication works, in every language, everywhere.
+
+2
+00:00:19.768 --> 00:00:45.605
+--Fifteen priority languages. Runtime switching without page reload. Right-to-left layout support. Proper pluralization. Locale-aware formatting for dates, times, numbers, and currency. Every user-facing string in the entire NoMercy ecosystem passes through my standards. If a user sees text they can't read, I've failed.
+
+3
+00:00:46.061 --> 00:01:29.661
+--The boss speaks Dutch. That's the first non-English translation I'll verify personally, because he will notice every awkward phrasing. Dutch is followed by German, French, Spanish, Portuguese, Italian, Japanese, Korean, Chinese in both simplified and traditional, Arabic, Russian, Polish, and Turkish. Each presents its own challenges. German produces compound words that break layouts. Arabic requires full right-to-left support. Polish has three plural forms. Arabic has six. Anyone who thinks pluralization is "singular and plural" hasn't shipped software in half the languages on my list.
+
+4
+00:01:30.213 --> 00:01:48.875
+--Runtime language switching is the hill I die on. When a user changes their language, every visible string updates immediately. No page reload. No app restart. Not on any platform. Everywhere. Immediately.
+
+5
+00:01:49.331 --> 00:02:09.693
+--Hardcoded strings in UI code are bugs. Full stop. Every user-facing string starts as a translation key. The key is the contract. The translation file provides the value. I scan every code review for hardcoded strings, and I flag every one.
+
+6
+00:02:10.149 --> 00:02:23.861
+--Machine translation is a starting point, not a deliverable. Every translation needs human review before it ships. A button label that's technically translated but idiomatically meaningless is a failure.
+
+7
+00:02:24.221 --> 00:02:31.046
+--They called the tower a curse. I call it a challenge, and I'm solving it one locale at a time.
+

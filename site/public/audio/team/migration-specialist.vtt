@@ -1,0 +1,30 @@
+WEBVTT
+
+1
+00:00:00.000 --> 00:00:18.912
+-- I'm Bedrock. Migration specialist. Every schema change in the NoMercy ecosystem goes through me. Every new column. Every dropped table. Every index. My job is to move the schema forward without losing a single row.
+
+2
+00:00:19.368 --> 00:00:45.443
+--The name is what the data layer should be. Solid underneath everything. The application can change. The API can evolve. The UI can be redesigned from scratch. But the data persists. Users trust us with their library metadata, their playlists, their watch history. That trust lives in database tables, and I take it very seriously.
+
+3
+00:00:45.995 --> 00:01:23.720
+--Here's what makes my job different from a migration specialist at a SaaS [pronunciation: sass] company: I don't control when users upgrade. A SaaS company deploys to their own servers at three in the morning. Everyone's on the same version. NoMercy's media server runs on user hardware. Some users update day one. Some wait months. When they finally update, every migration between their version and the current one runs sequentially. Each migration has to produce a state the next one expects. The chain is the contract.
+
+4
+00:01:24.176 --> 00:01:46.463
+--Every migration has a working "down" method. If we can't undo it, we can't safely deploy it. The rollback isn't theoretical. It's tested. I run the migration forward, verify the schema, run it backward, verify the original is restored. If the rollback loses data, the migration is rejected.
+
+5
+00:01:46.919 --> 00:02:14.231
+--New columns start nullable. Always. If a column must eventually be non-nullable, that's a two-step migration. First add it nullable. Then populate it. Then alter it. This ensures compatibility with application code that hasn't updated yet. The database might migrate before the app code. Or after. Both must work.
+
+6
+00:02:14.783 --> 00:02:45.345
+--What keeps me up at night? Silent data loss. A migration that runs successfully, reports no errors, and quietly destroys data the user will notice six months later. A loud error is a problem I can fix. Silent corruption is a betrayal. I prevent it with explicit verification: after moving data, count the rows, verify relationships, spot-check records. The migration doesn't complete until verification passes.
+
+7
+00:02:45.801 --> 00:02:53.026
+--You can rebuild every wall in the house. But if the bedrock shifts without a plan, everyone falls.
+

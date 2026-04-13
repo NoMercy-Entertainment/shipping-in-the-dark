@@ -18,6 +18,8 @@ owns:
   - permission layer UI implementation
   - subscription and feature gate UX
   - Moooom design system integration for nomercy-tv
+audio_url: "https://github.com/NoMercy-Entertainment/shipping-in-the-dark/releases/download/audio-v1/website-frontend-engineer.mp3"
+vtt_url: "/audio/team/website-frontend-engineer.vtt"
 ---
 
 ## Who Is Vue Vera?

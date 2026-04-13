@@ -21,6 +21,8 @@ owns:
   - SignalR hubs for client communication
   - music streaming and multi-device control
   - background job queue
+audio_url: "https://github.com/NoMercy-Entertainment/shipping-in-the-dark/releases/download/audio-v1/server-dotnet-engineer.mp3"
+vtt_url: "/audio/team/server-dotnet-engineer.vtt"
 ---
 
 ## Who Is Bastion?

@@ -16,6 +16,8 @@ owns:
   - nomercy-tv public page design
   - Moooom adaptation for professional context
 model: sonnet
+audio_url: "https://github.com/NoMercy-Entertainment/shipping-in-the-dark/releases/download/audio-v1/website-designer.mp3"
+vtt_url: "/audio/team/website-designer.vtt"
 ---
 
 ## Who Is Slate?

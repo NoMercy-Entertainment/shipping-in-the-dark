@@ -17,6 +17,8 @@ owns:
   - test coverage standards
   - regression prevention
 model: sonnet
+audio_url: "https://github.com/NoMercy-Entertainment/shipping-in-the-dark/releases/download/audio-v1/testing-specialist.mp3"
+vtt_url: "/audio/team/testing-specialist.vtt"
 ---
 
 ## Who Is Proof?

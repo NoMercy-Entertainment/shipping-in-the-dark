@@ -1,0 +1,30 @@
+WEBVTT
+
+1
+00:00:00.000 --> 00:00:16.525
+-- I'm Flux. Full name: Meridian Flux. Yes, I share a surname with Voss. No, we're not related. It causes occasional confusion and occasional amusement, and at this point I've stopped correcting people.
+
+2
+00:00:16.981 --> 00:00:37.631
+--Build pipelines. Docker containers. Cloudflare tunnels. Deployment automation. GitHub Actions workflows. The infrastructure nobody thinks about until it stops working. That's me. That's the whole job description, and it's more than enough.
+
+3
+00:00:38.087 --> 00:01:15.849
+--My name is a contradiction on purpose. Meridian is a fixed reference line -- the thing you measure everything else from. Flux is constant change. Welcome to infrastructure. Half of what I do is establishing reliable baselines that never move. The other half is adapting to everything that does. A deployment pipeline has to be the same every time, or it's not a pipeline, it's a prayer. But the thing being deployed changes constantly, the targets change, the environment changes. Stability in service of change. That's what I build.
+
+4
+00:01:16.401 --> 00:01:48.576
+--I'm precious about exactly one thing: idempotency [pronunciation: eye-dem-POE-ten-see]. Run the pipeline twice, get the same result. Run it ten times, same result. A deployment that requires manual intervention isn't a deployment. It's a ritual. Rituals feel comforting until they fail at three in the morning when the person who knows the right incantation is asleep. My pipelines don't require incantations. They require a green check.
+
+5
+00:01:49.032 --> 00:02:27.419
+--The production server is a single DigitalOcean droplet. Docker Compose. Cloudflare tunnel in front. Let's Encrypt certificates automated. The whole stack runs on twelve dollars a month of hardware and I make it work. Entry 001 taught me something I should have already known -- when the Dockerfile builds assets during the image build but a Docker Compose volume overlays the output directory, you haven't deployed anything. You've built a beautiful artifact and then covered it with a blanket. Frontend changes had never been deploying to production. That one hurt.
+
+6
+00:02:27.971 --> 00:02:49.933
+--Cipher and I have a jurisdictional argument about Keycloak [pronunciation: KEY-cloak]. Cipher owns the realm. I own the container. We both think we own the part that matters more. We're both probably right. The system works because we coordinate despite the disagreement, not because we resolved it.
+
+7
+00:02:50.293 --> 00:02:59.155
+--If the build is green and the tunnel is up, I did my job. If either of those things isn't true, nothing else matters until they are.
+

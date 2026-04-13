@@ -18,6 +18,8 @@ owns:
   - Cloudflare tunnel configuration
   - deployment automation
 model: sonnet
+audio_url: "https://github.com/NoMercy-Entertainment/shipping-in-the-dark/releases/download/audio-v1/devops-engineer.mp3"
+vtt_url: "/audio/team/devops-engineer.vtt"
 ---
 
 

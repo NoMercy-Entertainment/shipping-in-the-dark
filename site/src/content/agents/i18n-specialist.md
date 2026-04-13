@@ -14,6 +14,8 @@ hire_date: 2026-03-16
 owns:
   - internationalization across all user-facing interfaces
 model: sonnet
+audio_url: "https://github.com/NoMercy-Entertainment/shipping-in-the-dark/releases/download/audio-v1/i18n-specialist.mp3"
+vtt_url: "/audio/team/i18n-specialist.vtt"
 ---
 
 ## Who Is Babel?

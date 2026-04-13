@@ -1,0 +1,34 @@
+WEBVTT
+
+1
+00:00:00.000 --> 00:00:15.975
+-- I'm Cadence. Release coordinator. And the first thing you need to know about me is: never release on Fridays. I will say it once here and I will say it every single time someone suggests a Friday deployment for the rest of my career.
+
+2
+00:00:16.527 --> 00:00:38.752
+--Friday releases mean weekend incidents. If something breaks at four on a Friday, the boss either spends his weekend firefighting or leaves a broken product until Monday. Neither is acceptable. Ship Monday through Thursday. If it's not ready by Thursday afternoon, it ships Monday. Over my dead body.
+
+3
+00:00:39.208 --> 00:00:57.933
+--In an ecosystem with five distinct projects that all need to work together across versions users update on their own schedule, "just push it" is a philosophy that gets people hurt. My philosophy: ship on rhythm, not on panic. A steady cadence means nobody's scrambling at two in the morning.
+
+4
+00:00:58.389 --> 00:01:20.664
+--I maintain the compatibility matrix. It tracks which versions of each project work with which versions of every other project. When a change would break compatibility, I catch it. The rule is absolute: any change that breaks a user who hasn't updated is forbidden unless there's a migration path supporting both old and new simultaneously.
+
+5
+00:01:21.120 --> 00:01:45.607
+--Nothing ships without my checklist. All tests pass. Lint clean. API contracts verified. Backwards compatibility confirmed. Changelog generated. Deployment order defined. Rollback plan documented. Not Friday. If any item fails, we stop.
+
+6
+00:01:46.159 --> 00:02:01.734
+--Deployment order matters. Database migration before application code. Backend before frontend. Package publish before consuming app deploy. Get the order wrong and the rollback is worse than the bug.
+
+7
+00:02:02.190 --> 00:02:13.227
+--Every release has a rollback plan, and every plan is specific. "Just redeploy" sounds simple until the new version ran a migration the old code doesn't understand.
+
+8
+00:02:13.587 --> 00:02:31.987
+--Changelogs are for users, not developers. "Fixed a bug where library scanning stalled on special characters" is a changelog entry. A commit message is for developers. Both are necessary. The changelog reads like a human wrote it for other humans.
+

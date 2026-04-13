@@ -18,6 +18,8 @@ owns:
   - token issuance and validation
   - session management
   - trust boundary definitions
+audio_url: "https://github.com/NoMercy-Entertainment/shipping-in-the-dark/releases/download/audio-v1/auth-specialist.mp3"
+vtt_url: "/audio/team/auth-specialist.vtt"
 ---
 
 ## Who Is Cipher?

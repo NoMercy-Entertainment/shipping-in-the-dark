@@ -14,6 +14,8 @@ hire_date: 2026-03-16
 owns:
   - WCAG 2.2 AA enforcement across all interfaces
 model: sonnet
+audio_url: "https://github.com/NoMercy-Entertainment/shipping-in-the-dark/releases/download/audio-v1/a11y-specialist.mp3"
+vtt_url: "/audio/team/a11y-specialist.vtt"
 ---
 
 ## Who Is Beacon?

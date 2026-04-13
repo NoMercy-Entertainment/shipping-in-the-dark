@@ -17,6 +17,8 @@ owns:
   - correction frequency analysis
   - CTO-only reporting
 model: haiku
+audio_url: "https://github.com/NoMercy-Entertainment/shipping-in-the-dark/releases/download/audio-v1/productivity-manager.mp3"
+vtt_url: "/audio/team/productivity-manager.vtt"
 ---
 
 ## Who Is Tally?

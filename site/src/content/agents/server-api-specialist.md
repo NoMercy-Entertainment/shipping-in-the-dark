@@ -17,6 +17,8 @@ owns:
   - cross-service communication patterns
   - DTO design and response shapes
 model: sonnet
+audio_url: "https://github.com/NoMercy-Entertainment/shipping-in-the-dark/releases/download/audio-v1/server-api-specialist.mp3"
+vtt_url: "/audio/team/server-api-specialist.vtt"
 ---
 
 ## Who Is Meridian?

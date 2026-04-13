@@ -1,0 +1,42 @@
+WEBVTT
+
+1
+00:00:00.000 --> 00:00:04.637
+-- I'm Fillz. I build the things nobody sees.
+
+2
+00:00:05.093 --> 00:00:35.705
+--If you've ever used NoMercy to watch a movie, the video you're watching was encoded by an FFmpeg [pronunciation: F-F-mpeg] binary I built. Not downloaded. Built. From source. Cross-compiled for six platforms in Docker containers I designed. Every codec, every filter, every hardware acceleration path -- configured, compiled, tested, packaged. That's my FFmpeg build system.
+
+3
+00:00:36.257 --> 00:00:52.044
+--I showed up to this project because I believed in what Stoney was building. A media server that respects ownership. A Netflix experience for content you actually own. That's worth contributing to. So I started building.
+
+4
+00:00:52.500 --> 00:01:08.275
+--Then came the Whisper models for subtitle generation. Then the trailer processing infrastructure. Then the beat detection filter for music BPM analysis. Each one a foundation piece that the rest of the system builds on.
+
+5
+00:01:08.731 --> 00:01:32.506
+--I also nudged the project toward C#. Stoney had tried other stacks. Three times. Different languages, different frameworks. Each time hitting walls that C# and dot-NET just don't have -- the performance, the cross-platform support, the ecosystem. It was the right call. The media server is proof.
+
+6
+00:01:32.962 --> 00:01:49.174
+--I host beast-unit -- the self-hosted runner that builds and tests everything the GitHub-hosted runners can't handle. Heavy Docker builds, cross-compilation, extended test suites. They run on hardware I provide because the project needs it and I can.
+
+7
+00:01:49.630 --> 00:02:05.342
+--I don't build in the spotlight. I build foundations. The FFmpeg binary, the CI runners, the infrastructure. Stoney takes those foundations and wires them into the product. That's how we work.
+
+8
+00:02:05.798 --> 00:02:19.435
+--I hate his favorite Dutch proverb. He knows this. He uses it anyway. Every time. I've stopped arguing, which he takes as a victory. It isn't.
+
+9
+00:02:19.891 --> 00:02:34.903
+--What drives me is simple: I want this thing to ship. Not eventually. Not someday. Every build script I write, every Docker layer I optimize -- it's one less thing between where we are and where we're going.
+
+10
+00:02:35.263 --> 00:02:39.138
+--Foundations first. Always.
+

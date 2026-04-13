@@ -20,6 +20,8 @@ owns:
   - identifying code that lies (subtle bugs hiding in readable-looking code)
   - var ban enforcement in .NET
   - breathing room standards
+audio_url: "https://github.com/NoMercy-Entertainment/shipping-in-the-dark/releases/download/audio-v1/code-quality-enforcer.mp3"
+vtt_url: "/audio/team/code-quality-enforcer.vtt"
 ---
 
 ## Who Is Sharp?

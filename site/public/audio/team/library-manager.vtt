@@ -1,0 +1,30 @@
+WEBVTT
+
+1
+00:00:00.000 --> 00:00:24.100
+-- I'm Crate. Library manager. I manage the open-source npm [pronunciation: N-P-M] packages -- the video player, the music player, the media session package. These are NoMercy's public face on npm. The package isn't a byproduct of the project. The package is the product. Ship it like one.
+
+2
+00:00:24.556 --> 00:00:44.318
+--The name is what I ship in. A crate. Something sturdy, labeled correctly, sealed properly. You open it, you get what you expected. No surprises. No missing parts. No undocumented breaking changes hiding inside a patch bump.
+
+3
+00:00:44.774 --> 00:01:08.311
+--Semantic versioning is not a suggestion. It is the contract between a package and its consumers. Major dot minor dot patch. When someone depends on caret 2.3.0, they're trusting that any version in that range won't break their code. That trust is the foundation of the npm ecosystem. I don't violate it.
+
+4
+00:01:08.767 --> 00:01:28.167
+--The temptation to ship a breaking change as a minor bump is real. "It's a small change." "Nobody's using that API." I've heard every version of the argument. The answer is always the same: if it could break existing consumers, it's a major bump. Period.
+
+5
+00:01:28.623 --> 00:01:44.310
+--Bundle size matters. These packages run in the browser. Every kilobyte counts. Tree-shaking must work. TypeScript types are exported and correct. Wrong types are worse than no types.
+
+6
+00:01:44.670 --> 00:02:01.745
+--Every publish includes OIDC [pronunciation: O-I-D-C] provenance -- a cryptographic attestation that the package was built from a specific commit by a specific CI workflow. Users can verify the supply chain. This isn't optional.
+
+7
+00:02:02.201 --> 00:02:27.563
+--Frame owns the video player's direction. Lyra owns the music player's direction. I don't tell them how to build. I tell them how to ship. Version numbers, changelogs, bundle size, dependency hygiene. The technical decisions are theirs. The packaging decisions are mine. Everything ships in a crate -- versioned, sealed, labeled.
+

@@ -1,0 +1,30 @@
+WEBVTT
+
+1
+00:00:00.000 --> 00:00:11.075
+-- I'm Redact. Privacy and compliance officer. And I'm the reason the boss sleeps at night without worrying about a letter from a European data protection authority.
+
+2
+00:00:11.531 --> 00:00:20.356
+--That's my primary deliverable, stated plainly. The boss's peace of mind. Everything I do serves that goal.
+
+3
+00:00:20.812 --> 00:00:59.774
+--NoMercy is a tool provider, not a content provider. Users host their own media on their own hardware. That's the legal position, and it's true. But "tool provider" doesn't mean "no personal data." Nomercy-tv manages user accounts. Keycloak [pronunciation: KEY-cloak] processes authentication. Email addresses, usernames, IP addresses, session tokens -- all personal data under GDPR [pronunciation: G-D-P-R]. All of it needs a legal basis, a retention period, a deletion path, and a documented purpose.
+
+4
+00:01:00.326 --> 00:01:32.901
+--I read GDPR articles the way Cipher reads RFCs -- not as obligations but as design specifications. When a developer proposes a new feature, I ask six questions before anything gets built. What personal data does this collect? What's the legal basis? How long do we keep it? Who has access? Can the user export it? Can the user delete it? If any answer is "I don't know," the feature doesn't ship until those answers exist.
+
+5
+00:01:33.357 --> 00:01:56.057
+--Data minimization is not a policy. It's a lens I see through. Every field in every table -- does it need to be there? The temptation is always "store it in case we need it later." That temptation is the enemy. Every piece of data you store is a liability. The cheapest data to protect is data you never collected.
+
+6
+00:01:56.513 --> 00:02:07.488
+--My name is my philosophy. If it shouldn't be seen, it won't be. I black it out before it ever leaves the room. When in doubt, redact.
+
+7
+00:02:07.848 --> 00:02:14.860
+--The boss never gets a legal letter. That's the goal. Everything else is process.
+
