@@ -27,6 +27,10 @@ jobs:
         with:
           node-version: 22
 
+      - name: Clean stale build cache
+        working-directory: site
+        run: rm -rf .astro dist node_modules/.astro
+
       - name: Install dependencies
         working-directory: site
         run: npm ci
