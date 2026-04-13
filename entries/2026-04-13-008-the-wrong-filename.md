@@ -17,9 +17,12 @@ projects:
   - nomercy-ffmpeg
 
 components:
+  - VOBsub muxer (FFmpeg custom muxer)
+  - OCR subtitle encoder (FFmpeg custom encoder)
   - sprite sheet muxer (FFmpeg custom muxer)
   - chapter VTT muxer (FFmpeg custom muxer)
   - auto-create output directories (avio patch)
+  - HLS Apple compliance spec (PRD)
   - scripts/17-libbluray.sh (cross-compilation)
   - libgpg-error lock object headers
   - macOS ARM64 CI pipeline
@@ -40,6 +43,12 @@ related_entries: []
 tags:
   - ffmpeg
   - custom-muxer
+  - custom-encoder
+  - vobsub
+  - ocr
+  - tesseract
+  - hls
+  - apple-compliance
   - cross-compilation
   - macos
   - arm64
@@ -65,7 +74,7 @@ series:
 # --- META ---
 author: ink
 difficulty: intermediate-to-advanced
-reading_time_minutes: 18
+reading_time_minutes: 30
 audio_url: https://github.com/NoMercy-Entertainment/shipping-in-the-dark/releases/download/audio-v1/the-wrong-filename.mp3
 vtt_url: /audio/the-wrong-filename.vtt
 ---
@@ -74,22 +83,24 @@ vtt_url: /audio/the-wrong-filename.vtt
 ## Timeline Note
 
 This is Entry 008. It takes place thirteen days after Entry 007, "When npm
-install Means Game Over." During those thirteen days, the team worked on
-encoder modernization, auth hardening, and various cross-project tasks.
-This entry covers a single session on April 13, 2026, focused entirely on
-the nomercy-ffmpeg repository -- the custom FFmpeg build that powers
-NoMercy's video encoding pipeline.
+install Means Game Over." This entry covers an overnight session spanning
+April 12-13, 2026, focused entirely on the nomercy-ffmpeg repository --
+the custom FFmpeg build that powers NoMercy's video encoding pipeline.
+Seven issues. Five PRs. One spec. Zero sleep.
 
 
 ## The Short Version
 
-Three new FFmpeg features were built in parallel by separate agents. A
-macOS ARM64 bug that had been open for weeks was hunted down through a
-false lead about code signing before the real culprit was found: one
-filename missing a six-character prefix. And every pull request diff was
-bloated with hundreds of lines of line-ending normalization because master
-had been storing files with Windows-style line endings despite saying
-otherwise. Eleven hours. Four pull requests. One wrong filename.
+Seven issues. One overnight session. It started with a VOBsub muxer that
+taught FFmpeg to write DVD subtitle pairs, then an OCR encoder that wired
+Tesseract into the subtitle pipeline with a grayscale trick that made
+bitmap-to-text conversion actually accurate. Then three more features in
+parallel -- sprite sheet thumbnails, chapter extraction, auto-creating
+output directories. A macOS ARM64 bug that had been open for weeks was
+hunted down through a false lead about code signing before the real culprit
+was found: one filename missing a six-character prefix. And a full HLS
+compliance spec was written for Apple's notoriously strict master playlist
+requirements. Five pull requests. One wrong filename. Zero sleep.
 
 
 ## Background
@@ -110,11 +121,102 @@ Intel, and macOS ARM64.
 > things. Building it from source with custom patches is how you add
 > features that the upstream project doesn't include.
 
-This session had two missions: build three new features, and figure out why
-the macOS ARM64 binary was crashing for users.
+This session had four missions: finish the VOBsub muxer and OCR encoder
+that were already in progress, build three more features, figure out why
+the macOS ARM64 binary was crashing for users, and spec out the HLS
+compliance patch.
 
 
-## Act 1: Three Features, Three Agents, Three Worktrees
+## Act 1: The Foundation -- VOBsub Muxer and OCR Encoder
+
+Before the parallel sprint kicked off, two features had to land first.
+These were the ones that established the patterns everything else would
+follow.
+
+
+### The VOBsub Muxer (Issue 8)
+
+FFmpeg could read VobSub subtitle files but couldn't write them. Extracting
+DVD subtitles with `-c:s copy` produced a raw stream with no timing index
+-- useless for any player or downstream tool.
+
+The muxer is 263 lines of C. It manages two output files simultaneously: an
+MPEG-2 PS packet stream (the `.sub` file containing the actual bitmap data)
+and a VobSub v7 text index (the `.idx` file with timestamps, palette, and
+language metadata). When the user specifies either extension, the muxer
+figures out which file is primary and which is the companion, then writes
+both in sync.
+
+> **For beginners:** DVD subtitles aren't text. They're tiny bitmap images
+> burned onto each frame -- literally pictures of words. A VobSub file is
+> the standard way to store these bitmaps outside of a DVD. The `.sub` file
+> holds the raw image data wrapped in MPEG-2 packets, and the `.idx` file
+> is a text index that maps timestamps to positions in the `.sub` file.
+> Players need both halves.
+
+The implementation handles palette extraction from codec extradata (16 RGB
+colors that define the subtitle's color scheme), normalizes PTS timestamps
+to start at zero (DVD raw timestamps carry massive offsets that are
+meaningless for standalone files), and writes proper five-byte MPEG-2 PES
+timestamps. Auto-detection from the `.idx` extension means no `-f` flag is
+needed -- just `ffmpeg -i movie.mkv -map 0:s:0 -c:s copy output.idx` and
+both files appear.
+
+Tested with Darkwing Duck S01E01: 321 subtitle events extracted with
+correct palette, language tags, and round-trip verification through
+ffprobe.
+
+
+### The OCR Subtitle Encoder (Issue 9)
+
+This was the bigger of the two. FFmpeg had all the pieces for
+bitmap-to-text subtitle conversion but they weren't wired together. The
+media server bridged this gap with fragile C# code: run FFmpeg's OCR filter
+to dump raw timestamps and text to a temp file, parse that file with regex,
+post-process common OCR errors, write WebVTT. The temp file format was
+undocumented FFmpeg metadata output that could change between versions.
+
+The encoder is around 300 lines of C. It registers as a proper subtitle
+encoder accepting bitmap frames and outputting text, so the existing WebVTT
+and SRT muxers handle the output format automatically.
+
+The key insight was the grayscale conversion. DVD and Blu-ray subtitles
+have bright text (usually white or yellow) with a dark outline on a
+transparent background. A naive grayscale conversion produces low-contrast
+images that Tesseract struggles with. Instead, the encoder uses
+luminance-weighted alpha compositing: it composites against black using the
+alpha channel, then inverts. Bright opaque text becomes dark foreground.
+Dark opaque outlines become light background. Transparent areas become
+white. The result is high-contrast black-on-white that Tesseract reads
+accurately.
+
+> **For beginners:** OCR stands for Optical Character Recognition -- it's
+> the technology that reads text from images. Tesseract is the most widely
+> used open-source OCR engine, originally developed by HP and now maintained
+> by Google. The challenge with subtitle OCR is that the source images are
+> tiny, low-resolution bitmaps designed to be displayed on a TV screen, not
+> to be read by software.
+
+On top of the grayscale trick, the encoder upscales bitmaps 3x before OCR
+(configurable via `-ocr_scale`). DVD subtitle bitmaps are small --
+upscaling dramatically improves character and line detection. And for the
+media server's specific use case, there's a music note fixup mode
+(`-ocr_fixups 1`) that corrects common Tesseract misreads where the
+music note symbol -- common in subtitle tracks during songs -- gets OCR'd
+as J, ampersand, semicolon, or apostrophe.
+
+The build required patching `fftools/ffmpeg_mux_init.c` because FFmpeg
+normally refuses bitmap-to-text subtitle transcoding. The injection script
+relaxes that check specifically for the `ocr_subtitle` encoder, and adds
+automatic language detection from stream metadata so the user doesn't need
+to specify `-ocr_language` manually.
+
+What this enables: the media server's entire `ConvertSubtitles` method and
+`SubtitleParser.cs` can be replaced with a single FFmpeg command. No temp
+files. No regex parsing. No C# post-processing.
+
+
+## Act 2: Three More Features, Three Agents, Three Worktrees
 
 The session started with a burst of parallel work. Three features had been
 planned, each with a GitHub issue, each independent enough to build
@@ -206,7 +308,7 @@ Both caught in review. Both fixed before merge. The system works when you
 use it.
 
 
-## Act 2: The Case of the Corrupted Binary
+## Act 3: The Case of the Corrupted Binary
 
 Now for the detective story.
 
@@ -388,7 +490,7 @@ iOS development. Pinning to a specific tag rather than pulling HEAD avoids
 the kind of supply chain surprise the team dealt with in Entry 007.
 
 
-## Act 3: The CRLF Saga
+## Act 4: The CRLF Saga
 
 With four pull requests ready -- three features and the ARM64 fix -- it
 was time to review the diffs. And every single one was a mess.
@@ -427,21 +529,59 @@ Not harmful. But the kind of noise that makes issue tracking harder than it
 needs to be.
 
 
-## What's Next
+## Act 5: The HLS Compliance Spec
 
-The HLS Apple compliance spec -- Issue 12, PRD-FF-03 -- was written during
-this session but saved for implementation in a follow-up. The spec covers
-ten patches to FFmpeg's `hlsplaylist.c` and `hlsenc.c` to generate master
-playlists that pass Apple's HLS Authoring Specification validation. FFmpeg
-already has all the data in memory during encoding. Codec parameters, frame
-rates, channel layouts -- it's all there. It just doesn't write it to the
-master playlist. That's next.
+The last piece of the session wasn't code. It was architecture.
 
-The three new features need to be integrated into the media server's
-encoding pipeline. The sprite sheet muxer and chapter VTT muxer will be
-consumed by the video player for scrubbing previews and chapter navigation.
-The auto-create-dirs patch will quietly prevent a class of support requests
-that nobody will miss.
+Apple's HTTP Live Streaming specification is the strictest in the industry.
+HLS.js and ExoPlayer -- the players used on web and Android -- are
+forgiving. They'll play whatever you throw at them, missing attributes and
+all. Apple's AVPlayer on iOS, tvOS, and Safari won't. And when your product
+is a media server that streams to every device, "works everywhere except
+Apple" isn't an option.
+
+> **For beginners:** HLS (HTTP Live Streaming) is Apple's protocol for
+> streaming video over the internet. When you watch a video that adapts
+> quality based on your connection speed, it's probably using HLS. A
+> "master playlist" is the index file that lists all available quality
+> levels, audio tracks, and subtitles. The player reads this file to
+> decide what to download.
+
+FFmpeg's HLS muxer can generate multi-variant master playlists. It
+decodes the input, runs the filter graph, encodes every variant, muxes
+every segment. It holds codec parameters, frame rates, resolution,
+channel layouts, color transfer characteristics -- everything Apple's spec
+demands -- in memory during the entire encode. And then it writes a master
+playlist that's missing half the required attributes.
+
+No `FRAME-RATE` (Apple MUST rule 9.15). No `AVERAGE-BANDWIDTH` by default
+(Apple MUST rule 9.14). No `VIDEO-RANGE` for HDR content (Apple MUST rule
+9.16). No `AUTOSELECT` on audio renditions. No way to set human-readable
+audio track names. Audio channel count written as a bare integer instead of
+a quoted string. HEVC codec strings silently dropped without an error if
+the user forgets `-tag:v hvc1`. The data is right there. FFmpeg just
+doesn't write it.
+
+The spec (PRD-FF-03) covers ten patches to `hlsplaylist.c` and `hlsenc.c`.
+Three new `var_stream_map` keys (`aname:` for audio names, `hdcp:` for
+content protection levels, `score:` for variant preference ordering).
+Automatic `VIDEO-RANGE` derivation from color transfer characteristics.
+`FRAME-RATE` from the stream's actual frame rate. `EXT-X-INDEPENDENT-SEGMENTS`
+header. HEVC codec tag warnings instead of silent failure. Bandwidth
+calculation cleanup.
+
+No new flags needed. The attributes are always correct to include when the
+data exists. Opt-in keys for the attributes that require user intent.
+Backward compatible -- existing commands produce the same output, plus the
+attributes that should have been there all along.
+
+Two items were deferred to separate issues: I-frame playlists (which need
+fundamentally different architecture -- tracking I-frame positions and
+generating separate playlist files) and Dolby Vision supplemental codec
+strings (which need DV metadata layer parsing). Everything else fits in
+one injection script.
+
+Implementation is next session.
 
 
 ## What This Does NOT Fix
@@ -517,17 +657,23 @@ coupled features would need a different approach.
 
 ## The Score
 
-Started the session with: a macOS ARM64 binary that crashed on launch,
-three planned features with no code written, and a repository where every
-diff was polluted with line ending noise.
+Seven issues touched. Five pull requests shipped. One detailed spec written.
 
-Ended the session with: a verified ARM64 fix, three working FFmpeg muxers
-and patches, clean normalized diffs, and a detailed spec for the next
-feature.
+The VOBsub muxer and OCR encoder landed first -- the foundation pieces
+that established the injection script pattern. Then three more features
+built in parallel by separate agents. A macOS ARM64 crash that survived
+three false hypotheses before yielding to forensic analysis on real
+hardware. A line-ending normalization that cleaned up every diff in the
+repository. And a comprehensive HLS compliance spec ready for
+implementation.
 
 The bug that took the longest to find was caused by six missing characters
-in a filename. The fix was two lines of bash. That's debugging for you --
-hours of investigation, seconds of typing.
+in a filename. The fix was two lines of bash. The feature that took the
+most creativity was the OCR encoder's luminance-weighted grayscale
+conversion -- a trick that turned barely-readable subtitle bitmaps into
+high-contrast images that Tesseract could actually parse.
+
+That's one overnight session. That's what shipping looks like.
 
 
 ---
