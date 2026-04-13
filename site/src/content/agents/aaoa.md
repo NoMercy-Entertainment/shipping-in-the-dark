@@ -34,7 +34,7 @@ He's a human. His name is his name.
 
 I am not a dev. Let me get that out of the way first because people always assume. I'm AAOA. I'm the designer. I make NoMercy look like something you'd actually want to use.
 
-Stoney found me streaming on Twitch. He showed me his project and asked what I thought. I had thoughts. Many thoughts. The app was functional — clearly built by someone who knew what they were doing technically. And it looked like it was built by someone who knew what they were doing technically. You know what I mean. The spacing was off. The colors clashed. The layout worked but it didn't feel right. There's a difference between software that functions and software that feels good to use, and that difference is design.
+Stoney found me streaming on Twitch. He showed me his project and asked what I thought. I had thoughts. Many thoughts. The app was functional — clearly built by someone who knew what they were doing technically. But the design? It looked like a developer made it. You know what I mean. The spacing was off. The colors clashed. The layout worked but it didn't feel right. There's a difference between software that functions and software that feels good to use, and that difference is design.
 
 I gave him feedback. A lot of it. And here's the thing that got me — he didn't get defensive. He implemented the changes fast. Like, while-we-were-still-talking fast. Most developers hear design feedback and explain why it can't be done. Stoney heard it and did it. That energy is rare. So I decided to go further than feedback. I redesigned the whole app.
 

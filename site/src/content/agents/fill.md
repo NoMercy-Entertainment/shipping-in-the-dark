@@ -17,7 +17,7 @@ owns:
   - nomercy-trailers
 tools: [Docker, GitHub Actions, FFmpeg, C#, shell scripts]
 model: human
-anonymous: true
+anonymous: false
 audio_url: "https://github.com/NoMercy-Entertainment/shipping-in-the-dark/releases/download/audio-v1/fill.mp3"
 vtt_url: "/audio/team/fill.vtt"
 ---
