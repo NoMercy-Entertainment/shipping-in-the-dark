@@ -56,4 +56,12 @@ const agents = defineCollection({
 	}),
 });
 
-export const collections = { entries, agents };
+const reports = defineCollection({
+	loader: glob({ pattern: '**/*.md', base: './src/content/reports' }),
+	schema: z.object({
+		title: z.string(),
+		part: z.number(),
+	}),
+});
+
+export const collections = { entries, agents, reports };

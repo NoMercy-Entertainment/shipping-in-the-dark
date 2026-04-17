@@ -8,6 +8,7 @@ const journalRoot = join(projectRoot, '..');
 
 const collections = [
 	{ src: join(journalRoot, 'entries'), dest: join(projectRoot, 'src', 'content', 'entries') },
+	{ src: join(journalRoot, 'reports'), dest: join(projectRoot, 'src', 'content', 'reports') },
 	// Agents are committed directly in site/src/content/agents/ — no copy needed
 ];
 

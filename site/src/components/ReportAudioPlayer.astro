@@ -1,0 +1,517 @@
+---
+/**
+ * ReportAudioPlayer — multi-track player for long-form reports.
+ *
+ * Differences from AudioPlayer.astro:
+ *   - Holds a list of tracks (one per report part).
+ *   - Auto-advances to the next track on 'ended'.
+ *   - Skip-to-next-section button.
+ *   - Male/female narrator toggle.
+ *   - Emits 'audio-part-change' so AudioSync knows which part is active and
+ *     which VTT to load.
+ *
+ * Voice choice persists in localStorage under 'sitd:narrator-voice'.
+ */
+interface Track {
+	slug: string;
+	title: string;
+	part: number;
+	audio: { female: string; male: string };
+	vtt: { female: string; male: string };
+}
+
+interface Props {
+	tracks: Track[];
+	title?: string;
+}
+
+const { tracks, title = '' } = Astro.props;
+const tracksJson = JSON.stringify(tracks);
+---
+
+<div
+	id="report-audio-player"
+	class="audio-player report-audio-player"
+	data-tracks={tracksJson}
+	data-title={title}
+	aria-label="Report audio player"
+	role="region"
+>
+	<div
+		id="audio-progress-bar"
+		class="audio-progress-bar"
+		role="progressbar"
+		aria-valuemin="0"
+		aria-valuemax="100"
+		aria-valuenow="0"
+		aria-label="Playback progress"
+		tabindex="0"
+	>
+		<div id="audio-progress-fill" class="audio-progress-fill"></div>
+	</div>
+
+	<div class="audio-controls">
+		<button id="audio-play-btn" class="audio-play-btn" aria-label="Play" type="button">
+			<svg id="icon-play" class="audio-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+				<path d="M8 5v14l11-7z" />
+			</svg>
+			<svg id="icon-pause" class="audio-icon hidden" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+				<path d="M6 19h4V5H6zm8-14v14h4V5z" />
+			</svg>
+		</button>
+
+		<button id="audio-skip-btn" class="audio-secondary-btn" aria-label="Skip to next part" type="button" title="Skip to next part">
+			<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" width="18" height="18">
+				<path d="M6 6l8.5 6L6 18V6zm11 0h2v12h-2V6z" />
+			</svg>
+		</button>
+
+		<div class="audio-time" aria-live="off">
+			<span id="audio-current" class="audio-current">0:00</span>
+			<span class="audio-separator" aria-hidden="true">/</span>
+			<span id="audio-duration" class="audio-duration">0:00</span>
+		</div>
+
+		<div id="audio-title" class="audio-title" aria-label="Now playing">
+			<span id="audio-part-num" class="audio-part-num"></span>
+			<span id="audio-part-title"></span>
+		</div>
+
+		<button id="audio-voice-btn" class="audio-voice-btn" aria-label="Voice: female" type="button" title="Switch narrator voice">
+			<span id="audio-voice-label">Aria</span>
+		</button>
+
+		<button id="audio-speed-btn" class="audio-speed" aria-label="Playback speed: 1x" type="button">
+			1x
+		</button>
+	</div>
+</div>
+
+<style is:global>
+	.report-audio-player {
+		transform: translateY(0);
+	}
+
+	.audio-secondary-btn {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 32px;
+		height: 32px;
+		border-radius: 50%;
+		border: none;
+		cursor: pointer;
+		background-color: var(--color-surface-800);
+		color: var(--color-surface-100);
+		flex-shrink: 0;
+		transition: background-color 0.15s ease, transform 0.1s ease;
+		outline: none;
+	}
+	html.light .audio-secondary-btn {
+		background-color: var(--color-surface-200);
+		color: var(--color-surface-900);
+	}
+	.audio-secondary-btn:hover {
+		background-color: var(--color-surface-700);
+	}
+	html.light .audio-secondary-btn:hover {
+		background-color: var(--color-surface-300);
+	}
+	.audio-secondary-btn:focus-visible {
+		outline: 2px solid var(--color-accent-400);
+		outline-offset: 2px;
+	}
+
+	.audio-voice-btn {
+		flex-shrink: 0;
+		font-family: var(--font-mono);
+		font-size: 0.6875rem;
+		font-weight: 600;
+		color: var(--color-surface-400);
+		background-color: var(--color-surface-800);
+		border: 1px solid var(--color-surface-700);
+		border-radius: 9999px;
+		padding: 2px 10px;
+		cursor: pointer;
+		transition: color 0.15s ease, background-color 0.15s ease;
+		outline: none;
+		white-space: nowrap;
+	}
+	html.light .audio-voice-btn {
+		color: var(--color-surface-600);
+		background-color: var(--color-surface-200);
+		border-color: var(--color-surface-300);
+	}
+	.audio-voice-btn:hover {
+		color: var(--color-surface-100);
+		background-color: var(--color-surface-700);
+	}
+	html.light .audio-voice-btn:hover {
+		color: var(--color-surface-900);
+		background-color: var(--color-surface-300);
+	}
+	.audio-voice-btn:focus-visible {
+		outline: 2px solid var(--color-accent-400);
+		outline-offset: 2px;
+	}
+
+	.audio-part-num {
+		display: inline-block;
+		margin-right: 0.5em;
+		font-family: var(--font-mono);
+		font-size: 0.7rem;
+		color: var(--color-surface-500);
+	}
+	html.light .audio-part-num {
+		color: var(--color-surface-500);
+	}
+</style>
+
+<script is:inline define:vars={{ tracksJson }}>
+(function () {
+	'use strict';
+
+	const STORAGE_KEY = 'sitd:narrator-voice';
+
+	const playerEl = document.getElementById('report-audio-player');
+	if (!playerEl) return;
+
+	let tracks = [];
+	try {
+		tracks = JSON.parse(tracksJson);
+	} catch (e) {
+		console.warn('[ReportAudioPlayer] Failed to parse tracks:', e);
+		return;
+	}
+	if (!tracks.length) return;
+
+	// Global persistent <audio> lives in BaseLayout and survives view
+	// transitions. Keeps playback continuous across pages.
+	let audio = document.getElementById('sitd-global-audio');
+	if (!audio) {
+		audio = new Audio();
+		audio.preload = 'metadata';
+	}
+
+	const speeds = [0.75, 1, 1.25, 1.5];
+	let speedIndex = 1;
+	let currentIndex = 0;
+	let currentVoice = 'female';
+	try {
+		const saved = localStorage.getItem(STORAGE_KEY);
+		if (saved === 'male' || saved === 'female') currentVoice = saved;
+	} catch (e) { /* localStorage blocked */ }
+
+	// -------------------------------------------------------------- //
+	function showPlayer() {
+		playerEl.classList.add('is-visible');
+		document.body.classList.add('audio-player-visible');
+		document.documentElement.classList.add('audio-player-visible');
+	}
+
+	function setPlayingState(playing) {
+		const ip = document.getElementById('icon-play');
+		const ipa = document.getElementById('icon-pause');
+		const pb = document.getElementById('audio-play-btn');
+		if (!ip || !ipa || !pb) return;
+		if (playing) {
+			ip.classList.add('hidden');
+			ipa.classList.remove('hidden');
+			pb.setAttribute('aria-label', 'Pause');
+		} else {
+			ip.classList.remove('hidden');
+			ipa.classList.add('hidden');
+			pb.setAttribute('aria-label', 'Play');
+		}
+	}
+
+	function formatTime(seconds) {
+		if (!isFinite(seconds) || isNaN(seconds)) return '0:00';
+		const m = Math.floor(seconds / 60);
+		const s = Math.floor(seconds % 60);
+		return m + ':' + (s < 10 ? '0' : '') + s;
+	}
+
+	function updateProgress() {
+		if (!audio.duration) return;
+		const pct = (audio.currentTime / audio.duration) * 100;
+		const pf = document.getElementById('audio-progress-fill');
+		const pb = document.getElementById('audio-progress-bar');
+		const ct = document.getElementById('audio-current');
+		if (pf) pf.style.width = pct + '%';
+		if (pb) pb.setAttribute('aria-valuenow', Math.round(pct));
+		if (ct) ct.textContent = formatTime(audio.currentTime);
+	}
+
+	function updateVoiceLabel() {
+		const label = document.getElementById('audio-voice-label');
+		const btn = document.getElementById('audio-voice-btn');
+		if (label) label.textContent = currentVoice === 'female' ? 'Aria' : 'Guy';
+		if (btn) btn.setAttribute('aria-label', 'Voice: ' + currentVoice + '. Click to switch.');
+	}
+
+	function updateTitle(track) {
+		const pn = document.getElementById('audio-part-num');
+		const pt = document.getElementById('audio-part-title');
+		if (pn) pn.textContent = 'Part ' + String(track.part).padStart(2, '0');
+		if (pt) pt.textContent = track.title;
+	}
+
+	function updateTocHighlight(slug) {
+		const links = document.querySelectorAll('.report-toc-link');
+		links.forEach((link) => {
+			if (link.getAttribute('data-part-slug') === slug) {
+				link.classList.add('active');
+			} else {
+				link.classList.remove('active');
+			}
+		});
+	}
+
+	// -------------------------------------------------------------- //
+	function loadTrack(index, opts) {
+		opts = opts || {};
+		if (index < 0 || index >= tracks.length) return;
+		currentIndex = index;
+		const track = tracks[index];
+		const audioUrl = track.audio[currentVoice];
+		const vttUrl = track.vtt[currentVoice];
+
+		const resumeTime = opts.resumeAt || 0;
+		const autoplay = !!opts.autoplay;
+
+		setPlayingState(false);
+		audio.src = audioUrl;
+		audio.load();
+
+		// Tell AudioSync which VTT to load and which part to scope to
+		const syncData = document.getElementById('audio-sync-data');
+		if (syncData) {
+			syncData.setAttribute('data-vtt-url', vttUrl);
+			syncData.setAttribute('data-part-slug', track.slug);
+		}
+		document.dispatchEvent(new CustomEvent('audio-part-change', {
+			detail: { slug: track.slug, vttUrl: vttUrl, index: index },
+		}));
+
+		updateTitle(track);
+		updateTocHighlight(track.slug);
+		showPlayer();
+
+		const onReady = () => {
+			if (resumeTime) {
+				try { audio.currentTime = resumeTime; } catch (e) { /* ignore */ }
+			}
+			if (autoplay) {
+				audio.play().catch((err) => {
+					console.warn('[ReportAudioPlayer] Play blocked:', err);
+				});
+			}
+			audio.removeEventListener('loadedmetadata', onReady);
+		};
+		audio.addEventListener('loadedmetadata', onReady);
+	}
+
+	function switchVoice() {
+		const wasPlaying = !audio.paused;
+		const resumeAt = audio.currentTime;
+		currentVoice = currentVoice === 'female' ? 'male' : 'female';
+		try { localStorage.setItem(STORAGE_KEY, currentVoice); } catch (e) { /* blocked */ }
+		updateVoiceLabel();
+		loadTrack(currentIndex, { resumeAt: resumeAt, autoplay: wasPlaying });
+	}
+
+	function skipToNext() {
+		const next = currentIndex + 1;
+		if (next >= tracks.length) {
+			// End of report — stop playback
+			audio.pause();
+			audio.currentTime = 0;
+			return;
+		}
+		loadTrack(next, { autoplay: true });
+	}
+
+	// -------------------------------------------------------------- //
+	audio.addEventListener('loadedmetadata', function () {
+		const de = document.getElementById('audio-duration');
+		if (de) de.textContent = formatTime(audio.duration);
+	});
+
+	audio.addEventListener('timeupdate', function () {
+		updateProgress();
+		document.dispatchEvent(new CustomEvent('audio-timeupdate', {
+			detail: { currentTime: audio.currentTime, duration: audio.duration },
+		}));
+	});
+
+	audio.addEventListener('play', function () { setPlayingState(true); });
+	audio.addEventListener('pause', function () { setPlayingState(false); });
+
+	audio.addEventListener('ended', function () {
+		document.dispatchEvent(new CustomEvent('audio-ended'));
+		// Auto-advance to next part
+		const next = currentIndex + 1;
+		if (next < tracks.length) {
+			loadTrack(next, { autoplay: true });
+		} else {
+			setPlayingState(false);
+			audio.currentTime = 0;
+			const pf = document.getElementById('audio-progress-fill');
+			const ct = document.getElementById('audio-current');
+			if (pf) pf.style.width = '0%';
+			if (ct) ct.textContent = '0:00';
+		}
+	});
+
+	audio.addEventListener('error', function () {
+		const e = audio.error;
+		console.warn('[ReportAudioPlayer] Failed to load:', audio.src,
+			'code:', e ? e.code : 'unknown');
+	});
+
+	// -------------------------------------------------------------- //
+	document.addEventListener('click', function (e) {
+		if (e.target.closest('#audio-play-btn')) {
+			if (audio.paused) {
+				audio.play().catch((err) => console.warn('[ReportAudioPlayer] Play blocked:', err));
+			} else {
+				audio.pause();
+			}
+		}
+		if (e.target.closest('#audio-skip-btn')) skipToNext();
+		if (e.target.closest('#audio-voice-btn')) switchVoice();
+		if (e.target.closest('#audio-speed-btn')) {
+			speedIndex = (speedIndex + 1) % speeds.length;
+			const rate = speeds[speedIndex];
+			audio.playbackRate = rate;
+			const label = rate + 'x';
+			const btn = document.getElementById('audio-speed-btn');
+			if (btn) {
+				btn.textContent = label;
+				btn.setAttribute('aria-label', 'Playback speed: ' + label);
+			}
+		}
+	});
+
+	// Progress bar click-to-seek
+	function seekToPercent(pct) {
+		if (!audio.duration) return;
+		audio.currentTime = (pct / 100) * audio.duration;
+		updateProgress();
+	}
+
+	function getClickPercent(e) {
+		const bar = document.getElementById('audio-progress-bar');
+		if (!bar) return 0;
+		const rect = bar.getBoundingClientRect();
+		const x = (e.clientX !== undefined ? e.clientX : e.touches[0].clientX) - rect.left;
+		return Math.max(0, Math.min(100, (x / rect.width) * 100));
+	}
+
+	let isSeeking = false;
+	document.addEventListener('mousedown', function (e) {
+		if (!e.target.closest('#audio-progress-bar')) return;
+		e.preventDefault();
+		isSeeking = true;
+		seekToPercent(getClickPercent(e));
+	});
+	document.addEventListener('mousemove', function (e) {
+		if (!isSeeking) return;
+		seekToPercent(getClickPercent(e));
+	});
+	document.addEventListener('mouseup', function () { isSeeking = false; });
+
+	const progressBar = document.getElementById('audio-progress-bar');
+	if (progressBar) {
+		progressBar.addEventListener('touchstart', function (e) {
+			e.preventDefault();
+			seekToPercent(getClickPercent(e));
+		}, { passive: false });
+		progressBar.addEventListener('touchmove', function (e) {
+			e.preventDefault();
+			seekToPercent(getClickPercent(e));
+		}, { passive: false });
+		progressBar.addEventListener('keydown', function (e) {
+			if (!audio.duration) return;
+			const step = (e.shiftKey ? 30 : 5);
+			if (e.key === 'ArrowLeft') {
+				audio.currentTime = Math.max(0, audio.currentTime - step);
+				e.preventDefault();
+			} else if (e.key === 'ArrowRight') {
+				audio.currentTime = Math.min(audio.duration, audio.currentTime + step);
+				e.preventDefault();
+			}
+		});
+	}
+
+	// Scroll-driven active part: keep ToC + player title in sync when the
+	// user scrolls manually. Does NOT seek the audio — just the highlight.
+	const partSections = Array.from(document.querySelectorAll('.report-part'));
+	if (partSections.length && 'IntersectionObserver' in window) {
+		const io = new IntersectionObserver((entries) => {
+			entries.forEach((entry) => {
+				if (entry.isIntersecting) {
+					const slug = entry.target.getAttribute('data-part-slug');
+					if (!slug) return;
+					// Only update ToC highlight on scroll; don't swap tracks unless
+					// the audio is paused and the user is clearly browsing.
+					updateTocHighlight(slug);
+				}
+			});
+		}, { rootMargin: '-20% 0px -60% 0px', threshold: 0 });
+		partSections.forEach((s) => io.observe(s));
+	}
+
+	// -------------------------------------------------------------- //
+	// Init — but don't interrupt any audio already playing from a previous
+	// page. Check whether the persistent <audio> is already playing a track
+	// from THIS report; if so, just reattach the UI. Otherwise load part 1.
+	updateVoiceLabel();
+
+	function findTrackIndexByUrl(url) {
+		if (!url) return -1;
+		for (let i = 0; i < tracks.length; i++) {
+			if (tracks[i].audio.female === url || tracks[i].audio.male === url) return i;
+		}
+		return -1;
+	}
+
+	const srcNow = audio.src || '';
+	const matched = findTrackIndexByUrl(srcNow);
+	if (matched >= 0) {
+		// Audio is already playing a track from this report. Re-sync UI.
+		currentIndex = matched;
+		const t = tracks[matched];
+		currentVoice = srcNow === t.audio.male ? 'male' : 'female';
+		try { localStorage.setItem(STORAGE_KEY, currentVoice); } catch (e) { /* blocked */ }
+		updateVoiceLabel();
+		updateTitle(t);
+		updateTocHighlight(t.slug);
+		showPlayer();
+		setPlayingState(!audio.paused);
+		if (audio.duration) {
+			const de = document.getElementById('audio-duration');
+			if (de) de.textContent = formatTime(audio.duration);
+			updateProgress();
+		}
+		// Let AudioSync know which part is active so it loads the VTT
+		const syncData = document.getElementById('audio-sync-data');
+		if (syncData) {
+			syncData.setAttribute('data-vtt-url', t.vtt[currentVoice]);
+			syncData.setAttribute('data-part-slug', t.slug);
+		}
+		document.dispatchEvent(new CustomEvent('audio-part-change', {
+			detail: { slug: t.slug, vttUrl: t.vtt[currentVoice], index: matched },
+		}));
+	} else if (!audio.paused && audio.currentTime > 0) {
+		// Audio is playing something else (e.g. a journal entry). Don't
+		// interrupt — just keep the player visible so the user keeps control.
+		showPlayer();
+		setPlayingState(true);
+	} else {
+		// Fresh visit — load part 1.
+		loadTrack(0, { autoplay: false });
+	}
+})();
+</script>

@@ -1,0 +1,137 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import ReportAudioPlayer from '../../components/ReportAudioPlayer.astro';
+import AudioSync from '../../components/AudioSync.astro';
+
+const allParts = await getCollection('reports', (p) => p.id.startsWith('the-effortless-encoder/'));
+const parts = allParts.sort((a, b) => a.data.part - b.data.part);
+
+const rendered = await Promise.all(
+	parts.map(async (part) => {
+		const { Content, headings } = await render(part);
+		const slug = part.id.replace('the-effortless-encoder/', '').replace(/\.md$/, '');
+		return { part, slug, Content, headings };
+	}),
+);
+
+const AUDIO_BASE = 'https://github.com/NoMercy-Entertainment/shipping-in-the-dark/releases/download/audio-v1';
+const VTT_BASE = '/audio/reports/the-effortless-encoder';
+
+const tracks = rendered.map(({ part, slug }) => ({
+	slug,
+	title: part.data.title,
+	part: part.data.part,
+	audio: {
+		female: `${AUDIO_BASE}/the-effortless-encoder--${slug}.female.mp3`,
+		male: `${AUDIO_BASE}/the-effortless-encoder--${slug}.male.mp3`,
+	},
+	vtt: {
+		female: `${VTT_BASE}/${slug}.female.vtt`,
+		male: `${VTT_BASE}/${slug}.male.vtt`,
+	},
+}));
+
+const title = 'NoMercy MediaServer — The Effortless Encoder';
+const description = 'A deep report on the orchestration behind NoMercy MediaServer\'s video and audio encoding — architecture, codecs, safety net, hardware, content analysis, subtitles, DRM, live transcode, disc ripping, distributed encoding, and roadmap.';
+---
+
+<BaseLayout title={title} description={description} ogType="article">
+	<Header />
+
+	<main class="mx-auto max-w-4xl px-4 py-12 sm:px-6">
+		<article>
+			<header class="prose mb-8">
+				<div class="mb-4 inline-flex items-center rounded-full bg-accent-400/10 px-3 py-1 text-sm font-medium text-accent-400 light:bg-accent-600/10 light:text-accent-700">
+					Report · {parts.length} parts
+				</div>
+				<h1 class="mb-4 text-3xl font-bold leading-tight tracking-tight text-surface-50 sm:text-4xl light:text-surface-950">
+					{title}
+				</h1>
+				<p class="text-surface-400 light:text-surface-700">
+					{description}
+				</p>
+			</header>
+
+			<nav class="report-toc mb-12" aria-label="Report parts">
+				<h2 class="text-sm font-semibold uppercase tracking-wider text-surface-500 light:text-surface-600 mb-3">Contents</h2>
+				<ol class="space-y-1">
+					{rendered.map(({ part, slug }) => (
+						<li>
+							<a
+								href={`#part-${slug}`}
+								class="report-toc-link inline-flex items-baseline gap-3 text-surface-300 no-underline hover:text-accent-400 light:text-surface-700 light:hover:text-accent-700"
+								data-part-slug={slug}
+							>
+								<span class="font-mono text-xs text-surface-500 light:text-surface-500">
+									{part.data.part === 0 ? 'Intro' : `Part ${String(part.data.part).padStart(2, '0')}`}
+								</span>
+								<span>{part.data.title}</span>
+							</a>
+						</li>
+					))}
+				</ol>
+			</nav>
+
+			{rendered.map(({ part, slug, Content }) => (
+				<section
+					id={`part-${slug}`}
+					class="report-part"
+					data-part-slug={slug}
+					data-part-index={part.data.part}
+				>
+					<div class="prose part-body">
+						<Content />
+					</div>
+				</section>
+			))}
+		</article>
+	</main>
+
+	<Footer />
+
+	<AudioSync />
+	<ReportAudioPlayer tracks={tracks} title={title} />
+</BaseLayout>
+
+<style is:global>
+	.report-part {
+		scroll-margin-top: 80px;
+		padding-top: 2rem;
+		margin-top: 2rem;
+		border-top: 1px solid var(--color-surface-800);
+	}
+	html.light .report-part {
+		border-top-color: var(--color-surface-200);
+	}
+	.report-part:first-of-type {
+		border-top: none;
+		padding-top: 0;
+		margin-top: 0;
+	}
+
+	.report-toc {
+		padding: 1rem 1.25rem;
+		border-radius: 8px;
+		background-color: var(--color-surface-900);
+		border: 1px solid var(--color-surface-800);
+	}
+	html.light .report-toc {
+		background-color: var(--color-surface-100);
+		border-color: var(--color-surface-200);
+	}
+
+	.report-toc-link.active {
+		color: var(--color-accent-400);
+	}
+	html.light .report-toc-link.active {
+		color: var(--color-accent-700);
+	}
+
+	.part-body h1 {
+		/* Reports duplicate the part title as an h1. The page-level h1 is above. */
+		display: none;
+	}
+</style>

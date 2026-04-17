@@ -327,8 +327,14 @@ const { audioUrl = '', title = '' } = Astro.props;
 	// Audio engine — native HTML5 Audio                                    //
 	// ------------------------------------------------------------------ //
 
-	var audio = new Audio();
-	audio.preload = 'metadata';
+	// Global persistent <audio> lives in BaseLayout and survives view
+	// transitions. Keeps playback continuous when the user navigates.
+	var audio = document.getElementById('sitd-global-audio');
+	if (!audio) {
+		// Fallback for pages that somehow skipped BaseLayout
+		audio = new Audio();
+		audio.preload = 'metadata';
+	}
 
 	var speeds = [0.75, 1, 1.25, 1.5];
 	var speedIndex = 1; // start at 1x
@@ -551,26 +557,36 @@ const { audioUrl = '', title = '' } = Astro.props;
 		var url   = pagePlayer.getAttribute('data-audio-url') || '';
 		var title = pagePlayer.getAttribute('data-title') || '';
 
+		// If the persisted audio is already playing, never interrupt it for
+		// navigation. The new page's UI just syncs to whatever is running.
+		var isPlaying = !audio.paused && audio.currentTime > 0;
+
 		if (url) {
-			// Only reload if the URL actually changed
-			if (url !== audio.src) {
+			// Only load a new track if (a) audio isn't currently playing OR
+			// (b) the URL changed and the user hasn't explicitly chosen to
+			// keep the previous stream.
+			if (url !== audio.src && !isPlaying) {
 				loadTrack(url, title);
 			} else {
-				// Same track — just update title in case it changed
-				titleEl.textContent = title;
+				// Same track, or audio is playing — keep the existing stream.
+				// Update the UI title only.
+				if (titleEl) titleEl.textContent = title || '';
 				showPlayer();
 			}
+		} else if (isPlaying) {
+			// Page has no audio URL, but audio is playing from a previous page.
+			// Keep the player visible so the user can still control playback.
+			showPlayer();
 		} else {
-			// This page has no audio — pause and hide
-			audio.pause();
+			// No audio running and page has none — hide the player.
 			hidePlayer();
 		}
 	}
 
-	document.addEventListener('astro:before-swap', function () {
-		audio.pause();
-		hidePlayer();
-	});
+	// Note: we do NOT pause the audio on before-swap. The <audio> element is
+	// persisted via BaseLayout's transition:persist, so playback continues
+	// across navigations. The next page's AudioPlayer / ReportAudioPlayer
+	// will re-attach its UI to the same persistent element.
 
 	document.addEventListener('astro:page-load', function () {
 		// Re-grab element references after the swap (DOM replaced)
