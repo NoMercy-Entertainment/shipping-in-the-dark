@@ -206,7 +206,10 @@ html.light .prose .audio-active .heading-anchor {
 
 	function getScopeRoot() {
 		if (currentPartSlug) {
-			var scoped = document.querySelector('[data-part-slug="' + currentPartSlug + '"]');
+			// Must match the section element, not a TOC link that also carries
+			// data-part-slug. Prefer the id'd section, which is unique.
+			var scoped = document.getElementById('part-' + currentPartSlug)
+				|| document.querySelector('section[data-part-slug="' + currentPartSlug + '"]');
 			if (scoped) return scoped;
 		}
 		return null;

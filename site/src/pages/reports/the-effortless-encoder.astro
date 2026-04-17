@@ -307,9 +307,19 @@ const description = 'A deep report on the orchestration behind NoMercy MediaServ
 		margin-top: 0;
 	}
 
+	/*
+	  Each report part's markdown opens with `# Part Title`. That is the
+	  same text the sidebar lists, so it MUST render on the page — hiding
+	  it leaves #part-{slug} anchors landing on a section with no heading.
+	  Give the per-part h1 a visually distinct size so the top-level page
+	  h1 still reads as the primary title.
+	*/
 	.part-body h1 {
-		/* Reports duplicate the part title as an h1. The page-level h1 is above. */
-		display: none;
+		font-size: 1.875rem;
+		line-height: 1.25;
+		letter-spacing: -0.01em;
+		margin-top: 0;
+		margin-bottom: 0.5em;
 	}
 </style>
 
