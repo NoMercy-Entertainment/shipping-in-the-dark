@@ -41,54 +41,72 @@ const description = 'A deep report on the orchestration behind NoMercy MediaServ
 <BaseLayout title={title} description={description} ogType="article">
 	<Header />
 
-	<main class="mx-auto max-w-4xl px-4 py-12 sm:px-6">
-		<article>
-			<header class="prose mb-8">
-				<div class="mb-4 inline-flex items-center rounded-full bg-accent-400/10 px-3 py-1 text-sm font-medium text-accent-400 light:bg-accent-600/10 light:text-accent-700">
-					Report · {parts.length} parts
-				</div>
-				<h1 class="mb-4 text-3xl font-bold leading-tight tracking-tight text-surface-50 sm:text-4xl light:text-surface-950">
-					{title}
-				</h1>
-				<p class="text-surface-400 light:text-surface-700">
-					{description}
-				</p>
-			</header>
-
-			<nav class="report-toc mb-12" aria-label="Report parts">
-				<h2 class="text-sm font-semibold uppercase tracking-wider text-surface-500 light:text-surface-600 mb-3">Contents</h2>
-				<ol class="space-y-1">
-					{rendered.map(({ part, slug }) => (
-						<li>
-							<a
-								href={`#part-${slug}`}
-								class="report-toc-link inline-flex items-baseline gap-3 text-surface-300 no-underline hover:text-accent-400 light:text-surface-700 light:hover:text-accent-700"
-								data-part-slug={slug}
-							>
-								<span class="font-mono text-xs text-surface-500 light:text-surface-500">
-									{part.data.part === 0 ? 'Intro' : `Part ${String(part.data.part).padStart(2, '0')}`}
-								</span>
-								<span>{part.data.title}</span>
-							</a>
-						</li>
-					))}
-				</ol>
-			</nav>
-
-			{rendered.map(({ part, slug, Content }) => (
-				<section
-					id={`part-${slug}`}
-					class="report-part"
-					data-part-slug={slug}
-					data-part-index={part.data.part}
+	<div class="report-shell mx-auto px-4 py-12 sm:px-6">
+		<aside class="report-sidebar" aria-label="Report contents">
+			<div class="report-sidebar-inner">
+				<button
+					id="report-toc-toggle"
+					class="report-toc-toggle"
+					type="button"
+					aria-expanded="false"
+					aria-controls="report-toc-list"
 				>
-					<div class="prose part-body">
-						<Content />
+					<span>Contents</span>
+					<svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="14" height="14">
+						<polyline points="6 9 12 15 18 9"></polyline>
+					</svg>
+				</button>
+				<nav class="report-toc" aria-label="Report parts">
+					<h2 class="report-toc-heading">Contents</h2>
+					<ol id="report-toc-list" class="report-toc-list">
+						{rendered.map(({ part, slug }) => (
+							<li>
+								<a
+									href={`#part-${slug}`}
+									class="report-toc-link"
+									data-part-slug={slug}
+								>
+									<span class="report-toc-marker">
+										{part.data.part === 0 ? 'Intro' : String(part.data.part).padStart(2, '0')}
+									</span>
+									<span class="report-toc-title">{part.data.title}</span>
+								</a>
+							</li>
+						))}
+					</ol>
+				</nav>
+			</div>
+		</aside>
+
+		<main class="report-main">
+			<article>
+				<header class="prose mb-8">
+					<div class="mb-4 inline-flex items-center rounded-full bg-accent-400/10 px-3 py-1 text-sm font-medium text-accent-400 light:bg-accent-600/10 light:text-accent-700">
+						Report · {parts.length} parts
 					</div>
-				</section>
-			))}
-		</article>
-	</main>
+					<h1 class="mb-4 text-3xl font-bold leading-tight tracking-tight text-surface-50 sm:text-4xl light:text-surface-950">
+						{title}
+					</h1>
+					<p class="text-surface-400 light:text-surface-700">
+						{description}
+					</p>
+				</header>
+
+				{rendered.map(({ part, slug, Content }) => (
+					<section
+						id={`part-${slug}`}
+						class="report-part"
+						data-part-slug={slug}
+						data-part-index={part.data.part}
+					>
+						<div class="prose part-body">
+							<Content />
+						</div>
+					</section>
+				))}
+			</article>
+		</main>
+	</div>
 
 	<Footer />
 
@@ -97,6 +115,177 @@ const description = 'A deep report on the orchestration behind NoMercy MediaServ
 </BaseLayout>
 
 <style is:global>
+	/* ------------------------------------------------------------------ */
+	/* Shell — sidebar + main column                                       */
+	/* ------------------------------------------------------------------ */
+	.report-shell {
+		max-width: 80rem;       /* 1280px */
+		display: grid;
+		gap: 3rem;
+	}
+
+	@media (min-width: 1024px) {
+		.report-shell {
+			grid-template-columns: 16rem minmax(0, 1fr);
+			gap: 4rem;
+		}
+	}
+
+	.report-main {
+		max-width: 48rem;       /* prose readable width */
+		min-width: 0;
+	}
+
+	/* ------------------------------------------------------------------ */
+	/* Sidebar                                                              */
+	/* ------------------------------------------------------------------ */
+	.report-sidebar {
+		order: -1;               /* keep sidebar above main on mobile */
+	}
+
+	.report-sidebar-inner {
+		background-color: var(--color-surface-900);
+		border: 1px solid var(--color-surface-800);
+		border-radius: 10px;
+		padding: 1rem 1.25rem;
+	}
+
+	html.light .report-sidebar-inner {
+		background-color: var(--color-surface-100);
+		border-color: var(--color-surface-200);
+	}
+
+	@media (min-width: 1024px) {
+		.report-sidebar {
+			order: 0;
+		}
+		.report-sidebar-inner {
+			position: sticky;
+			top: 88px;              /* below the site header */
+			max-height: calc(100vh - 120px);
+			overflow-y: auto;
+		}
+	}
+
+	/* Collapse toggle — visible on mobile only */
+	.report-toc-toggle {
+		display: inline-flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.5rem;
+		width: 100%;
+		font-size: 0.75rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-surface-500);
+		background: transparent;
+		border: none;
+		cursor: pointer;
+		padding: 0.25rem 0;
+		outline: none;
+	}
+	html.light .report-toc-toggle { color: var(--color-surface-600); }
+	.report-toc-toggle:focus-visible {
+		outline: 2px solid var(--color-accent-400);
+		outline-offset: 2px;
+		border-radius: 4px;
+	}
+	.report-toc-toggle .chevron {
+		transition: transform 0.2s ease;
+	}
+	.report-toc-toggle[aria-expanded="true"] .chevron {
+		transform: rotate(180deg);
+	}
+	.report-toc-heading {
+		display: none;
+	}
+
+	@media (min-width: 1024px) {
+		.report-toc-toggle { display: none; }
+		.report-toc-heading {
+			display: block;
+			font-size: 0.75rem;
+			font-weight: 600;
+			text-transform: uppercase;
+			letter-spacing: 0.08em;
+			color: var(--color-surface-500);
+			margin: 0 0 0.75rem 0;
+		}
+		html.light .report-toc-heading { color: var(--color-surface-600); }
+	}
+
+	/* TOC list — collapsed by default on mobile */
+	.report-toc-list {
+		list-style: none;
+		padding: 0;
+		margin: 0.5rem 0 0 0;
+		display: none;
+	}
+	.report-toc[data-open="true"] .report-toc-list {
+		display: block;
+	}
+	@media (min-width: 1024px) {
+		.report-toc-list { display: block; margin-top: 0; }
+	}
+
+	.report-toc-list li + li { margin-top: 0.1rem; }
+
+	.report-toc-link {
+		display: flex;
+		align-items: baseline;
+		gap: 0.75rem;
+		padding: 0.35rem 0.5rem;
+		border-radius: 6px;
+		color: var(--color-surface-300);
+		text-decoration: none;
+		font-size: 0.875rem;
+		line-height: 1.4;
+		transition: color 0.15s ease, background-color 0.15s ease;
+	}
+	html.light .report-toc-link { color: var(--color-surface-700); }
+
+	.report-toc-link:hover {
+		color: var(--color-accent-400);
+		background-color: var(--color-surface-800);
+	}
+	html.light .report-toc-link:hover {
+		color: var(--color-accent-700);
+		background-color: var(--color-surface-200);
+	}
+
+	.report-toc-link.active {
+		color: var(--color-accent-400);
+		background-color: var(--color-surface-800);
+	}
+	html.light .report-toc-link.active {
+		color: var(--color-accent-700);
+		background-color: var(--color-surface-200);
+	}
+
+	.report-toc-marker {
+		flex-shrink: 0;
+		font-family: var(--font-mono);
+		font-size: 0.6875rem;
+		color: var(--color-surface-500);
+		min-width: 2.25rem;
+	}
+	html.light .report-toc-marker { color: var(--color-surface-500); }
+
+	.report-toc-link.active .report-toc-marker {
+		color: var(--color-accent-400);
+	}
+	html.light .report-toc-link.active .report-toc-marker {
+		color: var(--color-accent-700);
+	}
+
+	.report-toc-title {
+		min-width: 0;
+	}
+
+	/* ------------------------------------------------------------------ */
+	/* Parts                                                                */
+	/* ------------------------------------------------------------------ */
 	.report-part {
 		scroll-margin-top: 80px;
 		padding-top: 2rem;
@@ -112,26 +301,30 @@ const description = 'A deep report on the orchestration behind NoMercy MediaServ
 		margin-top: 0;
 	}
 
-	.report-toc {
-		padding: 1rem 1.25rem;
-		border-radius: 8px;
-		background-color: var(--color-surface-900);
-		border: 1px solid var(--color-surface-800);
-	}
-	html.light .report-toc {
-		background-color: var(--color-surface-100);
-		border-color: var(--color-surface-200);
-	}
-
-	.report-toc-link.active {
-		color: var(--color-accent-400);
-	}
-	html.light .report-toc-link.active {
-		color: var(--color-accent-700);
-	}
-
 	.part-body h1 {
 		/* Reports duplicate the part title as an h1. The page-level h1 is above. */
 		display: none;
 	}
 </style>
+
+<script is:inline>
+(function () {
+	// Mobile collapse toggle for the contents sidebar.
+	function wireToggle() {
+		var btn = document.getElementById('report-toc-toggle');
+		var nav = document.querySelector('.report-toc');
+		if (!btn || !nav) return;
+		// Expanded by default on desktop, collapsed on mobile.
+		var isDesktop = window.matchMedia('(min-width: 1024px)').matches;
+		nav.setAttribute('data-open', isDesktop ? 'true' : 'false');
+		btn.setAttribute('aria-expanded', isDesktop ? 'true' : 'false');
+		btn.onclick = function () {
+			var open = nav.getAttribute('data-open') === 'true';
+			nav.setAttribute('data-open', String(!open));
+			btn.setAttribute('aria-expanded', String(!open));
+		};
+	}
+	wireToggle();
+	document.addEventListener('astro:page-load', wireToggle);
+})();
+</script>

@@ -1,5 +1,6 @@
 ---
 import { ViewTransitions } from 'astro:transitions';
+import CodeCopy from '../components/CodeCopy.astro';
 
 interface Props {
 	title: string;
@@ -83,5 +84,6 @@ const canonicalUrl = new URL(Astro.url.pathname, Astro.site);
 			between pages. Never remove the transition:persist attribute.
 		-->
 		<audio id="sitd-global-audio" preload="metadata" transition:persist="sitd-audio"></audio>
+		<CodeCopy />
 	</body>
 </html>
