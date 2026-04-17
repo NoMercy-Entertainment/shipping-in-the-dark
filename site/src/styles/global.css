@@ -41,20 +41,10 @@ html {
 	/*
 	  Offset every in-page anchor jump so the target is not hidden
 	  behind the sticky site header. Browsers apply this to the root
-	  scrolling container when navigating via hash URLs.
+	  scrolling container when navigating via hash URLs, and for the
+	  smooth scrollIntoView() calls AudioSync uses.
 	*/
 	scroll-padding-top: 88px;
-}
-
-/*
-  Every heading and every id-anchored section also carries its own
-  scroll-margin-top so programmatic scrollIntoView calls (used by
-  the audio sync auto-scroll and the report ToC) land in the right
-  spot, not behind the header.
-*/
-:is(h1, h2, h3, h4, h5, h6)[id],
-[id^="part-"] {
-	scroll-margin-top: 88px;
 }
 
 /* Dark mode (default) */
