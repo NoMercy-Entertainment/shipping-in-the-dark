@@ -76,14 +76,16 @@ const canonicalUrl = new URL(Astro.url.pathname, Astro.site);
 		<slot name="head" />
 	</head>
 	<body class="min-h-screen">
-		<slot />
 		<!--
 			Global audio element that persists across navigation via Astro's
 			View Transitions. Both AudioPlayer and ReportAudioPlayer reference
 			this element by id so playback continues when the user navigates
-			between pages. Never remove the transition:persist attribute.
+			between pages. MUST stay before <slot /> so that the inline
+			player scripts find it when they first run during HTML parsing.
+			Never remove the transition:persist attribute.
 		-->
 		<audio id="sitd-global-audio" preload="metadata" transition:persist="sitd-audio"></audio>
+		<slot />
 		<CodeCopy />
 	</body>
 </html>
