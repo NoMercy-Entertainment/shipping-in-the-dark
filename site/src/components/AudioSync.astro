@@ -313,16 +313,18 @@ html.light .prose .audio-active .heading-anchor {
 			// 2. Deterministic element reference — p-N, h-N, or i-N
 			if (cue.elementId) {
 				var el = null;
+				var isHeading = false;
 				if (cue.elementId.startsWith('p-')) {
 					el = lookupById(cue.elementId);
 				} else if (cue.elementId.startsWith('h-')) {
 					el = lookupHeading(cue.elementId);
+					isHeading = true;
 				} else if (cue.elementId.startsWith('i-')) {
 					el = lookupImage(cue.elementId);
 					if (el) el = el.closest('p') || el.parentElement || el;
 				}
 				var sectionSlug = el ? deriveSectionSlug(el) : null;
-				return { start: cue.start, end: cue.end, element: el, section: sectionSlug };
+				return { start: cue.start, end: cue.end, element: el, section: sectionSlug, isHeading: isHeading };
 			}
 
 			// 3. Text-based fuzzy matching — fallback for VTTs without p-N ids
@@ -415,15 +417,22 @@ html.light .prose .audio-active .heading-anchor {
 			}
 			activeElement = el;
 
-			// Auto-scroll: bring active paragraph into view if out of viewport
-			// Account for the 64px audio player bar at the bottom
+			// Auto-scroll: bring active element into view if out of viewport.
+			// Headings scroll to the TOP of the viewport (feels right when a
+			// new section opens — reader sees the heading then the paragraphs
+			// unroll below it). Paragraphs scroll to CENTER (easier to follow).
+			// The 64px player bar at the bottom and 88px scroll-padding at
+			// the top (global.css) are already respected by scrollIntoView.
 			if (el) {
 				var rect = el.getBoundingClientRect();
 				var vh   = window.innerHeight;
 				var playerHeight = 64;
 				var visibleBottom = vh - playerHeight;
 				if (rect.top < 80 || rect.bottom > visibleBottom) {
-					el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+					el.scrollIntoView({
+						behavior: 'smooth',
+						block: cue && cue.isHeading ? 'start' : 'center',
+					});
 				}
 			}
 		}
