@@ -417,22 +417,26 @@ html.light .prose .audio-active .heading-anchor {
 			}
 			activeElement = el;
 
-			// Auto-scroll: bring active element into view if out of viewport.
-			// Headings scroll to the TOP of the viewport (feels right when a
-			// new section opens — reader sees the heading then the paragraphs
-			// unroll below it). Paragraphs scroll to CENTER (easier to follow).
-			// The 64px player bar at the bottom and 88px scroll-padding at
-			// the top (global.css) are already respected by scrollIntoView.
+			// Auto-scroll behavior:
+			// - Headings ALWAYS scroll to the top (block: 'start'), regardless
+			//   of whether they are already in view. A new section always
+			//   feels right at the top — the heading + first paragraphs come
+			//   into view together.
+			// - Paragraphs only scroll if they would otherwise be offscreen,
+			//   and land in the CENTER for comfortable reading.
+			// scroll-padding-top: 88px on <html> keeps the heading below the
+			// sticky site header; the 64px player at the bottom is accounted
+			// for by the center-block default.
 			if (el) {
-				var rect = el.getBoundingClientRect();
-				var vh   = window.innerHeight;
-				var playerHeight = 64;
-				var visibleBottom = vh - playerHeight;
-				if (rect.top < 80 || rect.bottom > visibleBottom) {
-					el.scrollIntoView({
-						behavior: 'smooth',
-						block: cue && cue.isHeading ? 'start' : 'center',
-					});
+				if (cue && cue.isHeading) {
+					el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+				} else {
+					var rect = el.getBoundingClientRect();
+					var vh   = window.innerHeight;
+					var visibleBottom = vh - 64;
+					if (rect.top < 80 || rect.bottom > visibleBottom) {
+						el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+					}
 				}
 			}
 		}
