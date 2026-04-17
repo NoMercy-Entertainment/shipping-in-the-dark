@@ -381,6 +381,24 @@ const tracksJson = JSON.stringify(tracks);
 		}
 		if (e.target.closest('#audio-skip-btn')) skipToNext();
 		if (e.target.closest('#audio-voice-btn')) switchVoice();
+
+		// Clicking a sidebar TOC link also switches the audio track to that
+		// part. The browser still handles the hash anchor scroll — we just
+		// swap tracks underneath. If audio was playing, keep playing; if not,
+		// just cue the new track for play-readiness.
+		var tocLink = e.target.closest ? e.target.closest('.report-toc-link') : null;
+		if (tocLink) {
+			var slug = tocLink.getAttribute('data-part-slug');
+			if (slug) {
+				for (var ti = 0; ti < tracks.length; ti++) {
+					if (tracks[ti].slug === slug && ti !== currentIndex) {
+						var wasPlaying = !audio.paused && audio.currentTime > 0;
+						loadTrack(ti, { autoplay: wasPlaying });
+						break;
+					}
+				}
+			}
+		}
 		if (e.target.closest('#audio-speed-btn')) {
 			speedIndex = (speedIndex + 1) % speeds.length;
 			const rate = speeds[speedIndex];
