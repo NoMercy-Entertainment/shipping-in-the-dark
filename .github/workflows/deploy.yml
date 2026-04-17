@@ -87,20 +87,65 @@ jobs:
             DESCRIPTION="$SUBJECT"
           fi
 
-          # Find the newest entry added in this commit and extract its slug for a direct link.
-          # Look for added/modified .md files in entries/ and parse the slug from frontmatter.
-          ENTRY_SLUG=""
-          NEWEST_ENTRY=$(git diff --name-only --diff-filter=A HEAD~1 HEAD -- 'entries/*.md' 2>/dev/null | tail -1)
-          if [ -n "$NEWEST_ENTRY" ] && [ -f "$NEWEST_ENTRY" ]; then
-            ENTRY_SLUG=$(grep -m1 '^slug:' "$NEWEST_ENTRY" | sed 's/^slug:[[:space:]]*//')
+          # Work out what the deployment *was about* so the notification links
+          # the reader directly to the most relevant page instead of the home
+          # page. Check, in order of specificity:
+          #
+          #   1. A new entry added under entries/*.md → /entry/{slug}/
+          #   2. A new or modified report under reports/{report}/*.md → /reports/{report}/
+          #   3. A new or modified team profile under site/src/content/agents/*.md → /team/{slug}/
+          #   4. Fallback to the journal home page.
+          #
+          # "New" takes priority over "modified" so a VTT-only bot commit still
+          # resolves to the original entry or report it refreshed.
+          CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD 2>/dev/null || echo "")
+
+          TARGET_URL="https://journal.nomercy.tv"
+          TARGET_KIND="update"
+          TARGET_TITLE=""
+
+          # 1. New entry?
+          NEW_ENTRY=$(echo "$CHANGED_FILES" | grep -E '^entries/.+\.md$' | tail -1)
+          if [ -n "$NEW_ENTRY" ] && [ -f "$NEW_ENTRY" ]; then
+            SLUG=$(grep -m1 '^slug:' "$NEW_ENTRY" | sed 's/^slug:[[:space:]]*//; s/^["'\'']//; s/["'\'']$//')
+            if [ -n "$SLUG" ]; then
+              TARGET_URL="https://journal.nomercy.tv/entry/${SLUG}/"
+              TARGET_KIND="entry"
+              TARGET_TITLE=$(grep -m1 '^title:' "$NEW_ENTRY" | sed 's/^title:[[:space:]]*//; s/^["'\'']//; s/["'\'']$//')
+            fi
           fi
 
-          # Build the URL — direct link to entry if we found a slug, otherwise homepage
-          if [ -n "$ENTRY_SLUG" ]; then
-            ENTRY_URL="https://journal.nomercy.tv/entry/${ENTRY_SLUG}"
-          else
-            ENTRY_URL="https://journal.nomercy.tv"
+          # 2. Report (any file under reports/{report}/*.md)
+          if [ "$TARGET_KIND" = "update" ]; then
+            REPORT_FILE=$(echo "$CHANGED_FILES" | grep -E '^reports/[^/]+/.+\.md$' | tail -1)
+            if [ -n "$REPORT_FILE" ]; then
+              REPORT_SLUG=$(echo "$REPORT_FILE" | sed -E 's|^reports/([^/]+)/.*$|\1|')
+              if [ -n "$REPORT_SLUG" ]; then
+                TARGET_URL="https://journal.nomercy.tv/reports/${REPORT_SLUG}/"
+                TARGET_KIND="report"
+                # Use the report directory name as the title fallback
+                TARGET_TITLE="$(echo "$REPORT_SLUG" | sed 's/-/ /g')"
+              fi
+            fi
           fi
+
+          # 3. Team profile
+          if [ "$TARGET_KIND" = "update" ]; then
+            TEAM_FILE=$(echo "$CHANGED_FILES" | grep -E '^site/src/content/agents/.+\.md$' | tail -1)
+            if [ -n "$TEAM_FILE" ] && [ -f "$TEAM_FILE" ]; then
+              TEAM_SLUG=$(basename "$TEAM_FILE" .md)
+              TARGET_URL="https://journal.nomercy.tv/team/${TEAM_SLUG}/"
+              TARGET_KIND="team"
+              TARGET_TITLE=$(grep -m1 '^display_name:' "$TEAM_FILE" | sed 's/^display_name:[[:space:]]*//; s/^["'\'']//; s/["'\'']$//')
+            fi
+          fi
+
+          case "$TARGET_KIND" in
+            entry)   EMBED_DESCRIPTION="A new entry has been published to the NoMercy dev journal." ;;
+            report)  EMBED_DESCRIPTION="A report has been updated on the NoMercy dev journal." ;;
+            team)    EMBED_DESCRIPTION="A team profile has been updated on the NoMercy dev journal." ;;
+            *)       EMBED_DESCRIPTION="The NoMercy dev journal has been updated." ;;
+          esac
 
           # Format the ISO timestamp into something readable.
           FORMATTED_TIME=$(date -u -d "$COMMIT_TIMESTAMP" '+%d %b %Y at %H:%M UTC' 2>/dev/null || echo "$COMMIT_TIMESTAMP")
@@ -115,8 +160,8 @@ jobs:
             "embeds": [
               {
                 "title": "$DESCRIPTION",
-                "url": "$ENTRY_URL",
-                "description": "A new entry has been published to the NoMercy dev journal.",
+                "url": "$TARGET_URL",
+                "description": "$EMBED_DESCRIPTION",
                 "color": $EMBED_COLOR,
                 "fields": [
                   {
