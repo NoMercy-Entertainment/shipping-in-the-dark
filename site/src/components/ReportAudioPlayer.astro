@@ -412,6 +412,9 @@ const tracksJson = JSON.stringify(tracks);
 	'use strict';
 
 	const STORAGE_KEY = 'sitd:narrator-voice';
+	// Per-report position memory. The key is scoped by the tracks array's
+	// first slug so two different reports don't stomp each other.
+	const POSITION_KEY = 'sitd:report-position';
 
 	const playerEl = document.getElementById('report-audio-player');
 	if (!playerEl) return;
@@ -677,12 +680,60 @@ const tracksJson = JSON.stringify(tracks);
 		if (de) de.textContent = formatTime(audio.duration);
 	});
 
+	// Position persistence. Save the reader's spot every few seconds so
+	// a refresh or revisit resumes at the same paragraph in the same
+	// track with the same voice.
+	let lastPositionSaveAt = 0;
+	function getReportKey() {
+		return POSITION_KEY + ':' + (tracks[0] && tracks[0].slug ? tracks[0].slug : 'default');
+	}
+	function savePosition(force) {
+		if (!audio || audio.duration === 0 || !isFinite(audio.duration)) return;
+		const now = Date.now();
+		if (!force && now - lastPositionSaveAt < 2500) return;
+		lastPositionSaveAt = now;
+		try {
+			localStorage.setItem(getReportKey(), JSON.stringify({
+				trackIndex: currentIndex,
+				slug: tracks[currentIndex] ? tracks[currentIndex].slug : null,
+				time: audio.currentTime,
+				voice: currentVoice,
+				savedAt: now,
+			}));
+		} catch (e) { /* quota / disabled */ }
+	}
+	function loadPosition() {
+		try {
+			const raw = localStorage.getItem(getReportKey());
+			if (!raw) return null;
+			const data = JSON.parse(raw);
+			if (typeof data !== 'object' || data === null) return null;
+			// Validate against current tracks so changes to the report don't
+			// produce a nonsense resume.
+			if (typeof data.slug !== 'string') return null;
+			const idx = findTrackIndexBySlug(data.slug);
+			if (idx < 0) return null;
+			return {
+				trackIndex: idx,
+				time: Number.isFinite(data.time) ? data.time : 0,
+				voice: data.voice === 'male' ? 'male' : 'female',
+			};
+		} catch (e) { return null; }
+	}
+
 	audio.addEventListener('timeupdate', function () {
 		updateProgress();
 		document.dispatchEvent(new CustomEvent('audio-timeupdate', {
 			detail: { currentTime: audio.currentTime, duration: audio.duration },
 		}));
+		savePosition(false);
 	});
+
+	// Save on pause and before the page unloads, in addition to the
+	// throttled timeupdate saves.
+	audio.addEventListener('pause', function () { savePosition(true); });
+	window.addEventListener('pagehide', function () { savePosition(true); });
+	window.addEventListener('beforeunload', function () { savePosition(true); });
 
 	audio.addEventListener('play', function () { setPlayingState(true); });
 	audio.addEventListener('pause', function () { setPlayingState(false); });
@@ -1066,9 +1117,10 @@ const tracksJson = JSON.stringify(tracks);
 	} else {
 		// Fresh visit — honour a hash target if present. A section hash cues
 		// that part from the start; a heading hash cues the part AND queues
-		// a seek to the heading's cue once metadata is ready. No autoplay
-		// on first load — wait for the user to hit play, then we'll apply
-		// the correct start time on their first play.
+		// a seek to the heading's cue once metadata is ready. Otherwise
+		// restore the reader's last position from localStorage so a
+		// refresh or revisit picks up where they left off.
+		// No autoplay on first load — wait for the user to hit play.
 		const target = resolveHashTarget();
 		if (target) {
 			loadTrack(target.trackIdx, { autoplay: false });
@@ -1082,7 +1134,25 @@ const tracksJson = JSON.stringify(tracks);
 					.catch(function () { /* best effort */ });
 			}
 		} else {
-			loadTrack(0, { autoplay: false });
+			const saved = loadPosition();
+			if (saved) {
+				if (saved.voice !== currentVoice) {
+					currentVoice = saved.voice;
+					updateVoiceLabel();
+					updateVoiceMenuChecked();
+				}
+				loadTrack(saved.trackIndex, { autoplay: false });
+				// Queue the saved time for the first play; seek on loadedmetadata.
+				if (saved.time > 1) {
+					const applyResume = function () {
+						try { audio.currentTime = saved.time; } catch (_) {}
+						audio.removeEventListener('loadedmetadata', applyResume);
+					};
+					audio.addEventListener('loadedmetadata', applyResume);
+				}
+			} else {
+				loadTrack(0, { autoplay: false });
+			}
 		}
 	}
 

@@ -441,6 +441,20 @@ html.light .audio-progress-bar {
 	background-color: var(--color-surface-300);
 }
 
+/*
+  Invisible hit area — extends the clickable region 12px above and 4px
+  below the visible 4px strip without changing the layout. Much easier
+  to grab on a trackpad while keeping the minimal track look.
+*/
+.audio-progress-bar::before {
+	content: '';
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: -12px;
+	bottom: -4px;
+}
+
 .audio-progress-bar:hover {
 	height: 6px;
 	margin-top: -2px;
