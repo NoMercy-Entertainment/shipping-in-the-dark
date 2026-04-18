@@ -49,210 +49,226 @@ p-8
 p-9
 
 13
-00:02:14.911 --> 00:02:21.323
-p-10
+00:02:13.999 --> 00:02:40.924
+--On screen you see an example. A JSON object with a valid flag set to false, an errors array holding one entry with severity error, a field path pointing at video profiles index zero dot level, a human message explaining that H.264 Level 4.1 caps at 1080p but the output is 3840 by 2160, and a fix that tells the user to raise the level to 5.1 or drop the resolution. The warnings array is empty.
 
 14
-00:02:21.875 --> 00:02:37.050
-p-11
+00:02:41.884 --> 00:02:48.296
+p-10
 
 15
-00:02:38.010 --> 00:02:39.722
-h-3
+00:02:48.848 --> 00:03:04.023
+p-11
 
 16
-00:02:40.178 --> 00:02:47.890
-p-12
+00:03:04.983 --> 00:03:06.695
+h-3
 
 17
-00:02:48.346 --> 00:02:51.621
-p-13
+00:03:07.151 --> 00:03:14.863
+p-12
 
 18
-00:02:52.677 --> 00:02:58.664
-p-14
+00:03:15.319 --> 00:03:18.594
+p-13
 
 19
-00:03:00.512 --> 00:03:17.274
-p-15
+00:03:19.650 --> 00:03:25.637
+p-14
 
 20
-00:03:18.234 --> 00:03:19.734
-h-4
+00:03:26.285 --> 00:04:04.847
+--The record on screen captures a 4K HDR source. Duration a little over two hours. Constant frame rate at 23.976. One video stream: HEVC 10 bit, 3840 by 2160, pixel format yuv420p10le, color transfer SMPTE 2084, HDR true, Dolby Vision profile 7. Three audio streams: TrueHD 8 channel English, AC-3 6 channel English, AAC 2 channel Japanese. Two subtitle streams: PGS English, ASS English. 27 chapters and four attached fonts.
 
 21
-00:03:20.190 --> 00:03:26.765
-p-16
+00:04:05.807 --> 00:04:22.569
+p-15
 
 22
-00:03:27.317 --> 00:03:36.567
-p-17
+00:04:23.529 --> 00:04:25.029
+h-4
 
 23
-00:03:38.415 --> 00:03:42.690
-p-18
+00:04:25.485 --> 00:04:32.060
+p-16
 
 24
-00:03:43.242 --> 00:04:08.279
-p-19
+00:04:32.612 --> 00:04:41.862
+p-17
 
 25
-00:04:08.927 --> 00:04:19.302
-p-20
+00:04:42.510 --> 00:05:44.222
+--The example on screen picks apart a single variant. Strategy HLS single pass. One variant called v0 dash 1080p. The video section names the codec as H.264, the encoder handle as H.264 NVENC, GPU index zero, output 1920 by 1080, rate control mode CRF with value 23, preset p4, profile high, level 4.2, pixel format yuv420p, and a filter chain that crops 1920 by 800 from offset zero 140 then scales back to 1920 by 1080. The audio section keeps stream index one as AAC stereo 192 kbps. Segment duration six seconds. Keyframe interval two seconds. Hardware bindings name the primary GPU as NVIDIA RTX 4080 and the decoder handle as HEVC CUVID. And a decisions log holds four human sentences explaining what happened and why. That's the plan.
 
 26
-00:04:20.262 --> 00:04:21.774
-h-5
+00:05:45.182 --> 00:05:49.457
+p-18
 
 27
-00:04:22.230 --> 00:04:26.580
-p-21
+00:05:50.009 --> 00:06:15.046
+p-19
 
 28
-00:04:27.132 --> 00:04:47.932
-p-22
+00:06:15.694 --> 00:06:26.069
+p-20
 
 29
-00:04:48.484 --> 00:04:52.621
-p-23
+00:06:27.029 --> 00:06:28.541
+h-5
 
 30
-00:04:54.877 --> 00:05:03.139
-p-24
+00:06:28.997 --> 00:06:33.347
+p-21
 
 31
-00:05:03.691 --> 00:05:29.991
-p-25
+00:06:33.899 --> 00:06:54.699
+p-22
 
 32
-00:05:30.543 --> 00:05:44.343
-p-26
+00:06:55.251 --> 00:06:59.388
+p-23
 
 33
-00:05:45.303 --> 00:05:47.190
-h-6
+00:07:00.036 --> 00:07:47.598
+--Look at the shape of it. ffmpeg, a CUDA hardware device init, hardware accelerated HEVC decode on the input. A dash vf filter chain that reads: download from GPU, crop, zscale to linear, tonemap with Hable, zscale back to BT.709, scale to 1080p, upload back to GPU. Then the encoder flags: dash c colon v H.264 NVENC, preset p4, rate control VBR with a CQ of 23, profile high, level 4.2. Audio mapped to AAC 192 kbps stereo at 48 kilohertz. And finally the output format, HLS, with six second segments, VOD playlist type, MPEG-TS segments, independent segment flag, and filename patterns for segments and playlist.
 
 34
-00:05:47.646 --> 00:05:52.446
-p-27
+00:07:48.558 --> 00:07:56.820
+p-24
 
 35
-00:05:52.998 --> 00:06:02.773
-p-28
+00:07:57.372 --> 00:08:23.672
+p-25
 
 36
-00:06:04.429 --> 00:06:14.816
-p-29
+00:08:24.224 --> 00:08:38.024
+p-26
 
 37
-00:06:15.368 --> 00:06:22.880
-p-30
+00:08:38.984 --> 00:08:40.871
+h-6
 
 38
-00:06:23.432 --> 00:06:33.207
-p-31
+00:08:41.327 --> 00:08:46.127
+p-27
 
 39
-00:06:33.759 --> 00:06:42.634
-p-32
+00:08:46.679 --> 00:08:56.454
+p-28
 
 40
-00:06:43.594 --> 00:06:45.444
-h-7
+00:08:58.110 --> 00:09:08.497
+p-29
 
 41
-00:06:45.900 --> 00:06:50.787
-p-33
+00:09:09.049 --> 00:09:16.561
+p-30
 
 42
-00:06:51.339 --> 00:07:13.826
-p-34
+00:09:17.113 --> 00:09:26.888
+p-31
 
 43
-00:07:14.378 --> 00:07:24.228
-p-35
+00:09:27.440 --> 00:09:36.315
+p-32
 
 44
-00:07:24.780 --> 00:07:37.567
-p-36
+00:09:37.275 --> 00:09:39.125
+h-7
 
 45
-00:07:38.119 --> 00:07:43.244
-p-37
+00:09:39.581 --> 00:09:44.468
+p-33
 
 46
-00:07:43.796 --> 00:07:54.671
-p-38
+00:09:45.020 --> 00:10:07.507
+p-34
 
 47
-00:07:55.631 --> 00:07:58.218
-h-8
+00:10:08.059 --> 00:10:17.909
+p-35
 
 48
-00:07:58.674 --> 00:08:07.886
-p-39
+00:10:18.461 --> 00:10:31.248
+p-36
 
 49
-00:08:08.438 --> 00:08:20.538
-p-40
+00:10:31.800 --> 00:10:36.925
+p-37
 
 50
-00:08:21.090 --> 00:08:29.115
-p-41
+00:10:37.477 --> 00:10:48.352
+p-38
 
 51
-00:08:29.667 --> 00:08:52.679
-p-42
+00:10:49.312 --> 00:10:51.899
+h-8
 
 52
-00:08:53.231 --> 00:09:09.806
-p-43
+00:10:52.355 --> 00:11:01.567
+p-39
 
 53
-00:09:10.766 --> 00:09:12.403
-h-9
+00:11:02.119 --> 00:11:14.219
+p-40
 
 54
-00:09:12.859 --> 00:09:28.621
-p-44
+00:11:14.771 --> 00:11:22.796
+p-41
 
 55
-00:09:29.173 --> 00:09:35.510
-p-45
+00:11:23.348 --> 00:11:46.360
+p-42
 
 56
-00:09:36.566 --> 00:09:47.653
-p-46
+00:11:46.912 --> 00:12:03.487
+p-43
 
 57
-00:09:48.205 --> 00:10:01.905
-p-47
+00:12:04.447 --> 00:12:06.084
+h-9
 
 58
-00:10:02.865 --> 00:10:05.352
-h-10
+00:12:06.540 --> 00:12:22.302
+p-44
 
 59
-00:10:05.808 --> 00:10:13.020
-p-48
+00:12:22.854 --> 00:12:29.191
+p-45
 
 60
-00:10:13.572 --> 00:10:38.809
-p-49
+00:12:30.247 --> 00:12:41.334
+p-46
 
 61
-00:10:39.361 --> 00:11:06.998
-p-50
+00:12:41.886 --> 00:12:55.586
+p-47
 
 62
-00:11:07.550 --> 00:11:13.562
-p-51
+00:12:56.546 --> 00:12:59.033
+h-10
 
 63
-00:11:14.522 --> 00:11:17.072
-h-11
+00:12:59.489 --> 00:13:06.701
+p-48
 
 64
-00:11:17.528 --> 00:11:31.203
+00:13:07.253 --> 00:13:32.490
+p-49
+
+65
+00:13:33.042 --> 00:14:00.679
+p-50
+
+66
+00:14:01.231 --> 00:14:07.243
+p-51
+
+67
+00:14:08.203 --> 00:14:10.753
+h-11
+
+68
+00:14:11.209 --> 00:14:24.884
 p-52
 
