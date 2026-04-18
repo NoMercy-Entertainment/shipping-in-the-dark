@@ -44,32 +44,18 @@ this. The encoder runs everything locally by default.
 
 ## Quick start
 
-Both machines need the same signing key. Generate one:
+Distributed encoding is a paid-tier feature. Every worker the
+coordinator accepts must present a valid license, validated
+against the NoMercy API server at boot and on an interval.
+There is no manual key-sharing step. The operator does not
+type a signing key into a config file.
 
-```
-openssl rand -base64 32
-```
-
-Keep it secret. It is what prevents an attacker from
-dispatching jobs into your cluster.
-
-On the coordinator (your main media server), set the signing
-key in `appsettings.json`:
+On each worker, the config only points at the coordinator and
+declares which NoMercy account the worker belongs to:
 
 ```json
 {
   "EncoderOptions": {
-    "DistributedEncodingSigningKey": "dGhpc2lzYXNoYXJlZGtleXVzZWRmb3JoY..."
-  }
-}
-```
-
-On each worker, set four values:
-
-```json
-{
-  "EncoderOptions": {
-    "DistributedEncodingSigningKey": "dGhpc2lzYXNoYXJlZGtleXVzZWRmb3JoY...",
     "CoordinatorUrl": "https://nomercy.home.arpa:7626",
     "WorkerSelfBaseUrl": "https://workstation.home.arpa:7626",
     "WorkerId": "workstation-01"
@@ -77,9 +63,26 @@ On each worker, set four values:
 }
 ```
 
-Start both. The worker auto-registers. The coordinator's
-workers endpoint now lists it. The next encode uses both
-machines.
+The account credentials come from the standard NoMercy auth
+flow the rest of the server already uses — no distribution-
+specific secret ever lives on disk.
+
+Start the worker. On boot it:
+
+1. Authenticates to `api.nomercy.tv` with the usual device
+   certificate + account identity.
+2. Asks the license service for a short-lived, HMAC-signing
+   token scoped to the account's cluster.
+3. Presents that token plus the worker inventory to the
+   coordinator's register endpoint.
+4. The coordinator verifies the token with the API server,
+   adds the worker to the registry if the license covers it,
+   rejects with a clear error otherwise.
+
+Heartbeats carry a fresh short-lived token, so a revoked
+license or a lapsed subscription drops the worker from the
+cluster within one heartbeat interval. There is no long-lived
+shared secret to leak or rotate by hand.
 
 ## Architecture
 
@@ -103,13 +106,24 @@ machines.
 ```
 
 At the top sits the coordinator. That is your regular NoMercy
-media server. Inside it sit two key components:
+media server. Inside it sit two key components bolted onto
+the existing NoMercy job queue:
 
-- `RemoteWorkerDispatcher` picks a worker per task. It handles
-  the retry chain and falls back to local dispatch when no
-  remote works out.
+- `RemoteWorkerDispatcher` is a queue consumer. When the
+  queue hands it an `EncodeTask`, it picks a worker from the
+  registry, ships the task over HTTP, and writes the result
+  back into the same queue job record. If every remote
+  worker fails, the task is requeued for the local
+  dispatcher so encoding always finishes.
 - `RemoteWorkerRegistry` tracks active workers. It manages
   health tracking and cooldown eviction.
+
+Distributed encoding is an extension of the queue system, not
+a replacement. Every job goes through `NoMercy.Queue` the
+same way it always has — the remote workers are additional
+consumers bound to the existing queue. All the job status,
+progress, and retry wiring the single-machine setup relies on
+keeps working.
 
 The coordinator talks to each worker over HTTP with
 HMAC-signed payloads. In a typical setup, you might have
@@ -118,16 +132,21 @@ on a NAS.
 
 Each worker runs the same NoMercy binary, but with the
 distribution config pointing at the coordinator. Each worker
-has its own local dispatcher that runs ffmpeg jobs.
+consumes tasks from the coordinator's queue over HTTP and
+runs ffmpeg through its own local dispatcher.
 
 ## How tasks flow
 
 Five steps run in sequence.
 
-**1. User starts an encode on the coordinator.**
+**1. User starts an encode on the coordinator.** It lands in
+the regular `NoMercy.Queue` as an encode job, the same as any
+single-machine encode.
 
 **2. Strategy decomposition.** The selected strategy
-decomposes the job into an array of `EncodeTask` records. One
+decomposes the job into an array of `EncodeTask` records,
+each queued as its own queue item so existing retry and
+status tooling applies. One
 task per adaptive-bitrate variant, or one per time range for
 a two-pass chunked encode:
 
@@ -188,16 +207,26 @@ writing master manifests, and linking subtitle sidecars.
 
 ## Security model
 
+### License-gated signing keys
+
+There is no long-lived shared secret on disk. The HMAC key
+used to sign coordinator-to-worker traffic is derived from the
+short-lived cluster token the API server issues on boot and
+refreshes every heartbeat. A stolen config file is worthless
+on its own; without a current token, nothing signs or
+verifies. A revoked subscription drops the cluster within
+seconds of its next heartbeat.
+
 ### HMAC-signed payloads
 
 Every coordinator-to-worker call, and every worker-to-coordinator
-call that carries task data, is signed with the shared key
-using HMAC-SHA256. The signature covers the HTTP method, the
-path, the timestamp, and the full request body:
+call that carries task data, is signed with the current
+cluster token using HMAC-SHA256. The signature covers the
+HTTP method, the path, the timestamp, and the full request body:
 
 ```
 string_to_sign = METHOD + "\n" + PATH + "\n" + TIMESTAMP + "\n" + sha256(BODY)
-signature = base64(hmac_sha256(shared_key, string_to_sign))
+signature = base64(hmac_sha256(cluster_token_secret, string_to_sign))
 ```
 
 The headers carry the signature and timestamp:
@@ -212,7 +241,9 @@ Content-Type: application/json
 ```
 
 An attacker who intercepts the traffic can read payloads but
-cannot modify them. The signature will not verify.
+cannot modify them. The signature will not verify. When the
+cluster token rotates, the old signature stops working too —
+there is no multi-day-replay window to worry about.
 
 ### Five-minute replay window
 
@@ -242,18 +273,31 @@ rationale is that progress bodies contain no secrets. Spoofing
 just moves a fake progress bar. Real task dispatch and source
 fetch still require HMAC.
 
-## Self-registration
+## Self-registration through the license service
 
-The `WorkerSelfRegistrationService` is a hosted background
-service that runs on workers.
+`WorkerSelfRegistrationService` is a hosted background
+service that runs on every worker. The operator does not call
+an endpoint by hand, does not paste a shared secret, and does
+not configure HMAC keys. The service handles it end to end.
 
-On boot, it POSTs to the coordinator's register endpoint:
+On boot:
+
+1. The worker authenticates to the NoMercy API server
+   (`api.nomercy.tv`) with the machine's existing device
+   certificate plus the logged-in account identity.
+2. It calls `POST /cluster/token` on the API server. The
+   license service checks that the account has a paid tier
+   that covers distributed encoding, and that the worker fits
+   inside the account's allowed worker count. On success it
+   returns a short-lived HMAC-signing token plus the scope
+   (account id, cluster id, expiry).
+3. The worker presents that token to its configured
+   coordinator's register endpoint:
 
 ```
 POST /api/v1/distribution/workers/register
 Content-Type: application/json
-X-NoMercy-Timestamp: ...
-X-NoMercy-Signature: ...
+Authorization: Bearer <cluster-token>
 
 {
   "worker_id": "workstation-01",
@@ -268,26 +312,42 @@ X-NoMercy-Signature: ...
 }
 ```
 
-Every heartbeat interval (default 20 seconds), it POSTs to
-`/api/v1/distribution/workers/{worker_id}/heartbeat` with a
-fresh budget so the coordinator sees current load.
+4. The coordinator verifies the token with the API server's
+   introspection endpoint (cached for a short TTL), checks
+   that the token's cluster id matches its own account, and
+   adds the worker to the registry. A failed verification
+   returns 401 with a reason — expired token, account not
+   entitled, cluster id mismatch, worker-count cap hit.
 
-On clean shutdown, it DELETEs to unregister.
+Every heartbeat interval (default 20 seconds), the worker
+refreshes its cluster token and POSTs to
+`/api/v1/distribution/workers/{worker_id}/heartbeat` with a
+fresh budget. A revoked license or a lapsed subscription
+drops the worker from the cluster within one heartbeat —
+the next token request simply fails and the coordinator
+stops seeing heartbeats.
+
+On clean shutdown, the worker DELETEs to unregister.
 
 **Failure handling.**
 
-- Initial registration fails → the service logs a warning and
-  retries on the heartbeat loop. The process does not crash.
-- Heartbeat returns 404 → the coordinator does not know us.
-  Assume coordinator restart or late eviction after outage.
-  Re-register.
+- License service unreachable → retry with exponential
+  backoff. The process does not crash. Local encoding still
+  works; only the distributed portion is paused.
+- License revoked or tier downgraded → token request returns
+  403. The service logs the reason and stops re-registering.
+  The user sees a clear entitlement message in the dashboard.
 - Coordinator unreachable → heartbeats fail silently. The
-  coordinator's stale eviction removes us after 60 seconds.
-  When the connection restores, auto re-register on the next
-  attempt.
+  coordinator's stale eviction removes the worker after
+  60 seconds. When the connection restores, auto re-register.
+- Coordinator account mismatch → returns 401. The worker
+  refuses to retry until the operator fixes the config. This
+  prevents a stolen token from attaching a worker to the
+  wrong cluster.
 
-If no config is set, the service exits cleanly. Standalone
-installs have the service registered, but it does nothing.
+Free-tier installs have the service registered but it shuts
+itself down at the first license check. No cluster, no
+runtime overhead.
 
 ## Health tracking
 

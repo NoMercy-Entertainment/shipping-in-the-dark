@@ -242,11 +242,17 @@ them up.
 
 ## The hard honest limits
 
-**AACS and BD+** protected discs require a compatible drive
-plus key management, which is outside the scope of this
-encoder. The ripper reads the decrypted stream once the drive
-has decrypted it. It does not do key retrieval itself. If your
-drive will not play a disc, the ripper will not rip it.
+**AACS and BD+** protected discs are decrypted at rip time.
+NoMercy's custom ffmpeg build ships with the open-source AACS
+and BD+ decryption libraries linked in, and a baseline key
+database baked into the image so the common set of titles
+decrypts out of the box. For discs the bundled keys do not
+cover, you can point the ripper at your own
+`KEYDB.cfg` / `AACSKeys.txt` via the config and those override
+the defaults. If neither the bundled keys nor your overrides
+cover a specific title, the ripper surfaces a clear error
+naming the missing volume ID so you can source the key
+yourself.
 
 **No transcoding at rip time.** This is deliberate. Stream
 copy is lossless and reversible. The re-encode happens later,
