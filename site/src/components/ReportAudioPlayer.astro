@@ -1199,7 +1199,7 @@ const tracksJson = JSON.stringify(tracks);
 		const targetIdx = findTrackIndexBySlug(partSlug);
 		if (targetIdx < 0) return;
 		const track = tracks[targetIdx];
-		const vttUrl = track.vtt[currentVoice];
+		const vttUrl = resolveTrackUrl(track.vtt, currentVoice, currentVariant);
 		const needSwap = targetIdx !== currentIndex;
 		if (needSwap) loadTrack(targetIdx, { autoplay: true });
 
