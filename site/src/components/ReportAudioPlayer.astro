@@ -832,20 +832,46 @@ const tracksJson = JSON.stringify(tracks);
 	// Scroll-driven active part: keep ToC + player title in sync when the
 	// user scrolls manually. Does NOT seek the audio — just the highlight.
 	const partSections = Array.from(document.querySelectorAll('.report-part'));
+	// Update the URL hash in place so copying the URL captures the
+	// section the reader is currently on. Uses replaceState so the
+	// back button stays clean. No hashchange event fires for
+	// replaceState, so this will not retrigger track swaps.
+	function syncHashToSection(sectionEl) {
+		if (!sectionEl) return;
+		const id = sectionEl.id;
+		if (!id) return;
+		const newHash = '#' + id;
+		if (window.location.hash === newHash) return;
+		history.replaceState(null, '', window.location.pathname + window.location.search + newHash);
+	}
+
 	if (partSections.length && 'IntersectionObserver' in window) {
 		const io = new IntersectionObserver((entries) => {
+			// Pick the entry with the largest intersection ratio so the hash
+			// tracks the section actually dominating the viewport, not just
+			// whichever crossed the threshold last.
+			let best = null;
 			entries.forEach((entry) => {
-				if (entry.isIntersecting) {
-					const slug = entry.target.getAttribute('data-part-slug');
-					if (!slug) return;
-					// Only update ToC highlight on scroll; don't swap tracks unless
-					// the audio is paused and the user is clearly browsing.
-					updateTocHighlight(slug);
-				}
+				if (!entry.isIntersecting) return;
+				if (!best || entry.intersectionRatio > best.intersectionRatio) best = entry;
 			});
-		}, { rootMargin: '-20% 0px -60% 0px', threshold: 0 });
+			if (!best) return;
+			const slug = best.target.getAttribute('data-part-slug');
+			if (!slug) return;
+			updateTocHighlight(slug);
+			syncHashToSection(best.target);
+		}, { rootMargin: '-20% 0px -60% 0px', threshold: [0, 0.25, 0.5, 0.75, 1] });
 		partSections.forEach((s) => io.observe(s));
 	}
+
+	// When the audio advances into a new part (auto-advance, skip, sidebar
+	// click), also sync the hash so the URL stays accurate even if the
+	// reader has not scrolled.
+	document.addEventListener('audio-part-change', function (e) {
+		if (!e || !e.detail || !e.detail.slug) return;
+		const section = document.querySelector('section[data-part-slug="' + e.detail.slug + '"]');
+		if (section) syncHashToSection(section);
+	});
 
 	// -------------------------------------------------------------- //
 	// Init — but don't interrupt any audio already playing from a previous
