@@ -49,238 +49,226 @@ p-8
 p-9
 
 13
-00:02:23.136 --> 00:02:42.398
---<!-- variant:brief --> Every rule — whether it flags a level mismatch or a bad audio bitrate — returns the same shape. An ID, the field it concerns, a human sentence, and a suggested fix. That is why the dashboard can just render the feedback inline on whichever field the user is editing.
+00:02:23.136 --> 00:02:41.536
+--Every rule — whether it flags a level mismatch or a bad audio bitrate — returns the same shape. An ID, the field it concerns, a human sentence, and a suggested fix. That is why the dashboard can just render the feedback inline on whichever field the user is editing.
 
 14
-00:02:43.358 --> 00:02:45.433
---<!-- /variant -->
-
-15
-00:02:45.433 --> 00:03:33.833
---<!-- variant:elaborate --> The response carries a valid flag at the top, an errors array, and a warnings array. Each entry has five fields. A stable ID you can link to from documentation. A severity level — error or warning. A field path pointing at exactly which bit of the profile is wrong. A human sentence explaining what the problem is. And a fix field telling the user what to change. The example rejects a profile where video profile zero has Level 4.1 but the output resolution is 3840 by 2160 — Level 4.1 caps at 1080p, so the fix says raise the level to 5.1 or drop the resolution. The warnings array in this case is empty.
-
-16
-00:03:35.081 --> 00:03:37.156
---<!-- /variant -->
-
-17
-00:03:37.156 --> 00:03:43.731
+00:02:42.496 --> 00:02:49.071
 p-10
 
-18
-00:03:44.283 --> 00:04:00.470
+15
+00:02:49.623 --> 00:03:05.810
 p-11
 
-19
-00:04:01.430 --> 00:04:03.205
+16
+00:03:06.770 --> 00:03:08.545
 h-3
 
-20
-00:04:03.661 --> 00:04:11.461
+17
+00:03:09.001 --> 00:03:16.801
 p-12
 
-21
-00:04:11.917 --> 00:04:15.417
+18
+00:03:17.257 --> 00:03:20.757
 p-13
 
-22
-00:04:16.473 --> 00:04:23.185
+19
+00:03:21.813 --> 00:03:28.525
 p-14
 
-23
-00:04:23.833 --> 00:04:37.283
+20
+00:03:29.173 --> 00:03:42.623
 --Every later stage will read that same record — the duration, the frame rate, the per-stream inventory, and the HDR flags that tell the planner whether to tonemap, preserve Dolby Vision, or just pass the pixels through.
 
-24
-00:04:38.243 --> 00:04:55.968
+21
+00:03:43.583 --> 00:04:01.308
 p-15
 
-25
-00:04:56.928 --> 00:04:58.465
+22
+00:04:02.268 --> 00:04:03.805
 h-4
 
-26
-00:04:58.921 --> 00:05:05.796
+23
+00:04:04.261 --> 00:04:11.136
 p-16
 
-27
-00:05:06.348 --> 00:05:15.773
+24
+00:04:11.688 --> 00:04:21.113
 p-17
 
-28
-00:05:16.421 --> 00:05:38.896
+25
+00:04:21.761 --> 00:04:44.236
 --The plan names which encoder handle to use, how to rate control it, what filter chain to run, which GPU to bind to — and crucially, a decisions log. Every choice written out in one human sentence. Whenever you look at an encode later and wonder why it picked HEVC over AV1, or why Dolby Vision got stripped, the log tells you.
 
-29
-00:05:39.856 --> 00:05:44.181
+26
+00:04:45.196 --> 00:04:49.521
 p-18
 
-30
-00:05:44.733 --> 00:06:11.883
+27
+00:04:50.073 --> 00:05:17.223
 p-19
 
-31
-00:06:12.531 --> 00:06:24.006
+28
+00:05:17.871 --> 00:05:29.346
 p-20
 
-32
-00:06:24.966 --> 00:06:26.466
+29
+00:05:30.306 --> 00:05:31.806
 h-5
 
-33
-00:06:26.922 --> 00:06:31.534
+30
+00:05:32.262 --> 00:05:36.874
 p-21
 
-34
-00:06:32.086 --> 00:06:54.336
+31
+00:05:37.426 --> 00:05:59.676
 p-22
 
-35
-00:06:54.888 --> 00:06:59.213
+32
+00:06:00.228 --> 00:06:04.553
 p-23
 
-36
-00:06:59.861 --> 00:07:27.611
+33
+00:06:05.201 --> 00:06:32.951
 --Notice what the command is doing, even if you don't read every flag: it inits CUDA, decodes HEVC on the GPU, runs a tonemap filter chain all the way down to 8 bit, hands the frames to H.264 NVENC at a CRF of 23, and muxes the result into HLS with six second segments. Every one of those choices came from the profile plus the source analysis. The user wrote seven lines.
 
-37
-00:07:28.571 --> 00:07:37.396
+34
+00:06:33.911 --> 00:06:42.736
 p-24
 
-38
-00:07:37.948 --> 00:08:06.460
+35
+00:06:43.288 --> 00:07:11.800
 p-25
 
-39
-00:08:07.012 --> 00:08:22.749
+36
+00:07:12.352 --> 00:07:28.089
 p-26
 
-40
-00:08:23.709 --> 00:08:25.496
+37
+00:07:29.049 --> 00:07:30.836
 h-6
 
-41
-00:08:25.952 --> 00:08:31.114
+38
+00:07:31.292 --> 00:07:36.454
 p-27
 
-42
-00:08:31.666 --> 00:08:41.966
+39
+00:07:37.006 --> 00:07:47.306
 p-28
 
-43
-00:08:43.622 --> 00:08:54.847
+40
+00:07:48.962 --> 00:08:00.187
 p-29
 
-44
-00:08:55.399 --> 00:09:03.186
+41
+00:08:00.739 --> 00:08:08.526
 p-35
 
-45
-00:09:03.738 --> 00:09:14.800
+42
+00:08:09.078 --> 00:08:20.140
 p-36
 
-46
-00:09:15.352 --> 00:09:25.289
+43
+00:08:20.692 --> 00:08:30.629
 p-37
 
-47
-00:09:26.249 --> 00:09:28.136
+44
+00:08:31.589 --> 00:08:33.476
 h-7
 
-48
-00:09:28.592 --> 00:09:33.342
+45
+00:08:33.932 --> 00:08:38.682
 p-38
 
-49
-00:09:33.894 --> 00:09:58.394
+46
+00:08:39.234 --> 00:09:03.734
 p-39
 
-50
-00:09:58.946 --> 00:10:09.958
+47
+00:09:04.286 --> 00:09:15.298
 p-40
 
-51
-00:10:10.510 --> 00:10:24.735
+48
+00:09:15.850 --> 00:09:30.075
 p-41
 
-52
-00:10:25.287 --> 00:10:30.762
+49
+00:09:30.627 --> 00:09:36.102
 p-42
 
-53
-00:10:31.314 --> 00:10:42.951
+50
+00:09:36.654 --> 00:09:48.291
 p-43
 
-54
-00:10:43.911 --> 00:10:46.411
+51
+00:09:49.251 --> 00:09:51.751
 h-8
 
-55
-00:10:46.867 --> 00:10:56.617
+52
+00:09:52.207 --> 00:10:01.957
 p-44
 
-56
-00:10:57.169 --> 00:11:12.969
+53
+00:10:02.509 --> 00:10:18.309
 p-48
 
-57
-00:11:13.521 --> 00:11:21.571
+54
+00:10:18.861 --> 00:10:26.911
 p-41
 
-58
-00:11:22.123 --> 00:11:45.848
+55
+00:10:27.463 --> 00:10:51.188
 p-42
 
-59
-00:11:46.400 --> 00:12:04.250
+56
+00:10:51.740 --> 00:11:09.590
 p-43
 
-60
-00:12:05.210 --> 00:12:06.885
+57
+00:11:10.550 --> 00:11:12.225
 h-9
 
-61
-00:12:07.341 --> 00:12:23.916
+58
+00:11:12.681 --> 00:11:29.256
 p-49
 
-62
-00:12:24.468 --> 00:12:31.155
+59
+00:11:29.808 --> 00:11:36.495
 p-50
 
-63
-00:12:32.211 --> 00:12:44.498
+60
+00:11:37.551 --> 00:11:49.838
 p-51
 
-64
-00:12:45.050 --> 00:12:59.312
+61
+00:11:50.390 --> 00:12:04.652
 p-52
 
-65
-00:13:00.272 --> 00:13:02.697
+62
+00:12:05.612 --> 00:12:08.037
 h-10
 
-66
-00:13:03.153 --> 00:13:10.215
+63
+00:12:08.493 --> 00:12:15.555
 p-53
 
-67
-00:13:10.767 --> 00:13:37.079
+64
+00:12:16.107 --> 00:12:42.419
 p-54
 
-68
-00:13:37.631 --> 00:14:06.868
+65
+00:12:42.971 --> 00:13:12.208
 p-55
 
-69
-00:14:07.420 --> 00:14:13.557
+66
+00:13:12.760 --> 00:13:18.897
 p-56
 
-70
-00:14:14.517 --> 00:14:17.017
+67
+00:13:19.857 --> 00:13:22.357
 h-11
 
-71
-00:14:17.473 --> 00:14:31.835
+68
+00:13:22.813 --> 00:13:37.175
 p-57
 

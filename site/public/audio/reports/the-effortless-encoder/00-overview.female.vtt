@@ -101,114 +101,102 @@ h-4
 p-18
 
 26
-00:05:51.845 --> 00:06:17.095
---<!-- variant:brief --> <!-- code-1 --> Seven lines that actually matter — the container is HLS, the video is H.264 at 1080p with a CRF of 23, the audio is AAC stereo at 192 kbps, one English subtitle track, and the auto ladder flag is on. Every other flag on every output variant will be derived from those choices.
+00:05:51.845 --> 00:06:15.620
+code-1
 
 27
-00:06:18.055 --> 00:06:20.130
---<!-- /variant -->
-
-28
-00:06:20.130 --> 00:07:27.867
---<!-- variant:elaborate --> <!-- code-1 --> Let me walk it. The container is HLS for streaming delivery. The single video profile targets H.264 at 1920 by 1080, quality set by a CRF of 23, medium preset for a balanced speed-quality trade-off, high profile at level 4.2, pixel format yuv420p meaning 8 bit, and a keyframe every two seconds so segment boundaries can land on keyframes. The single audio profile is AAC stereo at 192 kbps, 48 kilohertz, with a language filter that keeps English, Japanese, and French tracks. One subtitle profile in extract mode writes WebVTT for English. And at the top level, auto ladder is true so the encoder expands this into a full adaptive bitrate ladder on its own, and auto detect crop is true so the encoder detects and removes black bars before encoding. That is every field the user wrote. Every other flag on every output variant will be derived.
-
-29
-00:07:29.115 --> 00:07:31.190
---<!-- /variant -->
-
-30
-00:07:31.190 --> 00:07:50.890
+00:06:16.580 --> 00:06:36.280
 p-19
 
-31
-00:07:51.442 --> 00:08:02.092
+28
+00:06:36.832 --> 00:06:47.482
 p-20
 
-32
-00:08:02.644 --> 00:08:16.694
+29
+00:06:48.034 --> 00:07:02.084
 p-21
 
-33
-00:08:17.654 --> 00:08:20.404
+30
+00:07:03.044 --> 00:07:05.794
 h-5
 
-34
-00:08:20.860 --> 00:08:42.360
+31
+00:07:06.250 --> 00:07:27.750
 p-22
 
-35
-00:08:42.912 --> 00:08:46.174
+32
+00:07:28.302 --> 00:07:31.564
 p-23
 
-36
-00:08:46.630 --> 00:09:03.655
+33
+00:07:32.020 --> 00:07:49.045
 p-24
 
-37
-00:09:04.207 --> 00:09:16.269
+34
+00:07:49.597 --> 00:08:01.659
 p-25
 
-38
-00:09:16.821 --> 00:09:31.896
+35
+00:08:02.211 --> 00:08:17.286
 p-26
 
-39
-00:09:32.448 --> 00:09:49.335
+36
+00:08:17.838 --> 00:08:34.725
 p-27
 
-40
-00:09:50.295 --> 00:09:52.695
+37
+00:08:35.685 --> 00:08:38.085
 h-6
 
-41
-00:09:53.151 --> 00:10:01.113
+38
+00:08:38.541 --> 00:08:46.503
 p-28
 
-42
-00:10:01.665 --> 00:10:15.177
+39
+00:08:47.055 --> 00:09:00.567
 p-29
 
-43
-00:10:15.633 --> 00:10:27.783
+40
+00:09:01.023 --> 00:09:13.173
 p-30
 
-44
-00:10:28.239 --> 00:10:42.239
+41
+00:09:13.629 --> 00:09:27.629
 p-31
 
-45
-00:10:42.695 --> 00:10:56.970
+42
+00:09:28.085 --> 00:09:42.360
 p-32
 
-46
-00:10:57.426 --> 00:11:12.588
+43
+00:09:42.816 --> 00:09:57.978
 p-33
 
-47
-00:11:13.044 --> 00:11:28.719
+44
+00:09:58.434 --> 00:10:14.109
 p-34
 
-48
-00:11:29.175 --> 00:11:50.700
+45
+00:10:14.565 --> 00:10:36.090
 p-35
 
-49
-00:11:51.156 --> 00:12:03.668
+46
+00:10:36.546 --> 00:10:49.058
 p-36
 
-50
-00:12:04.124 --> 00:12:18.636
+47
+00:10:49.514 --> 00:11:04.026
 p-37
 
-51
-00:12:19.092 --> 00:12:37.904
+48
+00:11:04.482 --> 00:11:23.294
 p-38
 
-52
-00:12:38.360 --> 00:12:51.335
+49
+00:11:23.750 --> 00:11:36.725
 p-39
 
-53
-00:12:52.103 --> 00:12:54.678
+50
+00:11:37.493 --> 00:11:40.068
 p-40
 
