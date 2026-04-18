@@ -452,27 +452,31 @@ html.light .prose .audio-active .heading-anchor {
 			activeElement = el;
 
 			// Auto-scroll behavior:
-			// - Headings ALWAYS scroll to top (block: 'start'). A new section
-			//   always feels right at the top — the heading + first
-			//   paragraphs come into view together.
-			// - Code blocks scroll to top too, and if the block is taller
-			//   than the viewport, a slow pan moves through it for the
-			//   duration of the cue so the listener reads along.
-			// - Paragraphs only scroll if they would otherwise be offscreen,
-			//   and land in the CENTER for comfortable reading.
+			// - Headings and code cues always realign to the top of the
+			//   "safe area" (between the 88px sticky header and the 64px
+			//   audio player), because a new section / code block always
+			//   feels right anchored at the top.
+			// - Paragraphs only scroll if they would otherwise be clipped
+			//   by the header, the player, or off-screen entirely; they
+			//   land centered within the safe area.
+			//
+			// block: 'center' / 'start' do not respect scroll-padding-top
+			// reliably across browsers, so we compute the scroll target
+			// ourselves from getBoundingClientRect + the sticky offsets.
 			if (el) {
 				if (cue && cue.isCode) {
 					startCodePan(el, cue.start, cue.end);
 				} else if (cue && cue.isHeading) {
 					stopCodePan();
-					el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+					scrollIntoSafeView(el, 'start');
 				} else {
 					stopCodePan();
 					var rect = el.getBoundingClientRect();
-					var vh   = window.innerHeight;
-					var visibleBottom = vh - 64;
-					if (rect.top < 80 || rect.bottom > visibleBottom) {
-						el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+					var header = 88;
+					var footer = 64;
+					var vh = window.innerHeight;
+					if (rect.top < header || rect.bottom > vh - footer) {
+						scrollIntoSafeView(el, 'center');
 					}
 				}
 			}
@@ -491,6 +495,30 @@ html.light .prose .audio-active .heading-anchor {
 				}
 			}
 		}
+	}
+
+	// Scroll el so it lands between the sticky 88px site header and the
+	// 64px audio player at the bottom. mode:
+	//   'start'  — align the element's top to the safe-top edge
+	//   'center' — center the element within the safe band
+	// If the element is taller than the safe band, align its top anyway.
+	function scrollIntoSafeView(el, mode) {
+		if (!el) return;
+		var rect = el.getBoundingClientRect();
+		var scrollY = window.scrollY || window.pageYOffset || 0;
+		var safeTop = 88;
+		var safeBottom = window.innerHeight - 64;
+		var safeHeight = Math.max(1, safeBottom - safeTop);
+
+		var target;
+		if (mode === 'center' && rect.height <= safeHeight) {
+			var elCenter = rect.top + rect.height / 2;
+			var safeCenter = safeTop + safeHeight / 2;
+			target = scrollY + (elCenter - safeCenter);
+		} else {
+			target = scrollY + rect.top - safeTop;
+		}
+		window.scrollTo({ top: Math.max(0, target), behavior: 'smooth' });
 	}
 
 	function stopCodePan() {
