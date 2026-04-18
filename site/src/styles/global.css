@@ -492,6 +492,76 @@ html.light .audio-progress-fill {
 	}
 }
 
+/* ------------------------------------------------------------------ */
+/* Mobile layout — the report player has too many buttons to fit in   */
+/* one row on narrow screens. Collapse to essentials as width drops.   */
+/* ------------------------------------------------------------------ */
+
+/* <= 720px: drop the title (the TOC sidebar already names the part)
+   and the speed stepper's +/- buttons (current speed stays visible
+   and tappable to cycle). Shrink gaps so the row stops overflowing. */
+@media (max-width: 720px) {
+	.audio-controls {
+		gap: 8px;
+	}
+	.audio-title {
+		display: none;
+	}
+	.audio-speed-group .audio-speed-step {
+		display: none;
+	}
+	.audio-speed-group {
+		border-radius: 9999px;
+	}
+	.audio-speed-display {
+		cursor: pointer;
+	}
+	.audio-voice-btn {
+		padding: 4px 8px;
+	}
+	.audio-voice-btn > span:not(.audio-voice-chevron) {
+		/* Keep first span (label) but shrink it */
+		max-width: 5ch;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+}
+
+/* <= 560px: drop the voice/variant button labels entirely so just
+   the chevron-menu affordance remains. Time display shrinks to the
+   current-time only (the '/ total' piece is decorative). */
+@media (max-width: 560px) {
+	.audio-controls {
+		gap: 6px;
+		padding: 0 10px;
+	}
+	#audio-voice-label,
+	#audio-variant-label {
+		display: none;
+	}
+	.audio-voice-btn {
+		padding: 4px 6px;
+		gap: 2px;
+	}
+	.audio-separator,
+	.audio-duration {
+		display: none;
+	}
+}
+
+/* <= 420px: phones. Drop the section prev/next buttons — the part
+   prev/next + the progress bar scrub are enough at this width. */
+@media (max-width: 420px) {
+	#audio-section-prev-btn,
+	#audio-section-next-btn {
+		display: none;
+	}
+	.audio-time {
+		font-size: 0.7rem;
+	}
+}
+
 .audio-play-btn {
 	display: flex;
 	align-items: center;

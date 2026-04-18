@@ -1025,6 +1025,14 @@ const tracksJson = JSON.stringify(tracks);
 		if (e.target.closest('#audio-section-prev-btn')) skipToPrevSection();
 		if (e.target.closest('#audio-speed-down'))       setSpeedIndex(speedIndex - 1);
 		if (e.target.closest('#audio-speed-up'))         setSpeedIndex(speedIndex + 1);
+		// Tap on the speed display cycles speeds forward. Desktop users
+		// have +/- buttons; mobile has only the display (the steppers
+		// are hidden in that breakpoint), so this is the only way for
+		// them to change rate.
+		if (e.target.closest('#audio-speed-display')) {
+			const next = speedIndex >= speeds.length - 1 ? 0 : speedIndex + 1;
+			setSpeedIndex(next);
+		}
 
 		// Heading "play from here" button
 		const seekBtn = e.target.closest ? e.target.closest('.heading-seek-btn') : null;
