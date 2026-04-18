@@ -492,25 +492,22 @@ html.light .audio-progress-fill {
 	}
 }
 
-/* Row 1 is always a 3-column grid (time | transport | time) so the
-   transport group sits perfectly centered regardless of the side
-   widths. Row 2 remains a flex row. On mobile we stack the two rows
-   vertically by setting .audio-controls flex-direction: column
-   further down. */
+/* Row 1 on desktop: a compact flex group [current-time · transport ·
+   duration] that hugs together on the left of the bar so the title +
+   chips from row 2 can fill the remaining width. No grid stretch here
+   — the times should sit right next to the transport, not float off
+   at opposite ends of the whole bar. Mobile overrides this to a
+   full-width 3-column grid further down. */
 .audio-row-primary {
-	display: grid;
-	grid-template-columns: 1fr auto 1fr;
+	display: flex;
 	align-items: center;
 	gap: 12px;
-	flex: 1;
-	min-width: 0;
 }
 
 .audio-transport {
 	display: flex;
 	align-items: center;
 	gap: 10px;
-	justify-self: center;
 }
 
 .audio-time-side {
@@ -521,12 +518,6 @@ html.light .audio-progress-fill {
 }
 html.light .audio-time-side {
 	color: var(--color-surface-600);
-}
-.audio-time-left {
-	justify-self: start;
-}
-.audio-time-right {
-	justify-self: end;
 }
 
 .audio-row-secondary {
@@ -554,15 +545,25 @@ html.light .audio-time-side {
 		padding: 10px 14px calc(10px + env(safe-area-inset-bottom, 0px));
 	}
 
-	/* Row 1 stays a 3-column grid; just grow the transport controls
-	   so the fingers have something to hit. */
+	/* Row 1 on mobile is a full-width 3-column grid so current time
+	   sits far-left, transport dead-centre, duration far-right. Grow
+	   the transport buttons so fingers have something to hit. */
 	.report-audio-player .audio-row-primary {
+		display: grid;
+		grid-template-columns: 1fr auto 1fr;
 		min-height: 52px;
 		gap: 10px;
 	}
 
+	.report-audio-player .audio-time-side:first-child {
+		justify-self: start;
+	}
+	.report-audio-player .audio-time-side:last-child {
+		justify-self: end;
+	}
 	.report-audio-player .audio-transport {
 		gap: 10px;
+		justify-self: center;
 	}
 	.report-audio-player .audio-transport .audio-secondary-btn {
 		width: 38px;
