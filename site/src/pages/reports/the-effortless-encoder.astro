@@ -11,11 +11,20 @@ import ArticleSource from '../../components/ArticleSource.astro';
 const allParts = await getCollection('reports', (p) => p.id.startsWith('the-effortless-encoder/'));
 const parts = allParts.sort((a, b) => a.data.part - b.data.part);
 
+const slugify = (s: string): string =>
+	s.toLowerCase()
+		.replace(/[^a-z0-9]+/g, '-')
+		.replace(/^-+|-+$/g, '');
+
 const rendered = await Promise.all(
 	parts.map(async (part) => {
 		const { Content, headings } = await render(part);
 		const slug = part.id.replace('the-effortless-encoder/', '').replace(/\.md$/, '');
-		return { part, slug, Content, headings };
+		// Derive a hash slug from the human title so the URL tracks the
+		// section name (e.g. #why-we-built-our-own-encoder) instead of
+		// the internal filename (#part-00-overview).
+		const hashSlug = slugify(part.data.title);
+		return { part, slug, hashSlug, Content, headings };
 	}),
 );
 
@@ -63,10 +72,10 @@ const reportSourcePath = 'reports/the-effortless-encoder/';
 				<nav class="report-toc" aria-label="Report parts">
 					<h2 class="report-toc-heading">Contents</h2>
 					<ol id="report-toc-list" class="report-toc-list">
-						{rendered.map(({ part, slug }) => (
+						{rendered.map(({ part, slug, hashSlug }) => (
 							<li>
 								<a
-									href={`#part-${slug}`}
+									href={`#${hashSlug}`}
 									class="report-toc-link"
 									data-part-slug={slug}
 								>
@@ -96,11 +105,12 @@ const reportSourcePath = 'reports/the-effortless-encoder/';
 					</p>
 				</header>
 
-				{rendered.map(({ part, slug, Content }) => (
+				{rendered.map(({ part, slug, hashSlug, Content }) => (
 					<section
-						id={`part-${slug}`}
+						id={hashSlug}
 						class="report-part"
 						data-part-slug={slug}
+						data-part-hash-slug={hashSlug}
 						data-part-index={part.data.part}
 					>
 						<div class="prose part-body">

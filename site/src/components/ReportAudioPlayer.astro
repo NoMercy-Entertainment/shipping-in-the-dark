@@ -545,7 +545,7 @@ const tracksJson = JSON.stringify(tracks);
 		// Voice-toggle mid-playback (resumeAt > 0) is a cosmetic swap, not
 		// a new section, so we skip the scroll there too.
 		if (opts.autoplay && !opts.resumeAt) {
-			const section = document.getElementById('part-' + track.slug);
+			const section = document.querySelector('section[data-part-slug="' + track.slug + '"]');
 			if (section) {
 				const heading = section.querySelector('h1, h2') || section;
 				heading.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -845,10 +845,33 @@ const tracksJson = JSON.stringify(tracks);
 		return -1;
 	}
 
-	function parseHashPart() {
-		const hash = (window.location.hash || '').replace(/^#/, '');
-		const m = hash.match(/^part-(.+)$/);
-		return m ? m[1] : '';
+	// Resolve the current URL hash to a track index. The hash can be:
+	//   1. A section's title slug (e.g. #how-it-thinks) — id on the
+	//      <section class="report-part"> element. The section carries a
+	//      data-part-slug attribute pointing at the filename slug we use
+	//      as the track key.
+	//   2. A heading inside a part (e.g. #validate, from rehype-slug) —
+	//      we walk up to the closest [data-part-slug] ancestor.
+	//   3. Legacy/external links like #part-00-overview — the filename
+	//      slug itself, kept working for existing links.
+	function resolveHashToTrackIndex() {
+		const raw = (window.location.hash || '').replace(/^#/, '');
+		if (!raw) return -1;
+		// Legacy prefix: #part-{filename-slug}
+		const legacy = raw.match(/^part-(.+)$/);
+		if (legacy) {
+			const idx = findTrackIndexBySlug(legacy[1]);
+			if (idx >= 0) return idx;
+		}
+		// Element id lookup (title slug or heading slug)
+		const el = document.getElementById(raw);
+		if (el) {
+			const section = el.closest('[data-part-slug]');
+			if (section) {
+				return findTrackIndexBySlug(section.getAttribute('data-part-slug'));
+			}
+		}
+		return -1;
 	}
 
 	// -------------------------------------------------------------- //
@@ -975,18 +998,17 @@ const tracksJson = JSON.stringify(tracks);
 		showPlayer();
 		setPlayingState(true);
 	} else {
-		// Fresh visit — honour a #part-{slug} hash if present, otherwise
-		// start with the first part cued up.
-		const hashSlug = parseHashPart();
-		const hashIdx = findTrackIndexBySlug(hashSlug);
+		// Fresh visit — honour a hash (title slug, heading slug, or legacy
+		// #part-{filename} form) if present, otherwise start with the
+		// first part cued up.
+		const hashIdx = resolveHashToTrackIndex();
 		loadTrack(hashIdx >= 0 ? hashIdx : 0, { autoplay: false });
 	}
 
 	// If the user navigates via hash while the page is loaded (back/forward
 	// button on an anchor, or clicks an in-page part link), swap the track.
 	window.addEventListener('hashchange', function () {
-		const slug = parseHashPart();
-		const idx = findTrackIndexBySlug(slug);
+		const idx = resolveHashToTrackIndex();
 		if (idx >= 0 && idx !== currentIndex) {
 			const wasPlaying = !audio.paused && audio.currentTime > 0;
 			loadTrack(idx, { autoplay: wasPlaying });
