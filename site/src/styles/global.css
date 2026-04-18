@@ -492,21 +492,96 @@ html.light .audio-progress-fill {
 	}
 }
 
+/* Desktop: the row wrappers flatten into the parent flex row so the
+   bar stays a single horizontal strip. Mobile redefines them as
+   explicit stacked rows below. */
+.audio-row {
+	display: contents;
+}
+
 /* ------------------------------------------------------------------ */
-/* Mobile layout — the report player has too many buttons to fit in   */
-/* one row on narrow screens. Collapse to essentials as width drops.   */
+/* Mobile layout — two-row stacked bar, taller + readable.            */
 /* ------------------------------------------------------------------ */
 
-/* <= 720px: drop the title (the TOC sidebar already names the part)
-   and the speed stepper's +/- buttons (current speed stays visible
-   and tappable to cycle). Shrink gaps so the row stops overflowing. */
 @media (max-width: 720px) {
+	.audio-player {
+		/* Two rows + the 4px progress bar. Safe-area inset added below. */
+		height: auto;
+	}
+
 	.audio-controls {
+		flex: 1;
+		flex-direction: column;
+		align-items: stretch;
+		justify-content: center;
+		gap: 0;
+		padding: 10px 14px calc(10px + env(safe-area-inset-bottom, 0px));
+	}
+
+	.audio-row {
+		display: flex;
+		align-items: center;
+	}
+
+	.audio-row-primary {
+		/* Transport controls grouped left, time right. */
+		justify-content: space-between;
+		gap: 10px;
+		min-height: 52px;
+	}
+
+	.audio-row-primary .audio-secondary-btn {
+		width: 38px;
+		height: 38px;
+	}
+	.audio-row-primary .audio-secondary-btn svg {
+		width: 18px;
+		height: 18px;
+	}
+	.audio-row-primary .audio-play-btn {
+		width: 44px;
+		height: 44px;
+	}
+	.audio-row-primary .audio-play-btn .audio-icon {
+		width: 22px;
+		height: 22px;
+	}
+
+	.audio-row-primary .audio-time {
+		font-size: 0.8125rem;
+		margin-left: auto;
+		padding-left: 8px;
+	}
+
+	.audio-row-secondary {
+		justify-content: flex-end;
 		gap: 8px;
+		padding-top: 8px;
+		border-top: 1px solid var(--color-surface-800);
+		margin-top: 6px;
 	}
-	.audio-title {
-		display: none;
+	html.light .audio-row-secondary {
+		border-top-color: var(--color-surface-200);
 	}
+
+	/* Title runs along the left of row 2, truncating as needed. */
+	.audio-row-secondary .audio-title {
+		order: -1;
+		margin-right: auto;
+		font-size: 0.75rem;
+		padding: 0;
+	}
+
+	/* Voice + variant chips: keep the labels, they're the whole point
+	   of the two-row layout — drop them and you're back to icons. */
+	.audio-voice-btn {
+		padding: 5px 10px;
+		font-size: 0.75rem;
+	}
+
+	/* Speed stepper renders as a single tappable pill on mobile — the
+	   +/- buttons disappear and the display cycles on tap. Keeping
+	   the group for consistent chrome with voice/variant. */
 	.audio-speed-group .audio-speed-step {
 		display: none;
 	}
@@ -515,50 +590,31 @@ html.light .audio-progress-fill {
 	}
 	.audio-speed-display {
 		cursor: pointer;
-	}
-	.audio-voice-btn {
-		padding: 4px 8px;
-	}
-	.audio-voice-btn > span:not(.audio-voice-chevron) {
-		/* Keep first span (label) but shrink it */
-		max-width: 5ch;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
+		padding: 5px 12px;
+		font-size: 0.75rem;
 	}
 }
 
-/* <= 560px: drop the voice/variant button labels entirely so just
-   the chevron-menu affordance remains. Time display shrinks to the
-   current-time only (the '/ total' piece is decorative). */
-@media (max-width: 560px) {
-	.audio-controls {
+/* Phones — title is noise when the page heading is right above the
+   player. Drop it so voice/variant/speed breathe on row 2. */
+@media (max-width: 480px) {
+	.audio-row-secondary .audio-title {
+		display: none;
+	}
+	.audio-row-primary {
 		gap: 6px;
-		padding: 0 10px;
 	}
-	#audio-voice-label,
-	#audio-variant-label {
-		display: none;
-	}
-	.audio-voice-btn {
-		padding: 4px 6px;
-		gap: 2px;
-	}
-	.audio-separator,
-	.audio-duration {
-		display: none;
+	.audio-row-primary .audio-secondary-btn {
+		width: 36px;
+		height: 36px;
 	}
 }
 
-/* <= 420px: phones. Drop the section prev/next buttons — the part
-   prev/next + the progress bar scrub are enough at this width. */
-@media (max-width: 420px) {
+/* Very narrow — drop section skip. Part skip + scrub cover it. */
+@media (max-width: 360px) {
 	#audio-section-prev-btn,
 	#audio-section-next-btn {
 		display: none;
-	}
-	.audio-time {
-		font-size: 0.7rem;
 	}
 }
 
@@ -692,4 +748,16 @@ body.audio-player-visible {
 
 html.audio-player-visible {
 	scroll-padding-bottom: 80px;
+}
+
+/* Mobile: the player is two rows tall, so body padding and
+   scroll-padding need to grow to match so content and hash
+   scrolling don't land under the bar. */
+@media (max-width: 720px) {
+	body.audio-player-visible {
+		padding-bottom: calc(128px + env(safe-area-inset-bottom, 0px));
+	}
+	html.audio-player-visible {
+		scroll-padding-bottom: calc(128px + env(safe-area-inset-bottom, 0px));
+	}
 }

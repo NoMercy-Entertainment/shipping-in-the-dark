@@ -56,6 +56,7 @@ const tracksJson = JSON.stringify(tracks);
 	</div>
 
 	<div class="audio-controls">
+		<div class="audio-row audio-row-primary">
 		<button id="audio-prev-btn" class="audio-secondary-btn" aria-label="Previous part" type="button" title="Previous part">
 			<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" width="18" height="18">
 				<path d="M7 6h2v12H7zm3.5 6l8.5 6V6z" />
@@ -96,7 +97,9 @@ const tracksJson = JSON.stringify(tracks);
 			<span class="audio-separator" aria-hidden="true">/</span>
 			<span id="audio-duration" class="audio-duration">0:00</span>
 		</div>
+		</div>
 
+		<div class="audio-row audio-row-secondary">
 		<div id="audio-title" class="audio-title" aria-label="Now playing">
 			<span id="audio-part-num" class="audio-part-num"></span>
 			<span id="audio-part-title"></span>
@@ -113,7 +116,8 @@ const tracksJson = JSON.stringify(tracks);
 				type="button"
 				title="Pick narrator voice"
 			>
-				<span id="audio-voice-label">Aria</span>
+				<span class="audio-chip-prefix">Voice</span>
+				<span id="audio-voice-label" class="audio-chip-value">Aria</span>
 				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="10" height="10">
 					<polyline points="6 9 12 15 18 9"></polyline>
 				</svg>
@@ -145,7 +149,8 @@ const tracksJson = JSON.stringify(tracks);
 				type="button"
 				title="Brief or elaborate code descriptions"
 			>
-				<span id="audio-variant-label">Brief</span>
+				<span class="audio-chip-prefix">Depth</span>
+				<span id="audio-variant-label" class="audio-chip-value">Brief</span>
 				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="10" height="10">
 					<polyline points="6 9 12 15 18 9"></polyline>
 				</svg>
@@ -178,6 +183,7 @@ const tracksJson = JSON.stringify(tracks);
 					<path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
 				</svg>
 			</button>
+		</div>
 		</div>
 	</div>
 </div>
@@ -262,6 +268,28 @@ const tracksJson = JSON.stringify(tracks);
 	}
 	.audio-voice-btn svg {
 		transition: transform 0.15s ease;
+	}
+
+	.audio-chip-prefix {
+		font-size: 0.625rem;
+		font-weight: 500;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+		color: var(--color-surface-500);
+	}
+	html.light .audio-chip-prefix {
+		color: var(--color-surface-500);
+	}
+	.audio-chip-value {
+		font-weight: 600;
+	}
+	/* On very tight desktop widths the prefix collapses, leaving the
+	   current value + chevron — still self-explanatory next to the
+	   aria-label. Mobile keeps both because row 2 has room. */
+	@media (min-width: 721px) and (max-width: 900px) {
+		.audio-chip-prefix {
+			display: none;
+		}
 	}
 
 	.audio-voice-menu {

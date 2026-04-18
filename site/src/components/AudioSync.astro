@@ -118,6 +118,18 @@ html.light .prose .audio-active .heading-anchor {
 	var codePanRaf = null;
 	var codePanEl = null;
 
+	// Returns the sticky audio-player bar's actual pixel height so
+	// the safe-scroll area respects the current layout. Desktop uses
+	// a single 64px row; mobile uses two rows and is ~128px tall.
+	// Falls back to 64 when the player is not mounted yet.
+	function getPlayerHeight() {
+		var el = document.getElementById('report-audio-player');
+		if (!el) el = document.getElementById('sitd-audio-player');
+		if (!el) return 64;
+		var h = el.getBoundingClientRect().height;
+		return h > 0 ? h : 64;
+	}
+
 	// ------------------------------------------------------------------ //
 	// Text normalization — strips markdown artifacts, lowercases,          //
 	// collapses whitespace, removes punctuation. Used for fuzzy matching.  //
@@ -473,27 +485,27 @@ html.light .prose .audio-active .heading-anchor {
 					stopCodePan();
 					var rect = el.getBoundingClientRect();
 					var header = 88;
-					var footer = 64;
+					var footer = getPlayerHeight();
 					var vh = window.innerHeight;
 					var needsScroll = rect.top < header || rect.bottom > vh - footer;
 
-					// If this paragraph is immediately followed by a <pre> code
-					// block, check the combined rectangle — the narration
-					// usually references the code, so we want the code visible
-					// while the paragraph is highlighted.
+					// If this paragraph is immediately followed by a <pre>,
+					// the narration is almost always about that code. Pin
+					// the paragraph to the top of the safe area so the <pre>
+					// below gets room. If the pre is taller than the
+					// remaining safe height, pan it over the paragraph's cue
+					// so the reader ends at the bottom of the code right as
+					// the narration finishes talking about it.
 					var nextEl = el.nextElementSibling;
 					var followingPre = (nextEl && nextEl.tagName === 'PRE') ? nextEl : null;
 					if (followingPre) {
+						scrollIntoSafeView(el, 'start');
 						var preRect = followingPre.getBoundingClientRect();
-						var combinedBottom = preRect.bottom;
-						var combinedTop = rect.top;
-						if (combinedTop < header || combinedBottom > vh - footer) {
-							// Align the paragraph to the top of the safe area so
-							// the <pre> below gets room — far more useful than
-							// centering the paragraph and cutting off the code.
-							scrollIntoSafeView(el, 'start');
-							return;
+						var availableForPre = (vh - footer) - (header + rect.height + 24);
+						if (preRect.height > availableForPre && cue && cue.end > cue.start) {
+							startCodePan(followingPre, cue.start, cue.end);
 						}
+						return;
 					}
 
 					// If this paragraph immediately follows a <pre> code
@@ -542,7 +554,7 @@ html.light .prose .audio-active .heading-anchor {
 		var rect = el.getBoundingClientRect();
 		var scrollY = window.scrollY || window.pageYOffset || 0;
 		var safeTop = 88;
-		var safeBottom = window.innerHeight - 64;
+		var safeBottom = window.innerHeight - getPlayerHeight();
 		var safeHeight = Math.max(1, safeBottom - safeTop);
 
 		var target;
@@ -572,7 +584,7 @@ html.light .prose .audio-active .heading-anchor {
 		codePanEl = el;
 
 		var header = 88;
-		var footer = 64;
+		var footer = getPlayerHeight();
 		var vh = window.innerHeight;
 		var visibleHeight = vh - header - footer;
 
