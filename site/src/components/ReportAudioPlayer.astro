@@ -298,11 +298,13 @@ const tracksJson = JSON.stringify(tracks);
 		updateTocHighlight(track.slug);
 		showPlayer();
 
-		// Scroll the part's heading to the top of the viewport so the reader
-		// is looking at the title being spoken, not wherever they scrolled.
-		// Skip this when the user is just switching voices mid-playback
-		// (resumeAt > 0) — that's a cosmetic swap, not a new section.
-		if (!opts.resumeAt) {
+		// Scroll the part's heading to the top of the viewport — but ONLY
+		// when a new track is actively about to play. On initial page load
+		// (autoplay:false, resumeAt:0) we leave the viewport where it is
+		// so the reader sees the page title + description first.
+		// Voice-toggle mid-playback (resumeAt > 0) is a cosmetic swap, not
+		// a new section, so we skip the scroll there too.
+		if (opts.autoplay && !opts.resumeAt) {
 			const section = document.getElementById('part-' + track.slug);
 			if (section) {
 				const heading = section.querySelector('h1, h2') || section;
