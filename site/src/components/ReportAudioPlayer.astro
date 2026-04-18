@@ -570,19 +570,35 @@ const tracksJson = JSON.stringify(tracks);
 		audio.addEventListener('loadedmetadata', onReady);
 	}
 
-	function setVoice(newVoice) {
+	async function setVoice(newVoice) {
 		if (newVoice !== 'female' && newVoice !== 'male') return;
 		if (newVoice === currentVoice) {
 			closeVoiceMenu();
 			return;
 		}
 		const wasPlaying = !audio.paused;
-		const resumeAt = audio.currentTime;
+
+		// The two voices speak the same script at different paces, so seeking
+		// to the same absolute time in the other voice's audio lands on a
+		// different paragraph. Re-anchor via the current VTT cue id instead.
+		const syncData = document.getElementById('audio-sync-data');
+		const activeCue = syncData ? (syncData.getAttribute('data-active-cue') || '') : '';
+
 		currentVoice = newVoice;
 		try { localStorage.setItem(STORAGE_KEY, currentVoice); } catch (e) { /* blocked */ }
 		updateVoiceLabel();
 		updateVoiceMenuChecked();
 		closeVoiceMenu();
+
+		let resumeAt = audio.currentTime;
+		if (activeCue) {
+			const newVttUrl = tracks[currentIndex].vtt[currentVoice];
+			try {
+				const start = await fetchVttCueStart(newVttUrl, activeCue);
+				if (start != null) resumeAt = start;
+			} catch (_) { /* keep the time-based fallback */ }
+		}
+
 		loadTrack(currentIndex, { resumeAt: resumeAt, autoplay: wasPlaying });
 	}
 

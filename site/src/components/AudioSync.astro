@@ -404,6 +404,20 @@ html.light .prose .audio-active .heading-anchor {
 		var el = cue ? cue.element : null;
 		var slug = cue ? cue.section : null;
 
+		// Expose the current cue id on the audio-sync-data element so other
+		// components (ReportAudioPlayer's voice swap) can re-anchor to the
+		// same spoken cue when the absolute time no longer maps cleanly —
+		// different voices say the same paragraph at different paces.
+		var syncData = document.getElementById('audio-sync-data');
+		if (syncData) {
+			var cueId = '';
+			if (el && el.id && /^p-\d+$/.test(el.id)) cueId = el.id;
+			else if (el && el.getAttribute && el.getAttribute('data-audio-h')) cueId = el.getAttribute('data-audio-h');
+			if (cueId !== (syncData.getAttribute('data-active-cue') || '')) {
+				syncData.setAttribute('data-active-cue', cueId);
+			}
+		}
+
 		// Paragraph highlight
 		if (el !== activeElement) {
 			if (activeElement) {
