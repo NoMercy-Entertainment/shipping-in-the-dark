@@ -505,14 +505,14 @@ html.light .prose .audio-active .heading-anchor {
 					// so the reader ends at the bottom of the code right as
 					// the narration finishes talking about it.
 					var nextEl = el.nextElementSibling;
-					var followingPre = (nextEl && nextEl.tagName === 'PRE') ? nextEl : null;
-					if (followingPre) {
-						var preRect = followingPre.getBoundingClientRect();
-						var availableForPre = (vh - footer) - (header + rect.height + 24);
-						if (preRect.height > availableForPre) {
+					var followingBlock = (nextEl && (nextEl.tagName === 'PRE' || nextEl.tagName === 'TABLE')) ? nextEl : null;
+					if (followingBlock) {
+						var blockRect = followingBlock.getBoundingClientRect();
+						var availableForBlock = (vh - footer) - (header + rect.height + 24);
+						if (blockRect.height > availableForBlock) {
 							// Pan at constant reading speed instead of cramming
-							// the whole pre into this cue's duration.
-							extendCodePan(followingPre, cue ? cue.end + 60 : null);
+							// the whole block into this cue's duration.
+							extendCodePan(followingBlock, cue ? cue.end + 60 : null);
 						} else {
 							scrollIntoSafeView(el, 'start');
 						}
@@ -525,11 +525,11 @@ html.light .prose .audio-active .heading-anchor {
 					// align the paragraph to the BOTTOM of the safe area
 					// so the pre above stays visible above it.
 					var prevEl = el.previousElementSibling;
-					var precedingPre = (prevEl && prevEl.tagName === 'PRE') ? prevEl : null;
-					if (precedingPre) {
+					var precedingBlock = (prevEl && (prevEl.tagName === 'PRE' || prevEl.tagName === 'TABLE')) ? prevEl : null;
+					if (precedingBlock) {
 						var visibleH = vh - header - footer;
-						if (precedingPre.getBoundingClientRect().height > visibleH) {
-							extendCodePan(precedingPre, cue ? cue.end + 60 : null);
+						if (precedingBlock.getBoundingClientRect().height > visibleH) {
+							extendCodePan(precedingBlock, cue ? cue.end + 60 : null);
 							return;
 						}
 						if (needsScroll) {
