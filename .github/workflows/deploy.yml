@@ -178,6 +178,20 @@ jobs:
             fi
           fi
 
+          # 4. Fallback — any site change while the site actively iterates on
+          #    a single report should point at that report. Beats the home page,
+          #    which is just a rehash of the entries list and rarely what any
+          #    specific commit is actually about.
+          if [ "$TARGET_KIND" = "update" ]; then
+            CNT=$(ls -1 reports/ 2>/dev/null | wc -l | tr -d ' ')
+            if [ "$CNT" = "1" ]; then
+              REPORT_SLUG=$(ls -1 reports/ | head -1)
+              TARGET_URL="https://journal.nomercy.tv/reports/${REPORT_SLUG}/"
+              TARGET_KIND="report"
+              TARGET_TITLE="$(echo "$REPORT_SLUG" | sed 's/-/ /g')"
+            fi
+          fi
+
           case "$TARGET_KIND" in
             entry)   EMBED_DESCRIPTION="A new entry has been published to the NoMercy dev journal." ;;
             report)  EMBED_DESCRIPTION="A report has been updated on the NoMercy dev journal." ;;

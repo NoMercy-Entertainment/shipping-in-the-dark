@@ -437,6 +437,10 @@ const tracksJson = JSON.stringify(tracks);
 	let speedIndex = 2; // start at 1x
 	let currentIndex = 0;
 	let currentVoice = 'female';
+	// When the page loads with a heading hash, we fetch that heading's
+	// cue start time asynchronously. On the user's first play, apply it
+	// before playing so the audio starts at the heading they linked to.
+	let pendingInitialSeek = null;
 	try {
 		const saved = localStorage.getItem(STORAGE_KEY);
 		if (saved === 'male' || saved === 'female') currentVoice = saved;
@@ -693,6 +697,12 @@ const tracksJson = JSON.stringify(tracks);
 	document.addEventListener('click', function (e) {
 		if (e.target.closest('#audio-play-btn')) {
 			if (audio.paused) {
+				// If the page loaded with a heading hash, the first play
+				// should start at that heading's timestamp, not at 0.
+				if (pendingInitialSeek != null && audio.currentTime < 0.5) {
+					try { audio.currentTime = pendingInitialSeek; } catch (_) {}
+					pendingInitialSeek = null;
+				}
 				audio.play().catch((err) => console.warn('[ReportAudioPlayer] Play blocked:', err));
 			} else {
 				audio.pause();
@@ -845,33 +855,47 @@ const tracksJson = JSON.stringify(tracks);
 		return -1;
 	}
 
-	// Resolve the current URL hash to a track index. The hash can be:
-	//   1. A section's title slug (e.g. #how-it-thinks) — id on the
-	//      <section class="report-part"> element. The section carries a
-	//      data-part-slug attribute pointing at the filename slug we use
-	//      as the track key.
-	//   2. A heading inside a part (e.g. #validate, from rehype-slug) —
-	//      we walk up to the closest [data-part-slug] ancestor.
-	//   3. Legacy/external links like #part-00-overview — the filename
-	//      slug itself, kept working for existing links.
-	function resolveHashToTrackIndex() {
+	// Resolve the current URL hash to a concrete target:
+	//   { trackIdx, partSlug, element, cueId }
+	//
+	// The hash can be:
+	//   1. A section's title slug (e.g. #how-it-thinks) — the <section>'s id.
+	//   2. A heading inside a part (e.g. #validate, from rehype-slug).
+	//   3. A legacy #part-{filename} link.
+	//
+	// For case 2 we also return the heading's h-N cueId so the caller can
+	// seek the audio to the corresponding cue start. For cases 1 and 3,
+	// cueId is null and playback should start at the beginning of the part.
+	function resolveHashTarget() {
 		const raw = (window.location.hash || '').replace(/^#/, '');
-		if (!raw) return -1;
-		// Legacy prefix: #part-{filename-slug}
+		if (!raw) return null;
+
+		// Legacy #part-{filename-slug}
 		const legacy = raw.match(/^part-(.+)$/);
 		if (legacy) {
 			const idx = findTrackIndexBySlug(legacy[1]);
-			if (idx >= 0) return idx;
-		}
-		// Element id lookup (title slug or heading slug)
-		const el = document.getElementById(raw);
-		if (el) {
-			const section = el.closest('[data-part-slug]');
-			if (section) {
-				return findTrackIndexBySlug(section.getAttribute('data-part-slug'));
+			if (idx >= 0) {
+				return { trackIdx: idx, partSlug: tracks[idx].slug, element: null, cueId: null };
 			}
 		}
-		return -1;
+
+		// id lookup — can resolve to the section itself or a heading inside it
+		const el = document.getElementById(raw);
+		if (!el) return null;
+		const section = el.closest('[data-part-slug]');
+		if (!section) return null;
+		const partSlug = section.getAttribute('data-part-slug');
+		const trackIdx = findTrackIndexBySlug(partSlug);
+		if (trackIdx < 0) return null;
+
+		// If the element itself IS the section, no specific cue — start from 0.
+		if (el === section) {
+			return { trackIdx, partSlug, element: el, cueId: null };
+		}
+		// Heading anchored by rehype-slug — find the h-N the paragraph-ids
+		// plugin stamped on the same element.
+		const cueId = el.getAttribute('data-audio-h');
+		return { trackIdx, partSlug, element: el, cueId: cueId || null };
 	}
 
 	// -------------------------------------------------------------- //
@@ -998,20 +1022,40 @@ const tracksJson = JSON.stringify(tracks);
 		showPlayer();
 		setPlayingState(true);
 	} else {
-		// Fresh visit — honour a hash (title slug, heading slug, or legacy
-		// #part-{filename} form) if present, otherwise start with the
-		// first part cued up.
-		const hashIdx = resolveHashToTrackIndex();
-		loadTrack(hashIdx >= 0 ? hashIdx : 0, { autoplay: false });
+		// Fresh visit — honour a hash target if present. A section hash cues
+		// that part from the start; a heading hash cues the part AND queues
+		// a seek to the heading's cue once metadata is ready. No autoplay
+		// on first load — wait for the user to hit play, then we'll apply
+		// the correct start time on their first play.
+		const target = resolveHashTarget();
+		if (target) {
+			loadTrack(target.trackIdx, { autoplay: false });
+			if (target.cueId) {
+				// Fetch the VTT for this track and remember the start offset
+				// so the first play jumps there instead of starting at 0.
+				fetchVttCueStart(tracks[target.trackIdx].vtt[currentVoice], target.cueId)
+					.then(function (start) {
+						if (start != null) pendingInitialSeek = start;
+					})
+					.catch(function () { /* best effort */ });
+			}
+		} else {
+			loadTrack(0, { autoplay: false });
+		}
 	}
 
-	// If the user navigates via hash while the page is loaded (back/forward
-	// button on an anchor, or clicks an in-page part link), swap the track.
+	// If the user navigates via hash while the page is loaded — back/forward,
+	// clicking an in-page part link in the sidebar, or clicking a heading
+	// anchor in the prose — swap the track and (for heading targets) seek.
 	window.addEventListener('hashchange', function () {
-		const idx = resolveHashToTrackIndex();
-		if (idx >= 0 && idx !== currentIndex) {
-			const wasPlaying = !audio.paused && audio.currentTime > 0;
-			loadTrack(idx, { autoplay: wasPlaying });
+		const target = resolveHashTarget();
+		if (!target) return;
+		const wasPlaying = !audio.paused && audio.currentTime > 0;
+		if (target.cueId) {
+			// seekToHeading handles the cross-part case and plays after seek
+			seekToHeading(target.partSlug, target.cueId);
+		} else if (target.trackIdx !== currentIndex) {
+			loadTrack(target.trackIdx, { autoplay: wasPlaying });
 		}
 	});
 })();
