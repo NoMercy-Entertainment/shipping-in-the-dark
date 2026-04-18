@@ -49,226 +49,226 @@ p-8
 p-9
 
 13
-00:02:13.999 --> 00:02:40.924
---On screen you see an example. A JSON object with a valid flag set to false, an errors array holding one entry with severity error, a field path pointing at video profiles index zero dot level, a human message explaining that H.264 Level 4.1 caps at 1080p but the output is 3840 by 2160, and a fix that tells the user to raise the level to 5.1 or drop the resolution. The warnings array is empty.
+00:02:13.999 --> 00:02:30.736
+--Every rule — whether it flags a level mismatch or a bad audio bitrate — returns the same shape. An ID, the field it concerns, a human sentence, and a suggested fix. That is why the dashboard can just render the feedback inline on whichever field the user is editing.
 
 14
-00:02:41.884 --> 00:02:48.296
+00:02:31.696 --> 00:02:38.108
 p-10
 
 15
-00:02:48.848 --> 00:03:04.023
+00:02:38.660 --> 00:02:53.835
 p-11
 
 16
-00:03:04.983 --> 00:03:06.695
+00:02:54.795 --> 00:02:56.507
 h-3
 
 17
-00:03:07.151 --> 00:03:14.863
+00:02:56.963 --> 00:03:04.675
 p-12
 
 18
-00:03:15.319 --> 00:03:18.594
+00:03:05.131 --> 00:03:08.406
 p-13
 
 19
-00:03:19.650 --> 00:03:25.637
+00:03:09.462 --> 00:03:15.449
 p-14
 
 20
-00:03:26.285 --> 00:04:04.847
---The record on screen captures a 4K HDR source. Duration a little over two hours. Constant frame rate at 23.976. One video stream: HEVC 10 bit, 3840 by 2160, pixel format yuv420p10le, color transfer SMPTE 2084, HDR true, Dolby Vision profile 7. Three audio streams: TrueHD 8 channel English, AC-3 6 channel English, AAC 2 channel Japanese. Two subtitle streams: PGS English, ASS English. 27 chapters and four attached fonts.
+00:03:16.097 --> 00:03:27.959
+--Every later stage will read that same record — the duration, the frame rate, the per-stream inventory, and the HDR flags that tell the planner whether to tonemap, preserve Dolby Vision, or just pass the pixels through.
 
 21
-00:04:05.807 --> 00:04:22.569
+00:03:28.919 --> 00:03:45.681
 p-15
 
 22
-00:04:23.529 --> 00:04:25.029
+00:03:46.641 --> 00:03:48.141
 h-4
 
 23
-00:04:25.485 --> 00:04:32.060
+00:03:48.597 --> 00:03:55.172
 p-16
 
 24
-00:04:32.612 --> 00:04:41.862
+00:03:55.724 --> 00:04:04.974
 p-17
 
 25
-00:04:42.510 --> 00:05:44.222
---The example on screen picks apart a single variant. Strategy HLS single pass. One variant called v0 dash 1080p. The video section names the codec as H.264, the encoder handle as H.264 NVENC, GPU index zero, output 1920 by 1080, rate control mode CRF with value 23, preset p4, profile high, level 4.2, pixel format yuv420p, and a filter chain that crops 1920 by 800 from offset zero 140 then scales back to 1920 by 1080. The audio section keeps stream index one as AAC stereo 192 kbps. Segment duration six seconds. Keyframe interval two seconds. Hardware bindings name the primary GPU as NVIDIA RTX 4080 and the decoder handle as HEVC CUVID. And a decisions log holds four human sentences explaining what happened and why. That's the plan.
+00:04:05.622 --> 00:04:25.734
+--The plan names which encoder handle to use, how to rate control it, what filter chain to run, which GPU to bind to — and crucially, a decisions log. Every choice written out in one human sentence. Whenever you look at an encode later and wonder why it picked HEVC over AV1, or why Dolby Vision got stripped, the log tells you.
 
 26
-00:05:45.182 --> 00:05:49.457
+00:04:26.694 --> 00:04:30.969
 p-18
 
 27
-00:05:50.009 --> 00:06:15.046
+00:04:31.521 --> 00:04:56.558
 p-19
 
 28
-00:06:15.694 --> 00:06:26.069
+00:04:57.206 --> 00:05:07.581
 p-20
 
 29
-00:06:27.029 --> 00:06:28.541
+00:05:08.541 --> 00:05:10.053
 h-5
 
 30
-00:06:28.997 --> 00:06:33.347
+00:05:10.509 --> 00:05:14.859
 p-21
 
 31
-00:06:33.899 --> 00:06:54.699
+00:05:15.411 --> 00:05:36.211
 p-22
 
 32
-00:06:55.251 --> 00:06:59.388
+00:05:36.763 --> 00:05:40.900
 p-23
 
 33
-00:07:00.036 --> 00:07:47.598
---Look at the shape of it. ffmpeg, a CUDA hardware device init, hardware accelerated HEVC decode on the input. A dash vf filter chain that reads: download from GPU, crop, zscale to linear, tonemap with Hable, zscale back to BT.709, scale to 1080p, upload back to GPU. Then the encoder flags: dash c colon v H.264 NVENC, preset p4, rate control VBR with a CQ of 23, profile high, level 4.2. Audio mapped to AAC 192 kbps stereo at 48 kilohertz. And finally the output format, HLS, with six second segments, VOD playlist type, MPEG-TS segments, independent segment flag, and filename patterns for segments and playlist.
+00:05:41.548 --> 00:06:05.460
+--Notice what the command is doing, even if you don't read every flag: it inits CUDA, decodes HEVC on the GPU, runs a tonemap filter chain all the way down to 8 bit, hands the frames to H.264 NVENC at a CRF of 23, and muxes the result into HLS with six second segments. Every one of those choices came from the profile plus the source analysis. The user wrote seven lines.
 
 34
-00:07:48.558 --> 00:07:56.820
+00:06:06.420 --> 00:06:14.682
 p-24
 
 35
-00:07:57.372 --> 00:08:23.672
+00:06:15.234 --> 00:06:41.534
 p-25
 
 36
-00:08:24.224 --> 00:08:38.024
+00:06:42.086 --> 00:06:55.886
 p-26
 
 37
-00:08:38.984 --> 00:08:40.871
+00:06:56.846 --> 00:06:58.733
 h-6
 
 38
-00:08:41.327 --> 00:08:46.127
+00:06:59.189 --> 00:07:03.989
 p-27
 
 39
-00:08:46.679 --> 00:08:56.454
+00:07:04.541 --> 00:07:14.316
 p-28
 
 40
-00:08:58.110 --> 00:09:08.497
+00:07:15.972 --> 00:07:26.359
 p-29
 
 41
-00:09:09.049 --> 00:09:16.561
+00:07:26.911 --> 00:07:34.423
 p-30
 
 42
-00:09:17.113 --> 00:09:26.888
+00:07:34.975 --> 00:07:44.750
 p-31
 
 43
-00:09:27.440 --> 00:09:36.315
+00:07:45.302 --> 00:07:54.177
 p-32
 
 44
-00:09:37.275 --> 00:09:39.125
+00:07:55.137 --> 00:07:56.987
 h-7
 
 45
-00:09:39.581 --> 00:09:44.468
+00:07:57.443 --> 00:08:02.330
 p-33
 
 46
-00:09:45.020 --> 00:10:07.507
+00:08:02.882 --> 00:08:25.369
 p-34
 
 47
-00:10:08.059 --> 00:10:17.909
+00:08:25.921 --> 00:08:35.771
 p-35
 
 48
-00:10:18.461 --> 00:10:31.248
+00:08:36.323 --> 00:08:49.110
 p-36
 
 49
-00:10:31.800 --> 00:10:36.925
+00:08:49.662 --> 00:08:54.787
 p-37
 
 50
-00:10:37.477 --> 00:10:48.352
+00:08:55.339 --> 00:09:06.214
 p-38
 
 51
-00:10:49.312 --> 00:10:51.899
+00:09:07.174 --> 00:09:09.761
 h-8
 
 52
-00:10:52.355 --> 00:11:01.567
+00:09:10.217 --> 00:09:19.429
 p-39
 
 53
-00:11:02.119 --> 00:11:14.219
+00:09:19.981 --> 00:09:32.081
 p-40
 
 54
-00:11:14.771 --> 00:11:22.796
+00:09:32.633 --> 00:09:40.658
 p-41
 
 55
-00:11:23.348 --> 00:11:46.360
+00:09:41.210 --> 00:10:04.222
 p-42
 
 56
-00:11:46.912 --> 00:12:03.487
+00:10:04.774 --> 00:10:21.349
 p-43
 
 57
-00:12:04.447 --> 00:12:06.084
+00:10:22.309 --> 00:10:23.946
 h-9
 
 58
-00:12:06.540 --> 00:12:22.302
+00:10:24.402 --> 00:10:40.164
 p-44
 
 59
-00:12:22.854 --> 00:12:29.191
+00:10:40.716 --> 00:10:47.053
 p-45
 
 60
-00:12:30.247 --> 00:12:41.334
+00:10:48.109 --> 00:10:59.196
 p-46
 
 61
-00:12:41.886 --> 00:12:55.586
+00:10:59.748 --> 00:11:13.448
 p-47
 
 62
-00:12:56.546 --> 00:12:59.033
+00:11:14.408 --> 00:11:16.895
 h-10
 
 63
-00:12:59.489 --> 00:13:06.701
+00:11:17.351 --> 00:11:24.563
 p-48
 
 64
-00:13:07.253 --> 00:13:32.490
+00:11:25.115 --> 00:11:50.352
 p-49
 
 65
-00:13:33.042 --> 00:14:00.679
+00:11:50.904 --> 00:12:18.541
 p-50
 
 66
-00:14:01.231 --> 00:14:07.243
+00:12:19.093 --> 00:12:25.105
 p-51
 
 67
-00:14:08.203 --> 00:14:10.753
+00:12:26.065 --> 00:12:28.615
 h-11
 
 68
-00:14:11.209 --> 00:14:24.884
+00:12:29.071 --> 00:12:42.746
 p-52
 
