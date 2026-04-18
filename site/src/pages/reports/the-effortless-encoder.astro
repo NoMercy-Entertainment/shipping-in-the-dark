@@ -324,7 +324,9 @@ const reportSourcePath = 'reports/the-effortless-encoder/';
 	/* Parts                                                                */
 	/* ------------------------------------------------------------------ */
 	.report-part {
-		scroll-margin-top: 80px;
+		/* Anchor offset is handled globally via html { scroll-padding-top:
+		   88px } — do NOT add scroll-margin-top here or the two stack and
+		   the section lands ~170px below the header with blank space. */
 		padding-top: 2rem;
 		margin-top: 2rem;
 		border-top: 1px solid var(--color-surface-800);
