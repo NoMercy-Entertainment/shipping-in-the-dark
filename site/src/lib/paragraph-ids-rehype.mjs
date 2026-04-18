@@ -24,7 +24,13 @@ export default function rehypeParagraphIds() {
 		var cCounter = 0;
 
 		visit(tree, 'element', (node) => {
-			if (node.tagName === 'p') {
+			// Treat <p> and top-level <li> as the same class of "prose block"
+			// for narration alignment — markdown numbered and bulleted lists
+			// become <li>, and the narration still wants to highlight each
+			// item as its own beat. Nested <li> inside a nested list is fine:
+			// the visit walks depth-first, so each gets its own number in
+			// document order.
+			if (node.tagName === 'p' || node.tagName === 'li') {
 				pCounter++;
 				if (node.properties && node.properties.id) return;
 				if (!node.properties) node.properties = {};
