@@ -33,8 +33,7 @@ const present = vttUrl || partSlug !== undefined;
 /* ------------------------------------------------------------------ */
 
 .prose p.audio-active,
-.prose ul.audio-active,
-.prose ol.audio-active {
+.prose li.audio-active {
 	position: relative;
 	border-left: 3px solid var(--color-accent-400);
 	padding: 0.55em 1em 0.55em 1em;
@@ -49,9 +48,16 @@ const present = vttUrl || partSlug !== undefined;
 		margin 0.2s ease;
 }
 
+/* <li> already sits inside a list with its own left padding — pull the
+   highlight flush with the list marker rather than extending into the
+   surrounding prose. */
+.prose li.audio-active {
+	margin-left: -1.5em;
+	padding-left: 1.5em;
+}
+
 html.light .prose p.audio-active,
-html.light .prose ul.audio-active,
-html.light .prose ol.audio-active {
+html.light .prose li.audio-active {
 	border-left-color: var(--color-accent-700);
 	background-color: oklch(0.48 0.13 163 / 0.07);
 }
@@ -439,20 +445,9 @@ html.light .prose .audio-active .heading-anchor {
 		if (el !== activeElement) {
 			if (activeElement) {
 				activeElement.classList.remove('audio-active');
-				// Remove highlight from sibling list if we added it
-				var prevList = activeElement.nextElementSibling;
-				if (prevList && (prevList.tagName === 'UL' || prevList.tagName === 'OL')) {
-					prevList.classList.remove('audio-active');
-				}
 			}
 			if (el) {
 				el.classList.add('audio-active');
-				// If this paragraph is followed by a list (callout bullets),
-				// highlight the list too and scroll to show both
-				var nextSib = el.nextElementSibling;
-				if (nextSib && (nextSib.tagName === 'UL' || nextSib.tagName === 'OL')) {
-					nextSib.classList.add('audio-active');
-				}
 			}
 			activeElement = el;
 
@@ -526,7 +521,6 @@ html.light .prose .audio-active .heading-anchor {
 
 		// Pan down to the bottom of the block over the remaining cue time.
 		var extraToPan = rect.height - visibleHeight;
-		var endY = startY + extraToPan;
 
 		// Give the smooth scroll a moment to settle before we start panning.
 		var audioEl = document.getElementById('sitd-global-audio');
@@ -586,10 +580,6 @@ html.light .prose .audio-active .heading-anchor {
 		// Clear any previous highlight before the new cues arrive
 		if (activeElement) {
 			activeElement.classList.remove('audio-active');
-			var nextList = activeElement.nextElementSibling;
-			if (nextList && (nextList.tagName === 'UL' || nextList.tagName === 'OL')) {
-				nextList.classList.remove('audio-active');
-			}
 			activeElement = null;
 		}
 
