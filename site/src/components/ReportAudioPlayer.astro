@@ -621,15 +621,48 @@ const tracksJson = JSON.stringify(tracks);
 		return m + ':' + (s < 10 ? '0' : '') + s;
 	}
 
+	// Sum the precomputed per-track durations for the current voice +
+	// variant to give the reader the whole-report duration, not just the
+	// current part. Falls back to audio.duration for the current track
+	// if the VTT-sourced number is missing.
+	function resolveTrackDuration(track, voice, variant) {
+		if (!track || !track.duration) return 0;
+		const vMap = track.duration[voice] || track.duration.female || null;
+		if (!vMap) return 0;
+		const val = vMap[variant] || vMap.brief || vMap.elaborate || 0;
+		return Number(val) || 0;
+	}
+
+	function totalReportDuration() {
+		let total = 0;
+		for (let i = 0; i < tracks.length; i++) {
+			total += resolveTrackDuration(tracks[i], currentVoice, currentVariant);
+		}
+		return total;
+	}
+
+	function totalReportPosition() {
+		let total = 0;
+		for (let i = 0; i < currentIndex; i++) {
+			total += resolveTrackDuration(tracks[i], currentVoice, currentVariant);
+		}
+		return total + (isFinite(audio.currentTime) ? audio.currentTime : 0);
+	}
+
 	function updateProgress() {
-		if (!audio.duration) return;
-		const pct = (audio.currentTime / audio.duration) * 100;
+		const total = totalReportDuration();
+		const position = totalReportPosition();
+		const ct = document.getElementById('audio-current');
+		const de = document.getElementById('audio-duration');
 		const pf = document.getElementById('audio-progress-fill');
 		const pb = document.getElementById('audio-progress-bar');
-		const ct = document.getElementById('audio-current');
-		if (pf) pf.style.width = pct + '%';
-		if (pb) pb.setAttribute('aria-valuenow', Math.round(pct));
-		if (ct) ct.textContent = formatTime(audio.currentTime);
+		if (ct) ct.textContent = formatTime(position);
+		if (de) de.textContent = formatTime(total);
+		if (total > 0) {
+			const pct = (position / total) * 100;
+			if (pf) pf.style.width = pct + '%';
+			if (pb) pb.setAttribute('aria-valuenow', Math.round(pct));
+		}
 	}
 
 	function updateVoiceLabel() {
@@ -666,10 +699,40 @@ const tracksJson = JSON.stringify(tracks);
 		const audioUrl = resolveTrackUrl(track.audio, currentVoice, currentVariant);
 		const vttUrl = resolveTrackUrl(track.vtt, currentVoice, currentVariant);
 
+		if (!audioUrl) {
+			console.warn('[ReportAudioPlayer] No audio URL for', track.slug, 'voice=' + currentVoice, 'variant=' + currentVariant);
+			return;
+		}
+
 		const resumeTime = opts.resumeAt || 0;
 		const autoplay = !!opts.autoplay;
 
 		setPlayingState(false);
+
+		// Wire the onReady handler BEFORE the load() call. If the browser
+		// has the metadata cached it can fire loadedmetadata synchronously
+		// from inside load(), and an addEventListener attached after that
+		// would never hear the event.
+		const onReady = () => {
+			if (resumeTime) {
+				try { audio.currentTime = resumeTime; } catch (e) { /* ignore */ }
+			}
+			try { audio.playbackRate = speeds[speedIndex]; } catch (e) { /* ignore */ }
+			updateProgress();
+			if (autoplay) {
+				audio.play().catch((err) => console.warn('[ReportAudioPlayer] Play blocked:', err));
+			}
+			audio.removeEventListener('loadedmetadata', onReady);
+		};
+		audio.addEventListener('loadedmetadata', onReady);
+
+		// Force a reload even if src is equal (e.g. the persistent audio
+		// element carried the same URL across a view transition). Some
+		// browsers skip the fetch and leave duration at 0 when you
+		// re-assign an identical src; removeAttribute + set forces it.
+		if (audio.src === audioUrl) {
+			audio.removeAttribute('src');
+		}
 		audio.src = audioUrl;
 		audio.load();
 
@@ -686,6 +749,10 @@ const tracksJson = JSON.stringify(tracks);
 		updateTitle(track);
 		updateTocHighlight(track.slug);
 		showPlayer();
+		// Draw the total / position labels from the precomputed VTT
+		// durations straight away so the reader never sees 0:00 / 0:00
+		// before the audio's metadata has arrived.
+		updateProgress();
 
 		// Scroll the part's heading to the top of the viewport — but ONLY
 		// when a new track is actively about to play. On initial page load
@@ -700,22 +767,6 @@ const tracksJson = JSON.stringify(tracks);
 				heading.scrollIntoView({ behavior: 'smooth', block: 'start' });
 			}
 		}
-
-		const onReady = () => {
-			if (resumeTime) {
-				try { audio.currentTime = resumeTime; } catch (e) { /* ignore */ }
-			}
-			// audio.load() resets playbackRate to 1.0 on Chromium/Safari,
-			// so re-apply the stored rate every time a new track loads.
-			try { audio.playbackRate = speeds[speedIndex]; } catch (e) { /* ignore */ }
-			if (autoplay) {
-				audio.play().catch((err) => {
-					console.warn('[ReportAudioPlayer] Play blocked:', err);
-				});
-			}
-			audio.removeEventListener('loadedmetadata', onReady);
-		};
-		audio.addEventListener('loadedmetadata', onReady);
 	}
 
 	async function setVoice(newVoice) {
@@ -968,10 +1019,10 @@ const tracksJson = JSON.stringify(tracks);
 	}
 
 	// -------------------------------------------------------------- //
-	audio.addEventListener('loadedmetadata', function () {
-		const de = document.getElementById('audio-duration');
-		if (de) de.textContent = formatTime(audio.duration);
-	});
+	// Duration label is driven by updateProgress (report-wide total
+	// from the precomputed VTT durations) — no per-track override on
+	// loadedmetadata any more. Kept the hook for potential future
+	// per-track refinements, but intentionally empty for now.
 
 	// Position persistence. Save the reader's spot every few seconds so
 	// a refresh or revisit resumes at the same paragraph in the same
@@ -1154,11 +1205,30 @@ const tracksJson = JSON.stringify(tracks);
 		}
 	});
 
-	// Progress bar click-to-seek
+	// Progress bar click-to-seek. The progress bar represents the whole
+	// report (all parts summed), so a click at 50% has to figure out
+	// which track that lands in and seek inside it, not just scrub the
+	// current track. If the target track is different, swap first.
 	function seekToPercent(pct) {
-		if (!audio.duration) return;
-		audio.currentTime = (pct / 100) * audio.duration;
-		updateProgress();
+		const total = totalReportDuration();
+		if (total <= 0) return;
+		let target = (pct / 100) * total;
+		let acc = 0;
+		for (let i = 0; i < tracks.length; i++) {
+			const dur = resolveTrackDuration(tracks[i], currentVoice, currentVariant);
+			if (target <= acc + dur || i === tracks.length - 1) {
+				const withinTrack = Math.max(0, target - acc);
+				if (i !== currentIndex) {
+					const wasPlaying = !audio.paused;
+					loadTrack(i, { resumeAt: withinTrack, autoplay: wasPlaying });
+				} else {
+					try { audio.currentTime = withinTrack; } catch (_) {}
+				}
+				updateProgress();
+				return;
+			}
+			acc += dur;
+		}
 	}
 
 	function getClickPercent(e) {
@@ -1480,11 +1550,7 @@ const tracksJson = JSON.stringify(tracks);
 		updateTocHighlight(t.slug);
 		showPlayer();
 		setPlayingState(!audio.paused);
-		if (audio.duration) {
-			const de = document.getElementById('audio-duration');
-			if (de) de.textContent = formatTime(audio.duration);
-			updateProgress();
-		}
+		updateProgress();
 		// Let AudioSync know which part is active so it loads the VTT
 		const vttUrlNow = resolveTrackUrl(t.vtt, currentVoice, currentVariant);
 		const syncData = document.getElementById('audio-sync-data');
@@ -1544,13 +1610,12 @@ const tracksJson = JSON.stringify(tracks);
 				// part you were on and where in it. Old per-report blobs
 				// should never silently downgrade a user's current choice.
 				loadTrack(saved.trackIndex, { autoplay: false });
-				// Queue the saved time for the first play; seek on loadedmetadata.
+				// Remember the saved time but do NOT seek to it on load —
+				// that would fire a timeupdate which scrolls the viewport
+				// down to the saved cue and the reader never sees the top
+				// of the page. Defer the seek until the user presses play.
 				if (saved.time > 1) {
-					const applyResume = function () {
-						try { audio.currentTime = saved.time; } catch (_) {}
-						audio.removeEventListener('loadedmetadata', applyResume);
-					};
-					audio.addEventListener('loadedmetadata', applyResume);
+					pendingInitialSeek = saved.time;
 				}
 			} else {
 				loadTrack(0, { autoplay: false });

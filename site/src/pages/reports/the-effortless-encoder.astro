@@ -1,5 +1,8 @@
 ---
 import { getCollection, render } from 'astro:content';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
@@ -7,6 +10,27 @@ import ReportAudioPlayer from '../../components/ReportAudioPlayer.astro';
 import AudioSync from '../../components/AudioSync.astro';
 import ShareButtons from '../../components/ShareButtons.astro';
 import ArticleSource from '../../components/ArticleSource.astro';
+
+// Parse a VTT file and return the highest end-timestamp (in seconds).
+// Used to pre-compute each part's audio duration so the player can
+// show a report-wide total instead of just the current part.
+function vttDuration(vttRelPath: string): number {
+	try {
+		const siteRoot = path.dirname(fileURLToPath(new URL('../..', import.meta.url)));
+		const full = path.join(siteRoot, 'public', vttRelPath.replace(/^\//, ''));
+		const text = fs.readFileSync(full, 'utf-8');
+		let max = 0;
+		const re = /\d+:\d+:\d+\.\d+\s*-->\s*(\d+):(\d+):(\d+)\.(\d+)/g;
+		let m: RegExpExecArray | null;
+		while ((m = re.exec(text)) !== null) {
+			const secs = Number(m[1]) * 3600 + Number(m[2]) * 60 + Number(m[3]) + Number(`0.${m[4]}`);
+			if (secs > max) max = secs;
+		}
+		return max;
+	} catch {
+		return 0;
+	}
+}
 
 const allParts = await getCollection('reports', (p) => p.id.startsWith('the-effortless-encoder/'));
 const parts = allParts.sort((a, b) => a.data.part - b.data.part);
@@ -31,31 +55,45 @@ const rendered = await Promise.all(
 const AUDIO_BASE = 'https://github.com/NoMercy-Entertainment/shipping-in-the-dark/releases/download/audio-v1';
 const VTT_BASE = '/audio/reports/the-effortless-encoder';
 
-const tracks = rendered.map(({ part, slug }) => ({
-	slug,
-	title: part.data.title,
-	part: part.data.part,
-	audio: {
-		female: {
-			brief: `${AUDIO_BASE}/the-effortless-encoder--${slug}.female.brief.mp3`,
-			elaborate: `${AUDIO_BASE}/the-effortless-encoder--${slug}.female.elaborate.mp3`,
+const tracks = rendered.map(({ part, slug }) => {
+	const vttFemaleBrief = `${VTT_BASE}/${slug}.female.brief.vtt`;
+	const vttFemaleElaborate = `${VTT_BASE}/${slug}.female.elaborate.vtt`;
+	const vttMaleBrief = `${VTT_BASE}/${slug}.male.brief.vtt`;
+	const vttMaleElaborate = `${VTT_BASE}/${slug}.male.elaborate.vtt`;
+	// Precompute per-track duration per voice/variant from the VTT so the
+	// player can show a report-wide total instead of the current part's
+	// duration. We store all four because voice + variant swaps change
+	// the total; the player picks the right one at runtime.
+	return {
+		slug,
+		title: part.data.title,
+		part: part.data.part,
+		audio: {
+			female: {
+				brief: `${AUDIO_BASE}/the-effortless-encoder--${slug}.female.brief.mp3`,
+				elaborate: `${AUDIO_BASE}/the-effortless-encoder--${slug}.female.elaborate.mp3`,
+			},
+			male: {
+				brief: `${AUDIO_BASE}/the-effortless-encoder--${slug}.male.brief.mp3`,
+				elaborate: `${AUDIO_BASE}/the-effortless-encoder--${slug}.male.elaborate.mp3`,
+			},
 		},
-		male: {
-			brief: `${AUDIO_BASE}/the-effortless-encoder--${slug}.male.brief.mp3`,
-			elaborate: `${AUDIO_BASE}/the-effortless-encoder--${slug}.male.elaborate.mp3`,
+		vtt: {
+			female: { brief: vttFemaleBrief, elaborate: vttFemaleElaborate },
+			male: { brief: vttMaleBrief, elaborate: vttMaleElaborate },
 		},
-	},
-	vtt: {
-		female: {
-			brief: `${VTT_BASE}/${slug}.female.brief.vtt`,
-			elaborate: `${VTT_BASE}/${slug}.female.elaborate.vtt`,
+		duration: {
+			female: {
+				brief: vttDuration(vttFemaleBrief),
+				elaborate: vttDuration(vttFemaleElaborate),
+			},
+			male: {
+				brief: vttDuration(vttMaleBrief),
+				elaborate: vttDuration(vttMaleElaborate),
+			},
 		},
-		male: {
-			brief: `${VTT_BASE}/${slug}.male.brief.vtt`,
-			elaborate: `${VTT_BASE}/${slug}.male.elaborate.vtt`,
-		},
-	},
-}));
+	};
+});
 
 const title = 'NoMercy MediaServer — The Effortless Encoder';
 const description = 'A deep report on the orchestration behind NoMercy MediaServer\'s video and audio encoding — architecture, codecs, safety net, hardware, content analysis, subtitles, DRM, live transcode, disc ripping, distributed encoding, and roadmap.';
