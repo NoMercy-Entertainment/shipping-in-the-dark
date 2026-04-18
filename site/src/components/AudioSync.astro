@@ -105,6 +105,12 @@ html.light .prose .audio-active .heading-anchor {
 	var activeTocSlug = null;
 	var currentPartSlug = '';
 	var currentVttUrl = '';
+	// Active code-block pan state. When a code-N cue starts, we kick off a
+	// requestAnimationFrame loop that eases window.scrollY from "top of pre
+	// aligned with header" to "bottom of pre above player" over the cue
+	// duration. A new cue (or audio end) cancels the pan.
+	var codePanRaf = null;
+	var codePanEl = null;
 
 	// ------------------------------------------------------------------ //
 	// Text normalization — strips markdown artifacts, lowercases,          //
@@ -186,6 +192,8 @@ html.light .prose .audio-active .heading-anchor {
 				result.push({ start: start, end: end, text: '', section: null, elementId: cueText });
 			} else if (/^h-\d+$/.test(cueText)) {
 				result.push({ start: start, end: end, text: '', section: null, elementId: cueText, isHeading: true });
+			} else if (/^code-\d+$/.test(cueText)) {
+				result.push({ start: start, end: end, text: '', section: null, elementId: cueText, isCode: true });
 			} else if (/^i-\d+$/.test(cueText)) {
 				result.push({ start: start, end: end, text: '', section: null, elementId: cueText, isImage: true });
 			// Unmatched cues (prefixed with --) — skip, no scroll
@@ -311,21 +319,30 @@ html.light .prose .audio-active .heading-anchor {
 				return { start: cue.start, end: cue.end, element: lookupById(cue.section), section: cue.section };
 			}
 
-			// 2. Deterministic element reference — p-N, h-N, or i-N
+			// 2. Deterministic element reference — p-N, h-N, i-N, or code-N
 			if (cue.elementId) {
 				var el = null;
 				var isHeading = false;
+				var isCode = false;
 				if (cue.elementId.startsWith('p-')) {
 					el = lookupById(cue.elementId);
 				} else if (cue.elementId.startsWith('h-')) {
 					el = lookupHeading(cue.elementId);
 					isHeading = true;
+				} else if (cue.elementId.startsWith('code-')) {
+					var scope = getScopeRoot() || document;
+					el = scope.querySelector('[data-audio-code="' + cue.elementId + '"]');
+					isCode = true;
 				} else if (cue.elementId.startsWith('i-')) {
 					el = lookupImage(cue.elementId);
 					if (el) el = el.closest('p') || el.parentElement || el;
 				}
 				var sectionSlug = el ? deriveSectionSlug(el) : null;
-				return { start: cue.start, end: cue.end, element: el, section: sectionSlug, isHeading: isHeading };
+				return {
+					start: cue.start, end: cue.end,
+					element: el, section: sectionSlug,
+					isHeading: isHeading, isCode: isCode,
+				};
 			}
 
 			// 3. Text-based fuzzy matching — fallback for VTTs without p-N ids
@@ -440,19 +457,22 @@ html.light .prose .audio-active .heading-anchor {
 			activeElement = el;
 
 			// Auto-scroll behavior:
-			// - Headings ALWAYS scroll to the top (block: 'start'), regardless
-			//   of whether they are already in view. A new section always
-			//   feels right at the top — the heading + first paragraphs come
-			//   into view together.
+			// - Headings ALWAYS scroll to top (block: 'start'). A new section
+			//   always feels right at the top — the heading + first
+			//   paragraphs come into view together.
+			// - Code blocks scroll to top too, and if the block is taller
+			//   than the viewport, a slow pan moves through it for the
+			//   duration of the cue so the listener reads along.
 			// - Paragraphs only scroll if they would otherwise be offscreen,
 			//   and land in the CENTER for comfortable reading.
-			// scroll-padding-top: 88px on <html> keeps the heading below the
-			// sticky site header; the 64px player at the bottom is accounted
-			// for by the center-block default.
 			if (el) {
-				if (cue && cue.isHeading) {
+				if (cue && cue.isCode) {
+					startCodePan(el, cue.start, cue.end);
+				} else if (cue && cue.isHeading) {
+					stopCodePan();
 					el.scrollIntoView({ behavior: 'smooth', block: 'start' });
 				} else {
+					stopCodePan();
 					var rect = el.getBoundingClientRect();
 					var vh   = window.innerHeight;
 					var visibleBottom = vh - 64;
@@ -476,6 +496,59 @@ html.light .prose .audio-active .heading-anchor {
 				}
 			}
 		}
+	}
+
+	function stopCodePan() {
+		if (codePanRaf != null) {
+			cancelAnimationFrame(codePanRaf);
+			codePanRaf = null;
+		}
+		codePanEl = null;
+	}
+
+	function startCodePan(el, cueStart, cueEnd) {
+		stopCodePan();
+		if (!el) return;
+		codePanEl = el;
+
+		var header = 88;
+		var footer = 64;
+		var vh = window.innerHeight;
+		var visibleHeight = vh - header - footer;
+
+		// Jump the code block's top just under the sticky header first.
+		var rect = el.getBoundingClientRect();
+		var startY = window.scrollY + rect.top - header;
+		window.scrollTo({ top: startY, behavior: 'smooth' });
+
+		// If the block fits in the viewport, we're done — no pan needed.
+		if (rect.height <= visibleHeight + 4) return;
+
+		// Pan down to the bottom of the block over the remaining cue time.
+		var extraToPan = rect.height - visibleHeight;
+		var endY = startY + extraToPan;
+
+		// Give the smooth scroll a moment to settle before we start panning.
+		var audioEl = document.getElementById('sitd-global-audio');
+		var panStartTs = null;
+		var delay = 350;
+
+		function tick(ts) {
+			if (codePanEl !== el) return;
+			if (panStartTs === null) panStartTs = ts;
+			// Sync to actual audio position so pausing pauses the pan.
+			var currentTime = audioEl ? audioEl.currentTime : 0;
+			if (currentTime >= cueEnd) { stopCodePan(); return; }
+			var elapsed = Math.max(0, currentTime - cueStart);
+			var dur = Math.max(0.001, cueEnd - cueStart);
+			var t = Math.min(1, elapsed / dur);
+			window.scrollTo({ top: startY + extraToPan * t });
+			codePanRaf = requestAnimationFrame(tick);
+		}
+
+		setTimeout(function () {
+			codePanRaf = requestAnimationFrame(tick);
+		}, delay);
 	}
 
 	function clearHighlight() {
@@ -544,6 +617,7 @@ html.light .prose .audio-active .heading-anchor {
 	});
 
 	document.addEventListener('audio-ended', function () {
+		stopCodePan();
 		clearHighlight();
 	});
 

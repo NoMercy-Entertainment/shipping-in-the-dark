@@ -21,6 +21,7 @@ export default function rehypeParagraphIds() {
 		var pCounter = 0;
 		var hCounter = 0;
 		var iCounter = 0;
+		var cCounter = 0;
 
 		visit(tree, 'element', (node) => {
 			if (node.tagName === 'p') {
@@ -37,6 +38,10 @@ export default function rehypeParagraphIds() {
 				iCounter++;
 				if (!node.properties) node.properties = {};
 				node.properties.dataAudioI = 'i-' + iCounter;
+			} else if (node.tagName === 'pre') {
+				cCounter++;
+				if (!node.properties) node.properties = {};
+				node.properties.dataAudioCode = 'code-' + cCounter;
 			}
 		});
 	};
