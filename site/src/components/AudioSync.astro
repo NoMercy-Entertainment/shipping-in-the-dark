@@ -496,6 +496,18 @@ html.light .prose .audio-active .heading-anchor {
 						}
 					}
 
+					// If this paragraph immediately follows a <pre> code
+					// block, the narration is usually describing that
+					// code. Keep the code on screen as long as possible:
+					// align the paragraph to the BOTTOM of the safe area
+					// so the pre above stays visible above it.
+					var prevEl = el.previousElementSibling;
+					var precedingPre = (prevEl && prevEl.tagName === 'PRE') ? prevEl : null;
+					if (precedingPre && needsScroll) {
+						scrollIntoSafeView(el, 'end');
+						return;
+					}
+
 					if (needsScroll) {
 						scrollIntoSafeView(el, 'center');
 					}
@@ -522,6 +534,8 @@ html.light .prose .audio-active .heading-anchor {
 	// 64px audio player at the bottom. mode:
 	//   'start'  — align the element's top to the safe-top edge
 	//   'center' — center the element within the safe band
+	//   'end'    — align the element's bottom to the safe-bottom edge
+	//              (keeps whatever is above the element visible longer)
 	// If the element is taller than the safe band, align its top anyway.
 	function scrollIntoSafeView(el, mode) {
 		if (!el) return;
@@ -536,6 +550,8 @@ html.light .prose .audio-active .heading-anchor {
 			var elCenter = rect.top + rect.height / 2;
 			var safeCenter = safeTop + safeHeight / 2;
 			target = scrollY + (elCenter - safeCenter);
+		} else if (mode === 'end' && rect.height <= safeHeight) {
+			target = scrollY + rect.bottom - safeBottom;
 		} else {
 			target = scrollY + rect.top - safeTop;
 		}
