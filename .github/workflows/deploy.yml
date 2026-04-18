@@ -115,17 +115,55 @@ jobs:
             fi
           fi
 
-          # 2. Report (any file under reports/{report}/*.md)
+          # 2. Report — checked broadly because report deploys often include
+          #    only component / CSS / player changes, not the markdown itself.
+          #
+          #    a) Markdown under reports/{slug}/*.md             → /reports/{slug}/
+          #    b) Astro route site/src/pages/reports/{slug}.astro → /reports/{slug}/
+          #    c) Report player / audio-sync components           → single report
+          #       in reports/ if there is exactly one
+          #    d) Bot commit "update audio VTTs" while public/audio/reports/
+          #       changed → that report
           if [ "$TARGET_KIND" = "update" ]; then
+            REPORT_SLUG=""
+
+            # (a) markdown under reports/
             REPORT_FILE=$(echo "$CHANGED_FILES" | grep -E '^reports/[^/]+/.+\.md$' | tail -1)
             if [ -n "$REPORT_FILE" ]; then
               REPORT_SLUG=$(echo "$REPORT_FILE" | sed -E 's|^reports/([^/]+)/.*$|\1|')
-              if [ -n "$REPORT_SLUG" ]; then
-                TARGET_URL="https://journal.nomercy.tv/reports/${REPORT_SLUG}/"
-                TARGET_KIND="report"
-                # Use the report directory name as the title fallback
-                TARGET_TITLE="$(echo "$REPORT_SLUG" | sed 's/-/ /g')"
+            fi
+
+            # (b) route under site/src/pages/reports/
+            if [ -z "$REPORT_SLUG" ]; then
+              REPORT_ROUTE=$(echo "$CHANGED_FILES" | grep -E '^site/src/pages/reports/[^/]+\.astro$' | tail -1)
+              if [ -n "$REPORT_ROUTE" ]; then
+                REPORT_SLUG=$(basename "$REPORT_ROUTE" .astro)
               fi
+            fi
+
+            # (c) report-scoped component change (ReportAudioPlayer, AudioSync)
+            if [ -z "$REPORT_SLUG" ]; then
+              if echo "$CHANGED_FILES" | grep -qE '^site/src/components/(ReportAudioPlayer|AudioSync)\.astro$'; then
+                # Use the single report in reports/ if there is exactly one.
+                CNT=$(ls -1 reports/ 2>/dev/null | wc -l | tr -d ' ')
+                if [ "$CNT" = "1" ]; then
+                  REPORT_SLUG=$(ls -1 reports/ | head -1)
+                fi
+              fi
+            fi
+
+            # (d) VTT bot commit touching public/audio/reports/
+            if [ -z "$REPORT_SLUG" ]; then
+              REPORT_VTT=$(echo "$CHANGED_FILES" | grep -E '^site/public/audio/reports/[^/]+/' | tail -1)
+              if [ -n "$REPORT_VTT" ]; then
+                REPORT_SLUG=$(echo "$REPORT_VTT" | sed -E 's|^site/public/audio/reports/([^/]+)/.*$|\1|')
+              fi
+            fi
+
+            if [ -n "$REPORT_SLUG" ]; then
+              TARGET_URL="https://journal.nomercy.tv/reports/${REPORT_SLUG}/"
+              TARGET_KIND="report"
+              TARGET_TITLE="$(echo "$REPORT_SLUG" | sed 's/-/ /g')"
             fi
           fi
 
