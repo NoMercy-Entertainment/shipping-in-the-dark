@@ -461,6 +461,7 @@ const tracksJson = JSON.stringify(tracks);
 
 	const STORAGE_KEY = 'sitd:narrator-voice';
 	const VARIANT_KEY = 'sitd:narration-variant';
+	const SPEED_KEY = 'sitd:playback-speed';
 	// Per-report position memory. The key is scoped by the tracks array's
 	// first slug so two different reports don't stomp each other.
 	const POSITION_KEY = 'sitd:report-position';
@@ -499,6 +500,11 @@ const tracksJson = JSON.stringify(tracks);
 		if (saved === 'male' || saved === 'female') currentVoice = saved;
 		const savedVariant = localStorage.getItem(VARIANT_KEY);
 		if (savedVariant === 'brief' || savedVariant === 'elaborate') currentVariant = savedVariant;
+		const savedSpeed = localStorage.getItem(SPEED_KEY);
+		if (savedSpeed != null) {
+			const idx = speeds.indexOf(parseFloat(savedSpeed));
+			if (idx >= 0) speedIndex = idx;
+		}
 	} catch (e) { /* localStorage blocked */ }
 
 	// Resolve the audio/vtt URL for a track, falling back to the other
@@ -800,6 +806,7 @@ const tracksJson = JSON.stringify(tracks);
 		speedIndex = Math.max(0, Math.min(speeds.length - 1, i));
 		const rate = speeds[speedIndex];
 		audio.playbackRate = rate;
+		try { localStorage.setItem(SPEED_KEY, String(rate)); } catch (e) { /* blocked */ }
 		const display = document.getElementById('audio-speed-display');
 		const label = (Number.isInteger(rate) ? rate.toFixed(0) : rate.toFixed(2).replace(/\.?0+$/, '')) + 'x';
 		if (display) display.textContent = label;
@@ -849,11 +856,17 @@ const tracksJson = JSON.stringify(tracks);
 			if (typeof data.slug !== 'string') return null;
 			const idx = findTrackIndexBySlug(data.slug);
 			if (idx < 0) return null;
+			// Older saved blobs predate voice/variant fields. Return null for
+			// those fields so the caller keeps whatever the global preference
+			// (STORAGE_KEY / VARIANT_KEY) said — otherwise an old save would
+			// silently override the user's current dropdown choice.
+			const savedVoice = data.voice === 'male' || data.voice === 'female' ? data.voice : null;
+			const savedVariant = data.variant === 'brief' || data.variant === 'elaborate' ? data.variant : null;
 			return {
 				trackIndex: idx,
 				time: Number.isFinite(data.time) ? data.time : 0,
-				voice: data.voice === 'male' ? 'male' : 'female',
-				variant: data.variant === 'elaborate' ? 'elaborate' : 'brief',
+				voice: savedVoice,
+				variant: savedVariant,
 			};
 		} catch (e) { return null; }
 	}
@@ -1330,12 +1343,12 @@ const tracksJson = JSON.stringify(tracks);
 		} else {
 			const saved = loadPosition();
 			if (saved) {
-				if (saved.voice !== currentVoice) {
+				if (saved.voice && saved.voice !== currentVoice) {
 					currentVoice = saved.voice;
 					updateVoiceLabel();
 					updateVoiceMenuChecked();
 				}
-				if (saved.variant !== currentVariant) {
+				if (saved.variant && saved.variant !== currentVariant) {
 					currentVariant = saved.variant;
 					updateVariantLabel();
 					updateVariantMenuChecked();
