@@ -6,6 +6,8 @@ import Footer from '../../components/Footer.astro';
 import AgentTooltip from '../../components/AgentTooltip.astro';
 import AudioPlayer from '../../components/AudioPlayer.astro';
 import AudioSync from '../../components/AudioSync.astro';
+import ShareButtons from '../../components/ShareButtons.astro';
+import ArticleSource from '../../components/ArticleSource.astro';
 
 export async function getStaticPaths() {
 	const agents = await getCollection('agents');
@@ -19,6 +21,8 @@ const { agent } = Astro.props;
 const { Content } = await render(agent);
 
 const ogImage = new URL(`/og/team/${agent.data.id}.png`, Astro.site).toString();
+const canonicalUrl = new URL(Astro.url.pathname, Astro.site).toString();
+const sourcePath = `site/src/content/agents/${agent.id}.md`;
 
 const modelLabels: Record<string, string> = {
 	opus: 'Claude Opus',
@@ -66,6 +70,12 @@ const modelColors: Record<string, string> = {
 		<div class="prose">
 			<Content />
 		</div>
+
+		<div class="mt-10 flex flex-col items-center gap-4">
+			<ShareButtons title={agent.data.display_name} url={canonicalUrl} prominent={true} />
+			<ArticleSource path={sourcePath} />
+		</div>
+
 		<AgentTooltip />
 	</main>
 

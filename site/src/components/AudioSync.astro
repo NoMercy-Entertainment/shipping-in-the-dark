@@ -379,13 +379,20 @@ html.light .prose .audio-active .heading-anchor {
 	// well within perf budget for 60fps timeupdate)                        //
 	// ------------------------------------------------------------------ //
 
+	// Return the cue the listener is currently "on": the cue whose range
+	// covers currentTime, OR — during silent pauses between cues — the most
+	// recent cue that has already started. Keeps the highlight stable
+	// through [pause:Nms] silences instead of flickering off and on, and
+	// eliminates the CSS transition lag that made the state feel late.
 	function findActiveCue(currentTime) {
+		var active = null;
 		for (var i = 0; i < cues.length; i++) {
 			if (currentTime >= cues[i].start && currentTime < cues[i].end) {
 				return cues[i];
 			}
+			if (cues[i].start <= currentTime) active = cues[i];
 		}
-		return null;
+		return active;
 	}
 
 	// ------------------------------------------------------------------ //

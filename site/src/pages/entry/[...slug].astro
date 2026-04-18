@@ -47,6 +47,7 @@ if (entry.data.excerpt) {
 	tags={entry.data.tags ?? []}
 	audioUrl={entry.data.audio_url}
 	vttUrl={entry.data.vtt_url}
+	sourcePath={`entries/${entry.id}.md`}
 >
 	<Content />
 </EntryLayout>
