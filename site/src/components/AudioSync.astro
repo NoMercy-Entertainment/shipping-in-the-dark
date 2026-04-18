@@ -482,7 +482,15 @@ html.light .prose .audio-active .heading-anchor {
 					stopCodePan();
 					scrollIntoSafeView(el, 'start');
 				} else {
-					stopCodePan();
+					// Keep a running code pan alive if this paragraph is a
+					// sibling of the <pre> currently being panned. Otherwise
+					// the cue has moved past the code block entirely and the
+					// pan should stop.
+					var panKeep = codePanEl && (
+						el === codePanEl.previousElementSibling ||
+						el === codePanEl.nextElementSibling
+					);
+					if (!panKeep) stopCodePan();
 					var rect = el.getBoundingClientRect();
 					var header = 88;
 					var footer = getPlayerHeight();
@@ -499,11 +507,14 @@ html.light .prose .audio-active .heading-anchor {
 					var nextEl = el.nextElementSibling;
 					var followingPre = (nextEl && nextEl.tagName === 'PRE') ? nextEl : null;
 					if (followingPre) {
-						scrollIntoSafeView(el, 'start');
 						var preRect = followingPre.getBoundingClientRect();
 						var availableForPre = (vh - footer) - (header + rect.height + 24);
-						if (preRect.height > availableForPre && cue && cue.end > cue.start) {
-							startCodePan(followingPre, cue.start, cue.end);
+						if (preRect.height > availableForPre) {
+							// Pan at constant reading speed instead of cramming
+							// the whole pre into this cue's duration.
+							extendCodePan(followingPre, cue ? cue.end + 60 : null);
+						} else {
+							scrollIntoSafeView(el, 'start');
 						}
 						return;
 					}
@@ -515,9 +526,16 @@ html.light .prose .audio-active .heading-anchor {
 					// so the pre above stays visible above it.
 					var prevEl = el.previousElementSibling;
 					var precedingPre = (prevEl && prevEl.tagName === 'PRE') ? prevEl : null;
-					if (precedingPre && needsScroll) {
-						scrollIntoSafeView(el, 'end');
-						return;
+					if (precedingPre) {
+						var visibleH = vh - header - footer;
+						if (precedingPre.getBoundingClientRect().height > visibleH) {
+							extendCodePan(precedingPre, cue ? cue.end + 60 : null);
+							return;
+						}
+						if (needsScroll) {
+							scrollIntoSafeView(el, 'end');
+							return;
+						}
 					}
 
 					if (needsScroll) {
@@ -619,6 +637,57 @@ html.light .prose .audio-active .heading-anchor {
 
 		setTimeout(function () {
 			codePanRaf = requestAnimationFrame(tick);
+		}, delay);
+	}
+
+	// Continuous constant-rate pan used when the narration about a
+	// <pre> spans multiple cues (intro + description + follow-up).
+	// If the same pre is already being panned, this call just extends
+	// the upper bound — the scroll keeps moving at a steady reading
+	// pace instead of restarting. The first cue that is not adjacent
+	// to the pre cancels the pan via stopCodePan.
+	var codePanRate = 42; // pixels per audio-second
+	var codePanStartY = 0;
+	var codePanStartAudioTime = 0;
+	var codePanExtra = 0;
+	var codePanMaxEnd = null;
+	function extendCodePan(el, maxEnd) {
+		if (!el) return;
+		var header = 88;
+		var footer = getPlayerHeight();
+		var vh = window.innerHeight;
+		var visibleHeight = vh - header - footer;
+		var rect = el.getBoundingClientRect();
+		if (rect.height <= visibleHeight + 4) return;
+
+		if (codePanEl === el) {
+			if (maxEnd != null) {
+				codePanMaxEnd = codePanMaxEnd == null ? maxEnd : Math.max(codePanMaxEnd, maxEnd);
+			}
+			return;
+		}
+
+		stopCodePan();
+		codePanEl = el;
+		codePanStartY = Math.max(0, window.scrollY + rect.top - header);
+		var audioEl = document.getElementById('sitd-global-audio');
+		codePanStartAudioTime = audioEl ? audioEl.currentTime : 0;
+		codePanExtra = rect.height - visibleHeight;
+		codePanMaxEnd = maxEnd != null ? maxEnd : null;
+		window.scrollTo({ top: codePanStartY, behavior: 'smooth' });
+
+		var delay = 350;
+		function panTick() {
+			if (codePanEl !== el) return;
+			var now = audioEl ? audioEl.currentTime : 0;
+			if (codePanMaxEnd != null && now >= codePanMaxEnd) { stopCodePan(); return; }
+			var elapsed = Math.max(0, now - codePanStartAudioTime);
+			var y = codePanStartY + Math.min(codePanExtra, elapsed * codePanRate);
+			window.scrollTo({ top: y });
+			codePanRaf = requestAnimationFrame(panTick);
+		}
+		setTimeout(function () {
+			codePanRaf = requestAnimationFrame(panTick);
 		}, delay);
 	}
 

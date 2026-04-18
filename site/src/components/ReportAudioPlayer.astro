@@ -57,46 +57,46 @@ const tracksJson = JSON.stringify(tracks);
 
 	<div class="audio-controls">
 		<div class="audio-row audio-row-primary">
-		<button id="audio-prev-btn" class="audio-secondary-btn" aria-label="Previous part" type="button" title="Previous part">
-			<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" width="18" height="18">
-				<path d="M7 6h2v12H7zm3.5 6l8.5 6V6z" />
-			</svg>
-		</button>
+			<span id="audio-current" class="audio-time-side audio-time-left">0:00</span>
 
-		<button id="audio-section-prev-btn" class="audio-secondary-btn" aria-label="Previous section" type="button" title="Previous section">
-			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="16" height="16">
-				<polyline points="11 17 6 12 11 7" />
-				<polyline points="18 17 13 12 18 7" />
-			</svg>
-		</button>
+			<div class="audio-transport" role="group" aria-label="Playback controls">
+				<button id="audio-prev-btn" class="audio-secondary-btn" aria-label="Previous part" type="button" title="Previous part">
+					<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" width="18" height="18">
+						<path d="M7 6h2v12H7zm3.5 6l8.5 6V6z" />
+					</svg>
+				</button>
 
-		<button id="audio-play-btn" class="audio-play-btn" aria-label="Play" type="button">
-			<svg id="icon-play" class="audio-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-				<path d="M8 5v14l11-7z" />
-			</svg>
-			<svg id="icon-pause" class="audio-icon hidden" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-				<path d="M6 19h4V5H6zm8-14v14h4V5z" />
-			</svg>
-		</button>
+				<button id="audio-section-prev-btn" class="audio-secondary-btn" aria-label="Previous section" type="button" title="Previous section">
+					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="16" height="16">
+						<polyline points="11 17 6 12 11 7" />
+						<polyline points="18 17 13 12 18 7" />
+					</svg>
+				</button>
 
-		<button id="audio-section-next-btn" class="audio-secondary-btn" aria-label="Next section" type="button" title="Next section">
-			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="16" height="16">
-				<polyline points="6 7 11 12 6 17" />
-				<polyline points="13 7 18 12 13 17" />
-			</svg>
-		</button>
+				<button id="audio-play-btn" class="audio-play-btn" aria-label="Play" type="button">
+					<svg id="icon-play" class="audio-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+						<path d="M8 5v14l11-7z" />
+					</svg>
+					<svg id="icon-pause" class="audio-icon hidden" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+						<path d="M6 19h4V5H6zm8-14v14h4V5z" />
+					</svg>
+				</button>
 
-		<button id="audio-skip-btn" class="audio-secondary-btn" aria-label="Next part" type="button" title="Next part">
-			<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" width="18" height="18">
-				<path d="M6 6l8.5 6L6 18V6zm11 0h2v12h-2V6z" />
-			</svg>
-		</button>
+				<button id="audio-section-next-btn" class="audio-secondary-btn" aria-label="Next section" type="button" title="Next section">
+					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="16" height="16">
+						<polyline points="6 7 11 12 6 17" />
+						<polyline points="13 7 18 12 13 17" />
+					</svg>
+				</button>
 
-		<div class="audio-time" aria-live="off">
-			<span id="audio-current" class="audio-current">0:00</span>
-			<span class="audio-separator" aria-hidden="true">/</span>
-			<span id="audio-duration" class="audio-duration">0:00</span>
-		</div>
+				<button id="audio-skip-btn" class="audio-secondary-btn" aria-label="Next part" type="button" title="Next part">
+					<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" width="18" height="18">
+						<path d="M6 6l8.5 6L6 18V6zm11 0h2v12h-2V6z" />
+					</svg>
+				</button>
+			</div>
+
+			<span id="audio-duration" class="audio-time-side audio-time-right">0:00</span>
 		</div>
 
 		<div class="audio-row audio-row-secondary">

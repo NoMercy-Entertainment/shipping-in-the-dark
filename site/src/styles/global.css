@@ -492,10 +492,44 @@ html.light .audio-progress-fill {
 	}
 }
 
-/* Desktop: the row wrappers flatten into the parent flex row so the
-   bar stays a single horizontal strip. Mobile redefines them as
-   explicit stacked rows below. */
-.audio-row {
+/* Row 1 is always a 3-column grid (time | transport | time) so the
+   transport group sits perfectly centered regardless of the side
+   widths. Row 2 remains a flex row. On mobile we stack the two rows
+   vertically by setting .audio-controls flex-direction: column
+   further down. */
+.audio-row-primary {
+	display: grid;
+	grid-template-columns: 1fr auto 1fr;
+	align-items: center;
+	gap: 12px;
+	flex: 1;
+	min-width: 0;
+}
+
+.audio-transport {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	justify-self: center;
+}
+
+.audio-time-side {
+	font-family: var(--font-mono);
+	font-size: 0.75rem;
+	color: var(--color-surface-400);
+	white-space: nowrap;
+}
+html.light .audio-time-side {
+	color: var(--color-surface-600);
+}
+.audio-time-left {
+	justify-self: start;
+}
+.audio-time-right {
+	justify-self: end;
+}
+
+.audio-row-secondary {
 	display: contents;
 }
 
@@ -518,42 +552,41 @@ html.light .audio-progress-fill {
 		padding: 10px 14px calc(10px + env(safe-area-inset-bottom, 0px));
 	}
 
-	.audio-row {
-		display: flex;
-		align-items: center;
-	}
-
+	/* Row 1 stays a 3-column grid; just grow the transport controls
+	   so the fingers have something to hit. */
 	.audio-row-primary {
-		/* Transport controls grouped left, time right. */
-		justify-content: space-between;
-		gap: 10px;
 		min-height: 52px;
+		gap: 10px;
 	}
 
-	.audio-row-primary .audio-secondary-btn {
+	.audio-transport {
+		gap: 10px;
+	}
+	.audio-transport .audio-secondary-btn {
 		width: 38px;
 		height: 38px;
 	}
-	.audio-row-primary .audio-secondary-btn svg {
+	.audio-transport .audio-secondary-btn svg {
 		width: 18px;
 		height: 18px;
 	}
-	.audio-row-primary .audio-play-btn {
+	.audio-transport .audio-play-btn {
 		width: 44px;
 		height: 44px;
 	}
-	.audio-row-primary .audio-play-btn .audio-icon {
+	.audio-transport .audio-play-btn .audio-icon {
 		width: 22px;
 		height: 22px;
 	}
 
-	.audio-row-primary .audio-time {
+	.audio-time-side {
 		font-size: 0.8125rem;
-		margin-left: auto;
-		padding-left: 8px;
 	}
 
+	/* Row 2 becomes a real flex row on mobile (not display:contents). */
 	.audio-row-secondary {
+		display: flex;
+		align-items: center;
 		justify-content: flex-end;
 		gap: 8px;
 		padding-top: 8px;
@@ -564,24 +597,19 @@ html.light .audio-progress-fill {
 		border-top-color: var(--color-surface-200);
 	}
 
-	/* Title runs along the left of row 2, truncating as needed. */
+	/* Title sits left, chips right. */
 	.audio-row-secondary .audio-title {
-		order: -1;
 		margin-right: auto;
 		font-size: 0.75rem;
 		padding: 0;
 	}
 
-	/* Voice + variant chips: keep the labels, they're the whole point
-	   of the two-row layout — drop them and you're back to icons. */
 	.audio-voice-btn {
 		padding: 5px 10px;
 		font-size: 0.75rem;
 	}
 
-	/* Speed stepper renders as a single tappable pill on mobile — the
-	   +/- buttons disappear and the display cycles on tap. Keeping
-	   the group for consistent chrome with voice/variant. */
+	/* Speed renders as a single tappable pill on mobile. */
 	.audio-speed-group .audio-speed-step {
 		display: none;
 	}
@@ -604,7 +632,10 @@ html.light .audio-progress-fill {
 	.audio-row-primary {
 		gap: 6px;
 	}
-	.audio-row-primary .audio-secondary-btn {
+	.audio-transport {
+		gap: 6px;
+	}
+	.audio-transport .audio-secondary-btn {
 		width: 36px;
 		height: 36px;
 	}
