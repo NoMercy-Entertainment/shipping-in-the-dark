@@ -1388,23 +1388,29 @@ const tracksJson = JSON.stringify(tracks);
 		}
 	}
 
-	// Inject a "play from here" button into every heading carrying
-	// data-audio-h, so hover reveals a small play badge.
+	// Inject a "play from here" button into every heading inside a
+	// report part. h1 = part title (seek to the start of the track);
+	// h2-h4 carry data-audio-h and map to a specific cue in the VTT.
 	function wireHeadingSeekButtons() {
-		const heads = document.querySelectorAll('.report-part [data-audio-h]');
+		const heads = document.querySelectorAll(
+			'.report-part h1, .report-part [data-audio-h]'
+		);
 		heads.forEach(function (h) {
 			if (h.querySelector('.heading-seek-btn')) return;
 			const section = h.closest('[data-part-slug]');
 			if (!section) return;
 			const partSlug = section.getAttribute('data-part-slug');
-			const cueId = h.getAttribute('data-audio-h');
-			if (!partSlug || !cueId) return;
+			if (!partSlug) return;
+
+			// h1 has no VTT cue — seekToHeading falls back to time 0
+			// when the cue id is missing, which is exactly the part start.
+			const cueId = h.getAttribute('data-audio-h') || '';
 
 			const btn = document.createElement('button');
 			btn.type = 'button';
 			btn.className = 'heading-seek-btn';
-			btn.setAttribute('aria-label', 'Play from this section');
-			btn.setAttribute('title', 'Play from here');
+			btn.setAttribute('aria-label', h.tagName === 'H1' ? 'Play this part' : 'Play from this section');
+			btn.setAttribute('title', h.tagName === 'H1' ? 'Play part' : 'Play from here');
 			btn.dataset.partSlug = partSlug;
 			btn.dataset.cueId = cueId;
 			btn.innerHTML =
