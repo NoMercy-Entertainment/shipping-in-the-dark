@@ -634,6 +634,9 @@ const tracksJson = JSON.stringify(tracks);
 			if (resumeTime) {
 				try { audio.currentTime = resumeTime; } catch (e) { /* ignore */ }
 			}
+			// audio.load() resets playbackRate to 1.0 on Chromium/Safari,
+			// so re-apply the stored rate every time a new track loads.
+			try { audio.playbackRate = speeds[speedIndex]; } catch (e) { /* ignore */ }
 			if (autoplay) {
 				audio.play().catch((err) => {
 					console.warn('[ReportAudioPlayer] Play blocked:', err);
@@ -1343,16 +1346,10 @@ const tracksJson = JSON.stringify(tracks);
 		} else {
 			const saved = loadPosition();
 			if (saved) {
-				if (saved.voice && saved.voice !== currentVoice) {
-					currentVoice = saved.voice;
-					updateVoiceLabel();
-					updateVoiceMenuChecked();
-				}
-				if (saved.variant && saved.variant !== currentVariant) {
-					currentVariant = saved.variant;
-					updateVariantLabel();
-					updateVariantMenuChecked();
-				}
+				// Voice + variant come from the global preference (STORAGE_KEY
+				// / VARIANT_KEY) — the per-report save only restores which
+				// part you were on and where in it. Old per-report blobs
+				// should never silently downgrade a user's current choice.
 				loadTrack(saved.trackIndex, { autoplay: false });
 				// Queue the saved time for the first play; seek on loadedmetadata.
 				if (saved.time > 1) {
