@@ -87,24 +87,25 @@ client disconnects.
 ## Architecture
 
 ```
-┌──────────────────────────┐
-│   Live Streaming Service │
-│   (sessions, lifecycle)  │
-└────────┬─────────────────┘
-         │
-         ▼
-┌──────────────────────────┐
-│       Live Session       │
-│   (state, cancellation)  │
-└────────┬─────────────────┘
-         │
-         ├────────────────┐
-         ▼                ▼
-┌──────────────┐  ┌───────────────────┐
-│ LiveFfmpeg   │  │ LivePlaylist      │
-│ Runner       │  │ Builder (segment  │
-│ (ffmpeg PID) │  │ events from .m3u8)│
-└──────────────┘  └───────────────────┘
++--------------------------+
+|  Live Streaming Service  |
+|  (sessions, lifecycle)   |
++-------------+------------+
+              |
+              v
++--------------------------+
+|       Live Session       |
+|  (state, cancellation)   |
++-------------+------------+
+              |
+       +------+------+
+       |             |
+       v             v
++--------------+  +---------------------+
+| LiveFfmpeg   |  | LivePlaylist        |
+| Runner       |  | Builder (segment    |
+| (ffmpeg PID) |  | events from .m3u8)  |
++--------------+  +---------------------+
 ```
 
 At the top sits the Live Streaming Service. It creates

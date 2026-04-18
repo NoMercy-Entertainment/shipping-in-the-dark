@@ -20,9 +20,9 @@ each with a specific responsibility, and each handing its results
 to the next.
 
 ```
- ┌──────────┐    ┌─────────┐    ┌──────┐    ┌───────┐    ┌─────────┐    ┌──────────┐
- │ Validate │ -> │ Analyze │ -> │ Plan │ -> │ Build │ -> │ Execute │ -> │ Finalize │
- └──────────┘    └─────────┘    └──────┘    └───────┘    └─────────┘    └──────────┘
+ +----------+    +---------+    +------+    +-------+    +---------+    +----------+
+ | Validate | -> | Analyze | -> | Plan | -> | Build | -> | Execute | -> | Finalize |
+ +----------+    +---------+    +------+    +-------+    +---------+    +----------+
 ```
 
 Each stage is a separate piece of code. Each one can be tested

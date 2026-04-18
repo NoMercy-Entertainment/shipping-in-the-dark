@@ -84,20 +84,22 @@ machines.
 ## Architecture
 
 ```
-┌─────────────────────────┐
-│       Coordinator       │   (your main media server)
-│                         │
-│   RemoteWorkerDispatcher│   ← picks a worker per task, handles retry
-│   WorkerRegistry        │   ← tracks active workers & health
-│   TaskSerializer        │   ← signs and verifies HMAC payloads
-└──────────┬──────────────┘
-           │ HTTPS + HMAC
-     ┌─────┴─────┬─────────┐
-     ▼           ▼         ▼
- ┌────────┐ ┌────────┐ ┌────────┐
- │Worker A│ │Worker B│ │Worker C│
- │ (GPU)  │ │ (CPU)  │ │ (GPU)  │
- └────────┘ └────────┘ └────────┘
++-------------------------+
+|       Coordinator       |   (your main media server)
+|                         |
+|   RemoteWorkerDispatcher|   picks a worker per task, handles retry
+|   WorkerRegistry        |   tracks active workers + health
+|   TaskSerializer        |   signs and verifies HMAC payloads
++------------+------------+
+             |
+             |  HTTPS + HMAC
+     +-------+-------+
+     |       |       |
+     v       v       v
+ +--------+ +--------+ +--------+
+ |Worker A| |Worker B| |Worker C|
+ | (GPU)  | | (CPU)  | | (GPU)  |
+ +--------+ +--------+ +--------+
 ```
 
 At the top sits the coordinator. That is your regular NoMercy
@@ -330,11 +332,11 @@ The dispatcher tries a small number of remote workers per task
 before falling back to local.
 
 ```
-Task T → Worker A (initial pick by slots * speed)
-  ├─ success → return
-  └─ fail → Worker B (next best)
-       ├─ success → return
-       └─ fail → local dispatcher (always succeeds if source is valid)
+Task T -> Worker A  (initial pick by slots * speed)
+  |-- success -> return
+  `-- fail    -> Worker B  (next best)
+                   |-- success -> return
+                   `-- fail    -> local dispatcher (always succeeds if source is valid)
 ```
 
 The retry only runs for this task. Other tasks continue on
