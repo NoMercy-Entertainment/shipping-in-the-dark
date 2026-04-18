@@ -343,6 +343,68 @@ const tracksJson = JSON.stringify(tracks);
 	html.light .audio-part-num {
 		color: var(--color-surface-500);
 	}
+
+	/* -------- "Play from here" badge on headings -------- */
+	.report-part h1,
+	.report-part h2,
+	.report-part h3,
+	.report-part h4 {
+		position: relative;
+	}
+
+	.heading-seek-btn {
+		position: absolute;
+		left: -2.25rem;
+		top: 50%;
+		transform: translateY(-50%);
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 26px;
+		height: 26px;
+		border-radius: 50%;
+		border: 1px solid var(--color-surface-700);
+		background-color: var(--color-surface-900);
+		color: var(--color-accent-400);
+		cursor: pointer;
+		opacity: 0;
+		transition: opacity 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+		padding: 0;
+	}
+	html.light .heading-seek-btn {
+		border-color: var(--color-surface-300);
+		background-color: var(--color-surface-50);
+		color: var(--color-accent-700);
+	}
+
+	.report-part :is(h1, h2, h3, h4):hover .heading-seek-btn,
+	.heading-seek-btn:focus-visible {
+		opacity: 1;
+	}
+
+	.heading-seek-btn:hover {
+		background-color: var(--color-accent-400);
+		color: var(--color-surface-950);
+	}
+	html.light .heading-seek-btn:hover {
+		background-color: var(--color-accent-700);
+		color: white;
+	}
+
+	.heading-seek-btn:focus-visible {
+		outline: 2px solid var(--color-accent-400);
+		outline-offset: 2px;
+	}
+
+	@media (max-width: 768px) {
+		.heading-seek-btn {
+			position: static;
+			transform: none;
+			opacity: 1;
+			margin-right: 0.5rem;
+			vertical-align: middle;
+		}
+	}
 </style>
 
 <script is:inline define:vars={{ tracksJson }}>
@@ -641,6 +703,15 @@ const tracksJson = JSON.stringify(tracks);
 		if (e.target.closest('#audio-speed-down')) setSpeedIndex(speedIndex - 1);
 		if (e.target.closest('#audio-speed-up'))   setSpeedIndex(speedIndex + 1);
 
+		// Heading "play from here" button
+		const seekBtn = e.target.closest ? e.target.closest('.heading-seek-btn') : null;
+		if (seekBtn) {
+			e.preventDefault();
+			e.stopPropagation();
+			seekToHeading(seekBtn.dataset.partSlug, seekBtn.dataset.cueId);
+			return;
+		}
+
 		// Voice dropdown — toggle on the trigger, select on a menu item,
 		// close when the user clicks outside the wrapper entirely.
 		if (e.target.closest('#audio-voice-btn')) {
@@ -779,6 +850,97 @@ const tracksJson = JSON.stringify(tracks);
 		const m = hash.match(/^part-(.+)$/);
 		return m ? m[1] : '';
 	}
+
+	// -------------------------------------------------------------- //
+	// Seek-to-heading — every h2/h3/h4 in the report gets a hover
+	// "play from here" button. Clicking jumps the audio to that
+	// heading's cue in the part's VTT and starts playback. If the
+	// heading lives in a different part than what's currently loaded,
+	// swap tracks first then seek once metadata is ready.
+	// -------------------------------------------------------------- //
+
+	function parseVttForCueStart(text, cueId) {
+		const lines = text.replace(/\r/g, '').split('\n');
+		for (let i = 0; i < lines.length; i++) {
+			const m = lines[i].match(/(\d+:\d+:\d+\.\d+)\s*-->/);
+			if (m && lines[i + 1] && lines[i + 1].trim() === cueId) {
+				const parts = m[1].split(':');
+				return parseInt(parts[0], 10) * 3600 + parseInt(parts[1], 10) * 60 + parseFloat(parts[2]);
+			}
+		}
+		return null;
+	}
+
+	const vttCache = Object.create(null);
+	function fetchVttCueStart(vttUrl, cueId) {
+		if (vttCache[vttUrl]) {
+			return Promise.resolve(parseVttForCueStart(vttCache[vttUrl], cueId));
+		}
+		return fetch(vttUrl).then(function (r) { return r.text(); }).then(function (text) {
+			vttCache[vttUrl] = text;
+			return parseVttForCueStart(text, cueId);
+		});
+	}
+
+	async function seekToHeading(partSlug, cueId) {
+		const targetIdx = findTrackIndexBySlug(partSlug);
+		if (targetIdx < 0) return;
+		const track = tracks[targetIdx];
+		const vttUrl = track.vtt[currentVoice];
+		const needSwap = targetIdx !== currentIndex;
+		if (needSwap) loadTrack(targetIdx, { autoplay: true });
+
+		let start;
+		try { start = await fetchVttCueStart(vttUrl, cueId); }
+		catch (_) { start = null; }
+		if (start == null) {
+			// Heading cue not found in VTT — start of part is the best fallback
+			start = 0;
+		}
+
+		const applySeek = () => {
+			try { audio.currentTime = start; } catch (_) { /* no-op */ }
+			audio.play().catch(function () { /* autoplay blocked */ });
+		};
+
+		if (needSwap) {
+			const onReady = function () {
+				audio.removeEventListener('loadedmetadata', onReady);
+				applySeek();
+			};
+			audio.addEventListener('loadedmetadata', onReady);
+		} else {
+			applySeek();
+		}
+	}
+
+	// Inject a "play from here" button into every heading carrying
+	// data-audio-h, so hover reveals a small play badge.
+	function wireHeadingSeekButtons() {
+		const heads = document.querySelectorAll('.report-part [data-audio-h]');
+		heads.forEach(function (h) {
+			if (h.querySelector('.heading-seek-btn')) return;
+			const section = h.closest('[data-part-slug]');
+			if (!section) return;
+			const partSlug = section.getAttribute('data-part-slug');
+			const cueId = h.getAttribute('data-audio-h');
+			if (!partSlug || !cueId) return;
+
+			const btn = document.createElement('button');
+			btn.type = 'button';
+			btn.className = 'heading-seek-btn';
+			btn.setAttribute('aria-label', 'Play from this section');
+			btn.setAttribute('title', 'Play from here');
+			btn.dataset.partSlug = partSlug;
+			btn.dataset.cueId = cueId;
+			btn.innerHTML =
+				'<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" width="14" height="14">' +
+				'<path d="M8 5v14l11-7z"/></svg>';
+			h.insertBefore(btn, h.firstChild);
+		});
+	}
+	wireHeadingSeekButtons();
+	document.addEventListener('astro:page-load', wireHeadingSeekButtons);
 
 	const srcNow = audio.src || '';
 	const matched = findTrackIndexByUrl(srcNow);
