@@ -188,11 +188,3 @@ p-39
 00:09:40.536 --> 00:10:08.411
 p-41
 
-48
-00:10:09.371 --> 00:10:11.871
-h-8
-
-49
-00:10:12.327 --> 00:10:32.352
---Part three. You now know that the encoder has to translate between the codec family you asked for and the specific encoder that will produce it. The next page covers how you tell the encoder what you want in the first place. Profiles. How to describe intent, without having to spell out every flag.
-
