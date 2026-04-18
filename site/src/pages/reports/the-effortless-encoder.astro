@@ -36,12 +36,24 @@ const tracks = rendered.map(({ part, slug }) => ({
 	title: part.data.title,
 	part: part.data.part,
 	audio: {
-		female: `${AUDIO_BASE}/the-effortless-encoder--${slug}.female.mp3`,
-		male: `${AUDIO_BASE}/the-effortless-encoder--${slug}.male.mp3`,
+		female: {
+			brief: `${AUDIO_BASE}/the-effortless-encoder--${slug}.female.brief.mp3`,
+			elaborate: `${AUDIO_BASE}/the-effortless-encoder--${slug}.female.elaborate.mp3`,
+		},
+		male: {
+			brief: `${AUDIO_BASE}/the-effortless-encoder--${slug}.male.brief.mp3`,
+			elaborate: `${AUDIO_BASE}/the-effortless-encoder--${slug}.male.elaborate.mp3`,
+		},
 	},
 	vtt: {
-		female: `${VTT_BASE}/${slug}.female.vtt`,
-		male: `${VTT_BASE}/${slug}.male.vtt`,
+		female: {
+			brief: `${VTT_BASE}/${slug}.female.brief.vtt`,
+			elaborate: `${VTT_BASE}/${slug}.female.elaborate.vtt`,
+		},
+		male: {
+			brief: `${VTT_BASE}/${slug}.male.brief.vtt`,
+			elaborate: `${VTT_BASE}/${slug}.male.elaborate.vtt`,
+		},
 	},
 }));
 

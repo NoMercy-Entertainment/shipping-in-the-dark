@@ -12,12 +12,17 @@
  *
  * Voice choice persists in localStorage under 'sitd:narrator-voice'.
  */
+type VoiceVariantMap = {
+	brief: string;
+	elaborate: string;
+};
+
 interface Track {
 	slug: string;
 	title: string;
 	part: number;
-	audio: { female: string; male: string };
-	vtt: { female: string; male: string };
+	audio: { female: VoiceVariantMap; male: VoiceVariantMap };
+	vtt: { female: VoiceVariantMap; male: VoiceVariantMap };
 }
 
 interface Props {
@@ -110,6 +115,38 @@ const tracksJson = JSON.stringify(tracks);
 					<button type="button" role="menuitemradio" data-voice-key="male">
 						<span class="voice-name">Guy</span>
 						<span class="voice-desc">Male narrator</span>
+					</button>
+				</li>
+			</ul>
+		</div>
+
+		<div class="audio-voice-menu-wrap">
+			<button
+				id="audio-variant-btn"
+				class="audio-voice-btn"
+				aria-haspopup="true"
+				aria-expanded="false"
+				aria-controls="audio-variant-menu"
+				aria-label="Narration depth"
+				type="button"
+				title="Brief or elaborate code descriptions"
+			>
+				<span id="audio-variant-label">Brief</span>
+				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="10" height="10">
+					<polyline points="6 9 12 15 18 9"></polyline>
+				</svg>
+			</button>
+			<ul id="audio-variant-menu" class="audio-voice-menu" role="menu" hidden>
+				<li role="none">
+					<button type="button" role="menuitemradio" data-variant-key="brief">
+						<span class="voice-name">Brief</span>
+						<span class="voice-desc">Short code descriptions</span>
+					</button>
+				</li>
+				<li role="none">
+					<button type="button" role="menuitemradio" data-variant-key="elaborate">
+						<span class="voice-name">Elaborate</span>
+						<span class="voice-desc">Walk through each field</span>
 					</button>
 				</li>
 			</ul>
@@ -423,6 +460,7 @@ const tracksJson = JSON.stringify(tracks);
 	'use strict';
 
 	const STORAGE_KEY = 'sitd:narrator-voice';
+	const VARIANT_KEY = 'sitd:narration-variant';
 	// Per-report position memory. The key is scoped by the tracks array's
 	// first slug so two different reports don't stomp each other.
 	const POSITION_KEY = 'sitd:report-position';
@@ -451,6 +489,7 @@ const tracksJson = JSON.stringify(tracks);
 	let speedIndex = 2; // start at 1x
 	let currentIndex = 0;
 	let currentVoice = 'female';
+	let currentVariant = 'brief';
 	// When the page loads with a heading hash, we fetch that heading's
 	// cue start time asynchronously. On the user's first play, apply it
 	// before playing so the audio starts at the heading they linked to.
@@ -458,7 +497,22 @@ const tracksJson = JSON.stringify(tracks);
 	try {
 		const saved = localStorage.getItem(STORAGE_KEY);
 		if (saved === 'male' || saved === 'female') currentVoice = saved;
+		const savedVariant = localStorage.getItem(VARIANT_KEY);
+		if (savedVariant === 'brief' || savedVariant === 'elaborate') currentVariant = savedVariant;
 	} catch (e) { /* localStorage blocked */ }
+
+	// Resolve the audio/vtt URL for a track, falling back to the other
+	// variant if the requested one is not available (e.g. scripts without
+	// variant blocks emit the same audio for both — the CI still writes
+	// both files, but be defensive).
+	function resolveTrackUrl(trackPart, voice, variant) {
+		if (!trackPart) return '';
+		if (typeof trackPart === 'string') return trackPart;
+		const voiceMap = trackPart[voice];
+		if (!voiceMap) return '';
+		if (typeof voiceMap === 'string') return voiceMap;
+		return voiceMap[variant] || voiceMap.brief || voiceMap.elaborate || '';
+	}
 
 	// -------------------------------------------------------------- //
 	function showPlayer() {
@@ -532,8 +586,8 @@ const tracksJson = JSON.stringify(tracks);
 		if (index < 0 || index >= tracks.length) return;
 		currentIndex = index;
 		const track = tracks[index];
-		const audioUrl = track.audio[currentVoice];
-		const vttUrl = track.vtt[currentVoice];
+		const audioUrl = resolveTrackUrl(track.audio, currentVoice, currentVariant);
+		const vttUrl = resolveTrackUrl(track.vtt, currentVoice, currentVariant);
 
 		const resumeTime = opts.resumeAt || 0;
 		const autoplay = !!opts.autoplay;
@@ -606,7 +660,7 @@ const tracksJson = JSON.stringify(tracks);
 
 		let resumeAt = audio.currentTime;
 		if (activeCue) {
-			const newVttUrl = tracks[currentIndex].vtt[currentVoice];
+			const newVttUrl = resolveTrackUrl(tracks[currentIndex].vtt, currentVoice, currentVariant);
 			try {
 				const start = await fetchVttCueStart(newVttUrl, activeCue);
 				if (start != null) resumeAt = start;
@@ -614,6 +668,76 @@ const tracksJson = JSON.stringify(tracks);
 		}
 
 		loadTrack(currentIndex, { resumeAt: resumeAt, autoplay: wasPlaying });
+	}
+
+	async function setVariant(newVariant) {
+		if (newVariant !== 'brief' && newVariant !== 'elaborate') return;
+		if (newVariant === currentVariant) {
+			closeVariantMenu();
+			return;
+		}
+		const wasPlaying = !audio.paused;
+
+		// Variants are the same script with extra sentences in the elaborate
+		// version, so the absolute timestamp diverges after any variant
+		// block. Re-anchor via the active cue id, same as the voice swap.
+		const syncData = document.getElementById('audio-sync-data');
+		const activeCue = syncData ? (syncData.getAttribute('data-active-cue') || '') : '';
+
+		currentVariant = newVariant;
+		try { localStorage.setItem(VARIANT_KEY, currentVariant); } catch (e) { /* blocked */ }
+		updateVariantLabel();
+		updateVariantMenuChecked();
+		closeVariantMenu();
+
+		let resumeAt = audio.currentTime;
+		if (activeCue) {
+			const newVttUrl = resolveTrackUrl(tracks[currentIndex].vtt, currentVoice, currentVariant);
+			try {
+				const start = await fetchVttCueStart(newVttUrl, activeCue);
+				if (start != null) resumeAt = start;
+			} catch (_) { /* fall back to timestamp */ }
+		}
+
+		loadTrack(currentIndex, { resumeAt: resumeAt, autoplay: wasPlaying });
+	}
+
+	function updateVariantLabel() {
+		const label = document.getElementById('audio-variant-label');
+		const btn = document.getElementById('audio-variant-btn');
+		const text = currentVariant === 'elaborate' ? 'Elaborate' : 'Brief';
+		if (label) label.textContent = text;
+		if (btn) btn.setAttribute('aria-label', 'Narration depth: ' + text + '. Click to switch.');
+	}
+
+	function updateVariantMenuChecked() {
+		const menu = document.getElementById('audio-variant-menu');
+		if (!menu) return;
+		menu.querySelectorAll('button[data-variant-key]').forEach(function (b) {
+			b.setAttribute('aria-checked', b.getAttribute('data-variant-key') === currentVariant ? 'true' : 'false');
+		});
+	}
+
+	function openVariantMenu() {
+		const menu = document.getElementById('audio-variant-menu');
+		const btn = document.getElementById('audio-variant-btn');
+		if (!menu || !btn) return;
+		updateVariantMenuChecked();
+		menu.hidden = false;
+		btn.setAttribute('aria-expanded', 'true');
+	}
+
+	function closeVariantMenu() {
+		const menu = document.getElementById('audio-variant-menu');
+		const btn = document.getElementById('audio-variant-btn');
+		if (menu) menu.hidden = true;
+		if (btn) btn.setAttribute('aria-expanded', 'false');
+	}
+
+	function toggleVariantMenu() {
+		const menu = document.getElementById('audio-variant-menu');
+		if (!menu) return;
+		if (menu.hidden) openVariantMenu(); else closeVariantMenu();
 	}
 
 	function updateVoiceMenuChecked() {
@@ -709,6 +833,7 @@ const tracksJson = JSON.stringify(tracks);
 				slug: tracks[currentIndex] ? tracks[currentIndex].slug : null,
 				time: audio.currentTime,
 				voice: currentVoice,
+				variant: currentVariant,
 				savedAt: now,
 			}));
 		} catch (e) { /* quota / disabled */ }
@@ -728,6 +853,7 @@ const tracksJson = JSON.stringify(tracks);
 				trackIndex: idx,
 				time: Number.isFinite(data.time) ? data.time : 0,
 				voice: data.voice === 'male' ? 'male' : 'female',
+				variant: data.variant === 'elaborate' ? 'elaborate' : 'brief',
 			};
 		} catch (e) { return null; }
 	}
@@ -807,13 +933,24 @@ const tracksJson = JSON.stringify(tracks);
 			toggleVoiceMenu();
 			return;
 		}
-		const voiceItem = e.target.closest ? e.target.closest('.audio-voice-menu button[data-voice-key]') : null;
+		const voiceItem = e.target.closest ? e.target.closest('#audio-voice-menu button[data-voice-key]') : null;
 		if (voiceItem) {
 			setVoice(voiceItem.getAttribute('data-voice-key'));
 			return;
 		}
+		if (e.target.closest('#audio-variant-btn')) {
+			e.preventDefault();
+			toggleVariantMenu();
+			return;
+		}
+		const variantItem = e.target.closest ? e.target.closest('#audio-variant-menu button[data-variant-key]') : null;
+		if (variantItem) {
+			setVariant(variantItem.getAttribute('data-variant-key'));
+			return;
+		}
 		if (!e.target.closest('.audio-voice-menu-wrap')) {
 			closeVoiceMenu();
+			closeVariantMenu();
 		}
 
 		// Clicking a sidebar TOC link also switches the audio track to that
@@ -837,7 +974,10 @@ const tracksJson = JSON.stringify(tracks);
 
 	// Close voice menu on Escape
 	document.addEventListener('keydown', function (e) {
-		if (e.key === 'Escape') closeVoiceMenu();
+		if (e.key === 'Escape') {
+			closeVoiceMenu();
+			closeVariantMenu();
+		}
 	});
 
 	// Progress bar click-to-seek
@@ -941,12 +1081,21 @@ const tracksJson = JSON.stringify(tracks);
 	// from THIS report; if so, just reattach the UI. Otherwise load part 1.
 	updateVoiceLabel();
 	updateVoiceMenuChecked();
+	updateVariantLabel();
+	updateVariantMenuChecked();
 	setSpeedIndex(speedIndex);
 
 	function findTrackIndexByUrl(url) {
 		if (!url) return -1;
 		for (let i = 0; i < tracks.length; i++) {
-			if (tracks[i].audio.female === url || tracks[i].audio.male === url) return i;
+			const t = tracks[i];
+			const urls = [
+				resolveTrackUrl(t.audio, 'female', 'brief'),
+				resolveTrackUrl(t.audio, 'female', 'elaborate'),
+				resolveTrackUrl(t.audio, 'male', 'brief'),
+				resolveTrackUrl(t.audio, 'male', 'elaborate'),
+			];
+			if (urls.indexOf(url) >= 0) return i;
 		}
 		return -1;
 	}
@@ -1099,9 +1248,25 @@ const tracksJson = JSON.stringify(tracks);
 		// Audio is already playing a track from this report. Re-sync UI.
 		currentIndex = matched;
 		const t = tracks[matched];
-		currentVoice = srcNow === t.audio.male ? 'male' : 'female';
-		try { localStorage.setItem(STORAGE_KEY, currentVoice); } catch (e) { /* blocked */ }
+		// Recover voice + variant from whichever URL matches the current src.
+		const voiceVariantPairs = [
+			['female', 'brief'], ['female', 'elaborate'],
+			['male', 'brief'],   ['male', 'elaborate'],
+		];
+		for (let p = 0; p < voiceVariantPairs.length; p++) {
+			const [v, vv] = voiceVariantPairs[p];
+			if (resolveTrackUrl(t.audio, v, vv) === srcNow) {
+				currentVoice = v;
+				currentVariant = vv;
+				break;
+			}
+		}
+		try {
+			localStorage.setItem(STORAGE_KEY, currentVoice);
+			localStorage.setItem(VARIANT_KEY, currentVariant);
+		} catch (e) { /* blocked */ }
 		updateVoiceLabel();
+		updateVariantLabel();
 		updateTitle(t);
 		updateTocHighlight(t.slug);
 		showPlayer();
@@ -1112,13 +1277,14 @@ const tracksJson = JSON.stringify(tracks);
 			updateProgress();
 		}
 		// Let AudioSync know which part is active so it loads the VTT
+		const vttUrlNow = resolveTrackUrl(t.vtt, currentVoice, currentVariant);
 		const syncData = document.getElementById('audio-sync-data');
 		if (syncData) {
-			syncData.setAttribute('data-vtt-url', t.vtt[currentVoice]);
+			syncData.setAttribute('data-vtt-url', vttUrlNow);
 			syncData.setAttribute('data-part-slug', t.slug);
 		}
 		document.dispatchEvent(new CustomEvent('audio-part-change', {
-			detail: { slug: t.slug, vttUrl: t.vtt[currentVoice], index: matched },
+			detail: { slug: t.slug, vttUrl: vttUrlNow, index: matched },
 		}));
 	} else if (!audio.paused && audio.currentTime > 0) {
 		// Audio is playing something else (e.g. a journal entry). Don't
@@ -1154,7 +1320,8 @@ const tracksJson = JSON.stringify(tracks);
 			if (target.cueId) {
 				// Fetch the VTT for this track and remember the start offset
 				// so the first play jumps there instead of starting at 0.
-				fetchVttCueStart(tracks[target.trackIdx].vtt[currentVoice], target.cueId)
+				const targetVtt = resolveTrackUrl(tracks[target.trackIdx].vtt, currentVoice, currentVariant);
+				fetchVttCueStart(targetVtt, target.cueId)
 					.then(function (start) {
 						if (start != null) pendingInitialSeek = start;
 					})
@@ -1167,6 +1334,11 @@ const tracksJson = JSON.stringify(tracks);
 					currentVoice = saved.voice;
 					updateVoiceLabel();
 					updateVoiceMenuChecked();
+				}
+				if (saved.variant !== currentVariant) {
+					currentVariant = saved.variant;
+					updateVariantLabel();
+					updateVariantMenuChecked();
 				}
 				loadTrack(saved.trackIndex, { autoplay: false });
 				// Queue the saved time for the first play; seek on loadedmetadata.
