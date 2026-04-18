@@ -1,0 +1,274 @@
+WEBVTT
+
+1
+00:00:00.000 --> 00:00:03.462
+--Part one. How it thinks.
+
+2
+00:00:04.422 --> 00:00:11.184
+p-1
+
+3
+00:00:11.736 --> 00:00:27.248
+p-2
+
+4
+00:00:28.208 --> 00:00:30.808
+h-1
+
+5
+00:00:31.264 --> 00:00:41.026
+p-3
+
+6
+00:00:42.274 --> 00:01:01.224
+p-4
+
+7
+00:01:01.776 --> 00:01:21.151
+p-5
+
+8
+00:01:22.111 --> 00:01:23.923
+h-2
+
+9
+00:01:24.379 --> 00:01:30.179
+p-6
+
+10
+00:01:30.635 --> 00:01:38.885
+p-7
+
+11
+00:01:39.437 --> 00:02:08.337
+p-8
+
+12
+00:02:08.985 --> 00:02:13.447
+p-9
+
+13
+00:02:13.999 --> 00:02:57.586
+--The response carries a valid flag at the top, an errors array, and a warnings array. Each entry has five fields. A stable ID you can link to from documentation. A severity level — error or warning. A field path pointing at exactly which bit of the profile is wrong. A human sentence explaining what the problem is. And a fix field telling the user what to change. The example rejects a profile where video profile zero has Level 4.1 but the output resolution is 3840 by 2160 — Level 4.1 caps at 1080p, so the fix says raise the level to 5.1 or drop the resolution. The warnings array in this case is empty.
+
+14
+00:02:58.834 --> 00:03:05.246
+p-10
+
+15
+00:03:05.798 --> 00:03:20.973
+p-11
+
+16
+00:03:21.933 --> 00:03:23.645
+h-3
+
+17
+00:03:24.101 --> 00:03:31.813
+p-12
+
+18
+00:03:32.269 --> 00:03:35.544
+p-13
+
+19
+00:03:36.600 --> 00:03:42.587
+p-14
+
+20
+00:03:43.235 --> 00:03:55.097
+--Every later stage will read that same record — the duration, the frame rate, the per-stream inventory, and the HDR flags that tell the planner whether to tonemap, preserve Dolby Vision, or just pass the pixels through.
+
+21
+00:03:56.057 --> 00:04:12.819
+p-15
+
+22
+00:04:13.779 --> 00:04:15.279
+h-4
+
+23
+00:04:15.735 --> 00:04:22.310
+p-16
+
+24
+00:04:22.862 --> 00:04:32.112
+p-17
+
+25
+00:04:32.760 --> 00:04:52.872
+--The plan names which encoder handle to use, how to rate control it, what filter chain to run, which GPU to bind to — and crucially, a decisions log. Every choice written out in one human sentence. Whenever you look at an encode later and wonder why it picked HEVC over AV1, or why Dolby Vision got stripped, the log tells you.
+
+26
+00:04:53.832 --> 00:04:58.107
+p-18
+
+27
+00:04:58.659 --> 00:05:23.696
+p-19
+
+28
+00:05:24.344 --> 00:05:34.719
+p-20
+
+29
+00:05:35.679 --> 00:05:37.191
+h-5
+
+30
+00:05:37.647 --> 00:05:41.997
+p-21
+
+31
+00:05:42.549 --> 00:06:03.349
+p-22
+
+32
+00:06:03.901 --> 00:06:08.038
+p-23
+
+33
+00:06:08.686 --> 00:06:32.598
+--Notice what the command is doing, even if you don't read every flag: it inits CUDA, decodes HEVC on the GPU, runs a tonemap filter chain all the way down to 8 bit, hands the frames to H.264 NVENC at a CRF of 23, and muxes the result into HLS with six second segments. Every one of those choices came from the profile plus the source analysis. The user wrote seven lines.
+
+34
+00:06:33.558 --> 00:06:41.820
+p-24
+
+35
+00:06:42.372 --> 00:07:08.672
+p-25
+
+36
+00:07:09.224 --> 00:07:23.024
+p-26
+
+37
+00:07:23.984 --> 00:07:25.871
+h-6
+
+38
+00:07:26.327 --> 00:07:31.127
+p-27
+
+39
+00:07:31.679 --> 00:07:41.454
+p-28
+
+40
+00:07:43.110 --> 00:07:53.497
+p-29
+
+41
+00:07:54.049 --> 00:08:01.561
+p-35
+
+42
+00:08:02.113 --> 00:08:11.888
+p-36
+
+43
+00:08:12.440 --> 00:08:21.315
+p-37
+
+44
+00:08:22.275 --> 00:08:24.125
+h-7
+
+45
+00:08:24.581 --> 00:08:29.468
+p-38
+
+46
+00:08:30.020 --> 00:08:52.507
+p-39
+
+47
+00:08:53.059 --> 00:09:02.909
+p-40
+
+48
+00:09:03.461 --> 00:09:16.248
+p-41
+
+49
+00:09:16.800 --> 00:09:21.925
+p-42
+
+50
+00:09:22.477 --> 00:09:33.352
+p-43
+
+51
+00:09:34.312 --> 00:09:36.899
+h-8
+
+52
+00:09:37.355 --> 00:09:46.567
+p-44
+
+53
+00:09:47.119 --> 00:09:59.219
+p-48
+
+54
+00:09:59.771 --> 00:10:07.796
+p-41
+
+55
+00:10:08.348 --> 00:10:31.360
+p-42
+
+56
+00:10:31.912 --> 00:10:48.487
+p-43
+
+57
+00:10:49.447 --> 00:10:51.084
+h-9
+
+58
+00:10:51.540 --> 00:11:07.302
+p-49
+
+59
+00:11:07.854 --> 00:11:14.191
+p-50
+
+60
+00:11:15.247 --> 00:11:26.334
+p-51
+
+61
+00:11:26.886 --> 00:11:40.586
+p-52
+
+62
+00:11:41.546 --> 00:11:44.033
+h-10
+
+63
+00:11:44.489 --> 00:11:51.526
+p-53
+
+64
+00:11:52.078 --> 00:12:17.315
+p-54
+
+65
+00:12:17.867 --> 00:12:45.504
+p-55
+
+66
+00:12:46.056 --> 00:12:52.068
+p-56
+
+67
+00:12:53.028 --> 00:12:55.578
+h-11
+
+68
+00:12:56.034 --> 00:13:09.709
+p-57
+
