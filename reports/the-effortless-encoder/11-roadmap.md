@@ -12,7 +12,7 @@ the reader knows where the edges are.
 
 ## What is shipped
 
-The previous pages described what works today. As a reminder:
+The earlier parts described what works today. As a reminder:
 
 - The four video codec families — H.264, HEVC, AV1, VP9 —
   resolved to the right encoder handle for your hardware.

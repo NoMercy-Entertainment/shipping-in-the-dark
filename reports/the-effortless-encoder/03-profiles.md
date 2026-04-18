@@ -370,11 +370,3 @@ Someone figures out a great preset for their weird specific
 projector. They publish the JSON, sign it. Others import it,
 try it, tweak it, share their own variants. The plumbing is in
 place; the library is not published yet.
-
-## What the next page covers
-
-You can now describe what you want. But what if what you want
-is broken in a way you do not know about?
-
-The next page covers the safety net. The list of user mistakes
-the encoder catches before you waste encode time.

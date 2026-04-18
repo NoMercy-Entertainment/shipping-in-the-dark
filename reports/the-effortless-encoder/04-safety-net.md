@@ -345,11 +345,3 @@ what will happen to your source. You get to decide whether the
 plan matches what you want. And you never get the "works on my
 PC, refuses on my Apple TV" surprise, because the validator
 would have caught the level mismatch at save time.
-
-## What the next page covers
-
-You have a validated profile and a previewed action plan. Now
-the encoder has to actually do the work. That means
-understanding what your hardware can do.
-
-The next page covers hardware measurement and HDR handling.

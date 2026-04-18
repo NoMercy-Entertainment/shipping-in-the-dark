@@ -334,11 +334,3 @@ subtitle streams and runs OCR if needed.
 
 The subscribers run in the background. They do not block
 anything. They just quietly improve the library over time.
-
-## What the next page covers
-
-You have a well-analyzed source and a validated profile. The
-encoder is ready to produce output.
-
-The next page covers two topics that go together. Subtitles,
-and the optional encryption layer for paid streaming.

@@ -277,12 +277,3 @@ media is. But the scanner still runs in a restricted ffprobe
 invocation, with no filter-chain evaluation, because disc
 structures have historically contained a surprising amount of
 creative malformation.
-
-## What the next page covers
-
-So far we have been talking about encoding on a single
-machine. The encoder runs on one box, reads from one library,
-produces one set of outputs.
-
-The next page covers what happens when you have more than one
-machine available.

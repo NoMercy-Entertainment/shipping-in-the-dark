@@ -44,11 +44,11 @@ But HLS playlists cannot carry image subtitles. HLS only wants
 text subtitles, in a format called WebVTT. Your PGS subtitles,
 having no text content to begin with, need to be converted. And
 the only way to convert an image of text to text is to run OCR
-on every cue. That was covered on the previous page.
+on every cue. That is covered earlier, in the content-analysis part.
 
-This page covers the wiring. How subtitle streams get routed
-from source to output based on what the container can actually
-hold.
+The rest of this part covers the wiring. How subtitle streams
+get routed from source to output based on what the container
+can actually hold.
 
 ## The routing decision
 
@@ -156,8 +156,8 @@ When extracting for HLS, five things happen.
 ffmpeg -i source.mkv -map 0:s:0 -c:s webvtt en.vtt
 ```
 
-**3. Convert bitmap codecs to WebVTT via OCR** (covered on the
-previous page):
+**3. Convert bitmap codecs to WebVTT via OCR** (covered in the
+content-analysis part):
 
 ```
 ffmpeg -i source.mkv -map 0:s:1 -c:s ocr_subtitle -ocr_lang eng en.vtt
@@ -208,44 +208,54 @@ the sidecar and offer subtitle tracks in the UI. Players that
 do not (some older web HLS players) need a JavaScript layer to
 fetch the WebVTT manually.
 
-## Preserving styling, or not
+## Preserving ASS styling across containers
 
 ASS carries rich typesetting. Positions, colours, fade effects,
 font choices, hand-tuned karaoke. WebVTT has a much smaller
-subset.
+subset. A naive HLS pipeline would convert ASS to WebVTT and
+drop most of that styling on the floor.
 
-When extracting ASS to WebVTT for HLS, most styling is lost.
-The validator warns:
+NoMercy does not do that. ASS tracks ship as sidecar files in
+every output format — MKV, MP4, HLS, DASH — right next to the
+video. The NoMercy web player renders ASS client-side with
+[JavascriptSubtitlesOctopus](https://github.com/libass/JavascriptSubtitlesOctopus),
+a libass WebAssembly port. Native platforms (Android, TV)
+render ASS through their bundled libass equivalent. Karaoke,
+positions, fades, all of it comes through faithfully.
+
+For third-party clients that cannot render ASS (stock iOS Safari
+HLS, some smart-TV HLS clients), the validator warns so the
+operator can ship a WebVTT fallback in parallel if they need it:
 
 ```json
 {
-  "severity": "warning",
-  "id": "subtitles.ass_to_webvtt_lossy",
-  "message": "ASS typesetting (positions, fades, karaoke) is lost when converting to WebVTT for HLS.",
-  "fix": "For styled subtitles, use MKV output, or switch the profile to burn_in mode."
+  "severity": "info",
+  "id": "subtitles.ass_needs_capable_client",
+  "message": "ASS tracks ship as sidecars. NoMercy's own clients render them via libass; third-party HLS players may fall back to plain text.",
+  "fix": "Ship both ASS and WebVTT in the profile if you need third-party HLS client coverage."
 }
 ```
-
-For anime in particular, MKV is the recommended output. ASS
-typesetting is central to the viewing experience, and HLS
-cannot carry it faithfully.
 
 ## Attached fonts
 
 MKV sources often ship with attached font files — `.ttf` and
 `.otf` — that the original subtitle author used for typesetting.
-Renderers use them to match the intended look.
+Renderers need those specific fonts to match the intended look.
 
-The font extractor pulls them out of MKV via ffmpeg:
+The font extractor pulls them out via ffmpeg on every encode
+that carries an ASS track, regardless of output container:
 
 ```
 ffmpeg -dump_attachment:t "" -i source.mkv
 ```
 
-And writes them to the output directory alongside the subtitle
-files. Playback in supported clients picks them up
-automatically. For HLS output where typesetting is lost anyway,
-fonts are not extracted because they serve no purpose.
+The extracted fonts land in the output directory alongside the
+subtitle files. The NoMercy web player loads them into
+SubtitlesOctopus at play time so libass-wasm renders the ASS
+with the same fonts the author picked. Native clients do the
+same with their platform libass. Without this step, even a
+libass-capable client would fall back to system fonts and the
+typesetting would drift.
 
 ## Chapter writing
 
@@ -454,13 +464,3 @@ When DRM is enabled on an HLS encode, subtitle sidecars are
 **not encrypted**. Subtitle files are tiny and carry no content
 worth stealing. The video segments are where the protection
 matters.
-
-## What the next page covers
-
-You can now produce well-subtitled, optionally protected
-streams. But what if the player is weak, and cannot decode the
-streams you produce?
-
-The next page covers live transcode. How a cheap phone can
-watch a 4K Blu Ray rip by having the server re-encode on the
-fly.

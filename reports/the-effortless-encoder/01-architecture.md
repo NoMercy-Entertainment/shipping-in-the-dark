@@ -402,10 +402,3 @@ person who hits the same issue does not.
 
 This does not prevent all bugs. It prevents the same bug from
 shipping twice.
-
-## What the next page covers
-
-Now that you know how the encoder thinks, we can talk about what
-it actually knows. The codec landscape. Why there are so many,
-which ones the encoder supports for output, and how it picks
-between them on your behalf.

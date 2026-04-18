@@ -242,11 +242,3 @@ Technically the ISO standard has a VP9-in-MP4 box definition,
 but most players never implemented it. ffmpeg will happily mux
 it. Most players will fail to play it. The safety net catches
 this before the encode runs.
-
-## What the next page covers
-
-You now know that the encoder has to translate between the
-codec family you asked for and the specific encoder that will
-produce it. The next page covers how you tell the encoder what
-you want in the first place. Profiles. How to describe intent,
-without having to spell out every flag.

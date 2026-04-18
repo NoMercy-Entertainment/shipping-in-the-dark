@@ -484,12 +484,3 @@ A full end-to-end test runs a simulated cluster through a real
 encode, and a mismatched-signing-key test verifies that the
 coordinator falls back to local dispatch when workers reject
 signed payloads.
-
-## What the next page covers
-
-You now have an encoder that can span one machine or many.
-That finishes the tour of what is shipping today.
-
-The last page covers what is not shipping. The roadmap. What
-is planned, what is not planned, and the honest trade-offs
-behind both.

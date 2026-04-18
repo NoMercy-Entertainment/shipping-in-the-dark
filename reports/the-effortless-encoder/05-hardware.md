@@ -334,12 +334,3 @@ from the hardware vendor).
 This is the kind of feedback you would never get from a raw
 ffmpeg invocation. ffmpeg encodes. It does not schedule. The
 encoder layer adds the scheduling.
-
-## What the next page covers
-
-Your machine has been measured. Your HDR path is handled. The
-scheduler knows what is running.
-
-The next page covers a different kind of hardware question. The
-encoder can also look at your content. Watch it. Learn from it.
-And use what it learns to encode more intelligently.
