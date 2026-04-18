@@ -475,7 +475,28 @@ html.light .prose .audio-active .heading-anchor {
 					var header = 88;
 					var footer = 64;
 					var vh = window.innerHeight;
-					if (rect.top < header || rect.bottom > vh - footer) {
+					var needsScroll = rect.top < header || rect.bottom > vh - footer;
+
+					// If this paragraph is immediately followed by a <pre> code
+					// block, check the combined rectangle — the narration
+					// usually references the code, so we want the code visible
+					// while the paragraph is highlighted.
+					var nextEl = el.nextElementSibling;
+					var followingPre = (nextEl && nextEl.tagName === 'PRE') ? nextEl : null;
+					if (followingPre) {
+						var preRect = followingPre.getBoundingClientRect();
+						var combinedBottom = preRect.bottom;
+						var combinedTop = rect.top;
+						if (combinedTop < header || combinedBottom > vh - footer) {
+							// Align the paragraph to the top of the safe area so
+							// the <pre> below gets room — far more useful than
+							// centering the paragraph and cutting off the code.
+							scrollIntoSafeView(el, 'start');
+							return;
+						}
+					}
+
+					if (needsScroll) {
 						scrollIntoSafeView(el, 'center');
 					}
 				}

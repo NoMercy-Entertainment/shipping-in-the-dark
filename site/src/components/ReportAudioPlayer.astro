@@ -352,6 +352,17 @@ const tracksJson = JSON.stringify(tracks);
 		position: relative;
 	}
 
+	/*
+	  rehype-autolink-headings wraps each heading's inner text in a
+	  .heading-anchor and shows a '#' on hover. The play-from-here
+	  button lives in the same left margin, so hide the '#' on report
+	  headings to avoid the clash. The clickable heading-anchor link
+	  (copy-to-clipboard via browser anchor behaviour) still works.
+	*/
+	.report-part .heading-anchor:hover::before {
+		content: none !important;
+	}
+
 	.heading-seek-btn {
 		position: absolute;
 		left: -2.25rem;
