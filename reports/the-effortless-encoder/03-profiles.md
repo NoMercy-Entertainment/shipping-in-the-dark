@@ -188,10 +188,10 @@ You cannot set both CRF and ABR. The validator rejects it with:
 }
 ```
 
-## Ten built-in presets
+## Built-in presets
 
 You do not have to write a profile from scratch. The encoder
-ships with ten built-in presets. Each one is tuned for a
+ships with a starter set of built-in presets, each tuned for a
 specific target. All are cloneable and editable.
 
 | Preset                         | Codec      | Res   | RC        | Audio             | Container |
@@ -201,14 +201,18 @@ specific target. All are cloneable and editable.
 | Archival H.265 1080p           | HEVC       | 1080p | CRF 22 slow | AAC stereo 192k | MKV       |
 | Anime 1080p                    | H.264      | 1080p | CRF 21, tune=animation | AAC stereo 192k | MKV |
 | Music AAC 192k                 | —          | —     | —         | AAC stereo 192k   | M4A       |
+| Music MP3 320k                 | —          | —     | —         | MP3 stereo 320k   | MP3       |
+| Music FLAC Lossless            | —          | —     | —         | FLAC stereo       | FLAC      |
 | Chromecast 1080p               | H.264      | 1080p | CRF 23, high@4.1 | AAC stereo 192k | HLS   |
 | Apple TV 4K                    | HEVC Main10 | 2160p | CRF 20 @ 5.1 | EAC3 5.1 640k   | HLS (fMP4) |
 | Mobile 480p Low Bandwidth      | H.264 Main | 480p  | ABR 1200k @ 3.1 | AAC stereo 96k | HLS    |
 | 4K Archival                    | HEVC Main10 | 2160p | CRF 18 slow | FLAC surround   | MKV       |
 | Anime HEVC 10-bit 1080p        | HEVC Main10 | 1080p | CRF 20 slow | Opus 5.1 256k   | MKV       |
 
-General 1080p Fast is the default. Most users find something
-that fits without writing their own.
+General 1080p Fast is the default for video. For music, the
+lineup covers modern lossy (AAC), legacy lossy (MP3), and
+lossless (FLAC). New presets can be added through the dashboard
+or imported from the community.
 
 ## Cloning and tweaking
 
@@ -223,8 +227,8 @@ POST /api/v1/encoder/profiles/{id}/clone
 The clone gets a copy of the profile, a new `id`, and a `name`
 with "copy" appended. `parent_id` is set to the original's `id`,
 and `is_builtin` is set to false. You edit the copy. The
-original built-in stays pristine so the next user who comes
-along gets the clean version.
+original built-in stays pristine, so you always have a clean
+baseline to clone from again the next time.
 
 This pattern shows up a lot in the encoder. Built-in things are
 read-only. User things are fully editable. The two never mix.
