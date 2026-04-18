@@ -201,8 +201,9 @@ them to text. That means optical character recognition. Run an
 OCR engine against each subtitle frame and extract the text.
 
 **Solution.** Tesseract, via a custom OCR subtitle encoder that
-ships as part of NoMercy's ffmpeg build. The journal entry "The
-Wrong Filename" (entry 008) covers how this encoder was built.
+ships as part of NoMercy's ffmpeg build. The journal entry
+[The Wrong Filename](/entry/the-wrong-filename) (entry 008)
+covers how this encoder was built.
 
 The spot-check endpoint:
 
@@ -240,7 +241,8 @@ Available language codes include `eng`, `jpn`, `chi_sim`,
 configured Tesseract models directory (default
 `<encoder_data>/tesseract/`).
 
-One interesting implementation detail covered in entry 008:
+One interesting implementation detail covered in
+[entry 008](/entry/the-wrong-filename):
 the OCR encoder uses a luminance-weighted alpha composite
 before OCR instead of a naive grayscale. Subtitles are bright
 text on a transparent background. Naive grayscale produces

@@ -62,12 +62,24 @@ const tracksJson = JSON.stringify(tracks);
 			</svg>
 		</button>
 
+		<button id="audio-section-prev-btn" class="audio-secondary-btn" aria-label="Previous section" type="button" title="Previous section">
+			<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" width="16" height="16">
+				<path d="M6 6h2v12H6zm13 0l-9 6 9 6V6z" />
+			</svg>
+		</button>
+
 		<button id="audio-play-btn" class="audio-play-btn" aria-label="Play" type="button">
 			<svg id="icon-play" class="audio-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
 				<path d="M8 5v14l11-7z" />
 			</svg>
 			<svg id="icon-pause" class="audio-icon hidden" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
 				<path d="M6 19h4V5H6zm8-14v14h4V5z" />
+			</svg>
+		</button>
+
+		<button id="audio-section-next-btn" class="audio-secondary-btn" aria-label="Next section" type="button" title="Next section">
+			<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" width="16" height="16">
+				<path d="M5 6l9 6-9 6V6zm11 0h2v12h-2V6z" />
 			</svg>
 		</button>
 
@@ -805,6 +817,83 @@ const tracksJson = JSON.stringify(tracks);
 		loadTrack(prev, { autoplay: !audio.paused });
 	}
 
+	// Jump to the next heading cue inside the current part. When we're
+	// at the final heading of the part, roll into the next part's first
+	// heading. Keeps the play/pause state.
+	async function skipToNextSection() {
+		const vttUrl = resolveTrackUrl(tracks[currentIndex].vtt, currentVoice, currentVariant);
+		let headings;
+		try { headings = await fetchVttHeadings(vttUrl); } catch (_) { headings = []; }
+		const now = audio.currentTime || 0;
+		// Anchor a hair past current so we skip the heading we're already on.
+		const target = headings.find(function (h) { return h.start > now + 0.1; });
+		if (target) {
+			try { audio.currentTime = target.start; } catch (_) {}
+			return;
+		}
+		// No next heading in this part — roll to the next part and seek
+		// to its first heading if one exists.
+		const nextIdx = currentIndex + 1;
+		if (nextIdx >= tracks.length) {
+			audio.pause();
+			return;
+		}
+		const nextVtt = resolveTrackUrl(tracks[nextIdx].vtt, currentVoice, currentVariant);
+		let nextHeadings;
+		try { nextHeadings = await fetchVttHeadings(nextVtt); } catch (_) { nextHeadings = []; }
+		const wasPlaying = !audio.paused;
+		loadTrack(nextIdx, { autoplay: wasPlaying });
+		if (nextHeadings.length > 0) {
+			const seek = nextHeadings[0].start;
+			const onReady = function () {
+				audio.removeEventListener('loadedmetadata', onReady);
+				try { audio.currentTime = seek; } catch (_) {}
+			};
+			audio.addEventListener('loadedmetadata', onReady);
+		}
+	}
+
+	// Previous section: if we're more than ~3 seconds into the current
+	// heading, snap to its start. Otherwise jump to the previous heading.
+	// Roll back into the previous part if we're on the first heading.
+	async function skipToPrevSection() {
+		const vttUrl = resolveTrackUrl(tracks[currentIndex].vtt, currentVoice, currentVariant);
+		let headings;
+		try { headings = await fetchVttHeadings(vttUrl); } catch (_) { headings = []; }
+		const now = audio.currentTime || 0;
+		let currentHeadingIdx = -1;
+		for (let i = 0; i < headings.length; i++) {
+			if (headings[i].start <= now) currentHeadingIdx = i;
+			else break;
+		}
+		if (currentHeadingIdx >= 0 && now - headings[currentHeadingIdx].start > 3) {
+			try { audio.currentTime = headings[currentHeadingIdx].start; } catch (_) {}
+			return;
+		}
+		const prevInPart = currentHeadingIdx - 1;
+		if (prevInPart >= 0) {
+			try { audio.currentTime = headings[prevInPart].start; } catch (_) {}
+			return;
+		}
+		// No earlier heading in this part — go to previous part's final heading.
+		const prevIdx = currentIndex - 1;
+		if (prevIdx < 0) {
+			try { audio.currentTime = 0; } catch (_) {}
+			return;
+		}
+		const prevVtt = resolveTrackUrl(tracks[prevIdx].vtt, currentVoice, currentVariant);
+		let prevHeadings;
+		try { prevHeadings = await fetchVttHeadings(prevVtt); } catch (_) { prevHeadings = []; }
+		const wasPlaying = !audio.paused;
+		loadTrack(prevIdx, { autoplay: wasPlaying });
+		const seek = prevHeadings.length > 0 ? prevHeadings[prevHeadings.length - 1].start : 0;
+		const onReady = function () {
+			audio.removeEventListener('loadedmetadata', onReady);
+			try { audio.currentTime = seek; } catch (_) {}
+		};
+		audio.addEventListener('loadedmetadata', onReady);
+	}
+
 	function setSpeedIndex(i) {
 		speedIndex = Math.max(0, Math.min(speeds.length - 1, i));
 		const rate = speeds[speedIndex];
@@ -928,10 +1017,12 @@ const tracksJson = JSON.stringify(tracks);
 				audio.pause();
 			}
 		}
-		if (e.target.closest('#audio-skip-btn'))   skipToNext();
-		if (e.target.closest('#audio-prev-btn'))   skipToPrev();
-		if (e.target.closest('#audio-speed-down')) setSpeedIndex(speedIndex - 1);
-		if (e.target.closest('#audio-speed-up'))   setSpeedIndex(speedIndex + 1);
+		if (e.target.closest('#audio-skip-btn'))         skipToNext();
+		if (e.target.closest('#audio-prev-btn'))         skipToPrev();
+		if (e.target.closest('#audio-section-next-btn')) skipToNextSection();
+		if (e.target.closest('#audio-section-prev-btn')) skipToPrevSection();
+		if (e.target.closest('#audio-speed-down'))       setSpeedIndex(speedIndex - 1);
+		if (e.target.closest('#audio-speed-up'))         setSpeedIndex(speedIndex + 1);
 
 		// Heading "play from here" button
 		const seekBtn = e.target.closest ? e.target.closest('.heading-seek-btn') : null;
@@ -1185,6 +1276,35 @@ const tracksJson = JSON.stringify(tracks);
 			}
 		}
 		return null;
+	}
+
+	// Return every heading cue's start time, in document order. Used by
+	// the section skip buttons so the reader can jump between h2s within
+	// a part.
+	function parseVttForHeadings(text) {
+		const headings = [];
+		const lines = text.replace(/\r/g, '').split('\n');
+		for (let i = 0; i < lines.length; i++) {
+			const m = lines[i].match(/(\d+:\d+:\d+\.\d+)\s*-->/);
+			if (!m) continue;
+			const body = (lines[i + 1] || '').trim();
+			if (/^h-\d+$/.test(body)) {
+				const parts = m[1].split(':');
+				const start = parseInt(parts[0], 10) * 3600 + parseInt(parts[1], 10) * 60 + parseFloat(parts[2]);
+				headings.push({ id: body, start: start });
+			}
+		}
+		return headings;
+	}
+
+	function fetchVttHeadings(vttUrl) {
+		if (vttCache[vttUrl]) {
+			return Promise.resolve(parseVttForHeadings(vttCache[vttUrl]));
+		}
+		return fetch(vttUrl).then(function (r) { return r.text(); }).then(function (text) {
+			vttCache[vttUrl] = text;
+			return parseVttForHeadings(text);
+		});
 	}
 
 	const vttCache = Object.create(null);
