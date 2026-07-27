@@ -239,11 +239,17 @@ extra complexity. Polling works today.
 
 ### Hardware benchmark recalibration cadence
 
-The default recalibration runs after a month. Driver updates
-can change throughput before that window elapses. The
-question is whether to add driver-version detection that
-forces a recalibration when the driver changes. That requires
-platform-specific driver queries for each vendor family.
+Settled and shipped. A background service checks hourly and
+recalibrates when either the speed index passes thirty days or
+the GPU driver set changes. Driver identity is a hash over
+every card's vendor, model, and driver version, persisted
+between boots, so a driver upgrade queues a fresh benchmark on
+the next check instead of waiting out the month.
+
+Recalibration waits for the encoders to go idle before it runs,
+and gives up for the hour if the machine stays busy for a week
+straight. Operators who want none of this set `AutoCalibrate`
+to false.
 
 ## Known limitations, honest list
 
