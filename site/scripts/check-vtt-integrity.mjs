@@ -104,6 +104,24 @@ if (fs.existsSync(DIST)) {
 	console.log('dist/ not built — skipped the rendered-id cross-check');
 }
 
+// A VTT rewritten without re-narrating the audio is the worst failure here,
+// because it looks correct: the title cue is present, the ids all resolve,
+// and the shift gets absorbed by the trailing silence so an end-alignment
+// check still passes. The tell is a marker file newer than the speech it
+// claims to describe.
+const manifest = path.join(AUDIO, 'audio-manifest.json');
+if (fs.existsSync(manifest)) {
+	const stamps = JSON.parse(fs.readFileSync(manifest, 'utf8'));
+	for (const file of walkVtts(AUDIO)) {
+		const rel = path.relative(AUDIO, file).replace(/\\/g, '/');
+		const audioStamp = stamps[rel.replace(/\.vtt$/, '.mp3')];
+		if (!audioStamp) continue;
+		if (fs.statSync(file).mtimeMs > audioStamp + 60_000) {
+			failures.push(`${rel}: timings rewritten after the audio was last narrated`);
+		}
+	}
+}
+
 if (failures.length) {
 	console.error(`VTT integrity: ${failures.length} problem(s)\n`);
 	for (const f of failures) console.error(`  ${f}`);
