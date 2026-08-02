@@ -25,17 +25,41 @@ const DIST = path.join(SITE, 'dist');
 // when its content actually landed, which would flag whichever VTT you
 // happened to pull most recently as "retimed" even when it is perfectly in
 // sync with its audio.
-function gitCommittedAtMs(absPath) {
-	try {
-		const rel = path.relative(REPO_ROOT, absPath).replace(/\\/g, '/');
-		const out = execFileSync('git', ['log', '-1', '--format=%ct', '--', rel], {
-			cwd: REPO_ROOT,
-			encoding: 'utf8',
-		}).trim();
-		return out ? Number(out) * 1000 : null;
-	} catch {
-		return null;
+//
+// git log failing here is not hypothetical: it took down the deploy gate
+// the first time this shipped. The fallback used mtime whenever git
+// couldn't answer, and a fresh checkout's mtime is "now" for every file --
+// which reads as "retimed after narration" for the entire catalog at once,
+// the moment git log itself stopped working in that environment for any
+// reason. "git has no history for this path" and "git itself is broken"
+// are different failures and need different responses, so this returns
+// which one happened instead of collapsing both to null:
+//   { ok: true,  ms }    — a real commit time
+//   { ok: true,  ms: null } — git works, this path just has no commits yet
+//                              (a genuine uncommitted local edit)
+//   { ok: false }        — git could not be run at all; do not trust mtime
+//                              either, just skip with a loud warning
+let gitBroken = null; // cached across calls: null = untested, else boolean
+function gitWorks() {
+	if (gitBroken === null) {
+		try {
+			execFileSync('git', ['log', '-1', '--format=%H'], { cwd: REPO_ROOT, encoding: 'utf8' });
+			gitBroken = false;
+		} catch (err) {
+			gitBroken = true;
+			console.error(`WARNING: git is not usable from ${REPO_ROOT} (${err.message.split('\n')[0]}) -- skipping the retiming check rather than falling back to filesystem mtime, which is unreliable on a fresh checkout.`);
+		}
 	}
+	return !gitBroken;
+}
+function gitCommittedAtMs(absPath) {
+	if (!gitWorks()) return { ok: false };
+	const rel = path.relative(REPO_ROOT, absPath).replace(/\\/g, '/');
+	const out = execFileSync('git', ['log', '-1', '--format=%ct', '--', rel], {
+		cwd: REPO_ROOT,
+		encoding: 'utf8',
+	}).trim();
+	return { ok: true, ms: out ? Number(out) * 1000 : null };
 }
 
 const failures = [];
@@ -179,11 +203,16 @@ if (fs.existsSync(manifest)) {
 		const rel = path.relative(AUDIO, file).replace(/\\/g, '/');
 		const audioStamp = stamps[rel.replace(/\.vtt$/, '.mp3')];
 		if (!audioStamp) continue;
-		const committedAt = gitCommittedAtMs(file);
-		// An uncommitted local edit has no git history to compare yet --
-		// fall back to mtime so a real, in-progress fix still gets caught
-		// rather than silently skipped.
-		const compareAt = committedAt ?? fs.statSync(file).mtimeMs;
+		const committed = gitCommittedAtMs(file);
+		// git itself unusable in this environment: already warned once by
+		// gitWorks(); skip rather than compare against mtime, which is "now"
+		// for every file on a fresh checkout and would fail the entire
+		// catalog at once, as it did the first time this shipped.
+		if (!committed.ok) continue;
+		// git works but this exact path has no commit history yet: a real
+		// uncommitted local edit, worth still catching with mtime since that
+		// is a genuine in-progress retime with nothing to hide behind.
+		const compareAt = committed.ms !== null ? committed.ms : fs.statSync(file).mtimeMs;
 		// The manifest stamp is taken when the mp3 is written on the
 		// self-hosted runner; the VTT lands in a separate git commit once
 		// the collect step gathers every matrix job's output, builds the
