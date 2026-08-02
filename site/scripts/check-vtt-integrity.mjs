@@ -85,6 +85,9 @@ function sequenceBreaks(ids) {
 	const last = {};
 	const breaks = [];
 	for (const cue of ids) {
+		// title / standfirst / part-title are singular — there is only ever
+		// one of each in scope, so they carry no number and no sequence.
+		if (cue.n === null) continue;
 		if (last[cue.kind] !== undefined && cue.n !== last[cue.kind] + 1) {
 			breaks.push(`${cue.kind}-${last[cue.kind]} => ${cue.id}`);
 		}
