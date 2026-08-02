@@ -237,24 +237,6 @@ html.light .prose .audio-active .heading-anchor {
 			}
 		}
 
-		// Bridge for VTTs written before the title / standfirst / part-title
-		// markers existed. Their opening is still a run of "--" cues, and
-		// "hold whatever was lit before" resolves to nothing at the very
-		// start of a track, so those pages sat dead through the whole intro.
-		// Map the leading run onto the same three anchors, in order. Once
-		// every VTT carries real markers this loop stops matching anything.
-		var openers = ['title', 'standfirst', 'part-title'];
-		for (var b = 0; b < result.length && openers.length; b++) {
-			if (result[b].elementId || result[b].section) break;
-			if (!result[b].holdsPrevious) continue;
-			var marker = openers.shift();
-			result[b].holdsPrevious = false;
-			result[b].elementId = marker;
-			result[b].isTitle = marker === 'title';
-			result[b].isStandfirst = marker === 'standfirst';
-			result[b].isPartTitle = marker === 'part-title';
-		}
-
 		return result;
 	}
 
