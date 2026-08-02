@@ -32,7 +32,15 @@ function vttDuration(vttRelPath: string): number {
 	}
 }
 
-const allParts = await getCollection('reports', (p) => p.id.startsWith('the-effortless-encoder/'));
+export async function getStaticPaths() {
+	const all = await getCollection('reports');
+	const slugs = [...new Set(all.map((p) => p.id.split('/')[0]).filter(Boolean))];
+	return slugs.map((report) => ({ params: { report } }));
+}
+
+const { report } = Astro.params;
+
+const allParts = await getCollection('reports', (p) => p.id.startsWith(report + '/'));
 const parts = allParts.sort((a, b) => a.data.part - b.data.part);
 
 const slugify = (s: string): string =>
@@ -43,7 +51,7 @@ const slugify = (s: string): string =>
 const rendered = await Promise.all(
 	parts.map(async (part) => {
 		const { Content, headings } = await render(part);
-		const slug = part.id.replace('the-effortless-encoder/', '').replace(/\.md$/, '');
+		const slug = part.id.replace(report + '/', '').replace(/\.md$/, '');
 		// Derive a hash slug from the human title so the URL tracks the
 		// section name (e.g. #why-we-built-our-own-encoder) instead of
 		// the internal filename (#part-00-overview).
@@ -53,7 +61,7 @@ const rendered = await Promise.all(
 );
 
 const AUDIO_BASE = 'https://github.com/NoMercy-Entertainment/shipping-in-the-dark/releases/download/audio-v1';
-const VTT_BASE = '/audio/reports/the-effortless-encoder';
+const VTT_BASE = `/audio/reports/${report}`;
 
 const tracks = rendered.map(({ part, slug }) => {
 	const vttFemaleBrief = `${VTT_BASE}/${slug}.female.brief.vtt`;
@@ -70,12 +78,12 @@ const tracks = rendered.map(({ part, slug }) => {
 		part: part.data.part,
 		audio: {
 			female: {
-				brief: `${AUDIO_BASE}/the-effortless-encoder--${slug}.female.brief.mp3`,
-				elaborate: `${AUDIO_BASE}/the-effortless-encoder--${slug}.female.elaborate.mp3`,
+				brief: `${AUDIO_BASE}/${report}--${slug}.female.brief.mp3`,
+				elaborate: `${AUDIO_BASE}/${report}--${slug}.female.elaborate.mp3`,
 			},
 			male: {
-				brief: `${AUDIO_BASE}/the-effortless-encoder--${slug}.male.brief.mp3`,
-				elaborate: `${AUDIO_BASE}/the-effortless-encoder--${slug}.male.elaborate.mp3`,
+				brief: `${AUDIO_BASE}/${report}--${slug}.male.brief.mp3`,
+				elaborate: `${AUDIO_BASE}/${report}--${slug}.male.elaborate.mp3`,
 			},
 		},
 		vtt: {
@@ -95,10 +103,23 @@ const tracks = rendered.map(({ part, slug }) => {
 	};
 });
 
-const title = 'NoMercy MediaServer — The Effortless Encoder';
-const description = 'A deep report on the orchestration behind NoMercy MediaServer\'s video and audio encoding — architecture, codecs, safety net, hardware, content analysis, subtitles, DRM, live transcode, disc ripping, distributed encoding, and roadmap.';
+// Part 0 carries the reader-facing title; this supplies the page and share title.
+const REPORT_META = {
+	'the-effortless-encoder': {
+		title: 'NoMercy MediaServer \u2014 The Effortless Encoder',
+		description: 'A deep report on the orchestration behind NoMercy MediaServer video and audio encoding: architecture, codecs, safety net, hardware, content analysis, subtitles, DRM, live transcode, disc ripping, distributed encoding, and roadmap.',
+	},
+	'the-player-you-can-overrule': {
+		title: 'NoMercy \u2014 The Player You Can Overrule',
+		description: 'A deep report on the web player trio: what it is, why it exists, what it lets you build, and how far every decision in it can be overruled without forking anything.',
+	},
+};
+
+const meta = REPORT_META[report] || { title: 'NoMercy \u2014 ' + report, description: '' };
+const title = meta.title;
+const description = meta.description;
 const canonicalUrl = new URL(Astro.url.pathname, Astro.site).toString();
-const reportSourcePath = 'reports/the-effortless-encoder/';
+const reportSourcePath = `reports/${report}/`;
 ---
 
 <BaseLayout title={title} description={description} ogType="article">
