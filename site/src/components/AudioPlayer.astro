@@ -1,21 +1,76 @@
 ---
+/**
+ * AudioPlayer — the one narration player.
+ *
+ * Takes a list of tracks. A report passes its parts; an entry or an agent
+ * page passes exactly one. Every feature is available on every page type;
+ * controls with nothing to act on are not rendered at all, so a single
+ * track drops the part transport, and a source without voice or depth
+ * variants drops those pickers.
+ *
+ * A track's audio/vtt is either a plain URL string (one narration) or a
+ * { female|male: { brief|elaborate } } map (reports). duration is either a
+ * precomputed number of seconds or the same nested map; when it is absent
+ * the player falls back to the element's own metadata.
+ *
+ * Voice, depth and speed persist in localStorage. Listening position
+ * persists per track list.
+ */
+type VariantMap = { brief?: string; elaborate?: string };
+type VoiceMap = { female?: VariantMap | string; male?: VariantMap | string };
+type Source = string | VoiceMap;
+
+type DurationVariantMap = { brief?: number; elaborate?: number };
+type DurationVoiceMap = { female?: DurationVariantMap; male?: DurationVariantMap };
+
+export interface Track {
+	slug: string;
+	title: string;
+	part?: number;
+	audio: Source;
+	vtt?: Source;
+	duration?: number | DurationVoiceMap;
+}
+
 interface Props {
-	audioUrl?: string;
+	tracks?: Track[];
 	title?: string;
 }
 
-const { audioUrl = '', title = '' } = Astro.props;
+const { tracks = [], title = '' } = Astro.props;
+
+const isMap = (value: unknown): value is Record<string, unknown> =>
+	typeof value === 'object' && value !== null;
+
+// A picker only earns its place when the page actually carries the
+// alternatives it switches between.
+const multiTrack: boolean = tracks.length > 1;
+
+const hasVoiceChoice: boolean = tracks.some(
+	(track) => isMap(track.audio) && !!track.audio.female && !!track.audio.male,
+);
+
+const hasDepthChoice: boolean = tracks.some((track) => {
+	if (!isMap(track.audio)) return false;
+	const voice = track.audio.female ?? track.audio.male;
+	return isMap(voice) && !!voice.brief && !!voice.elaborate;
+});
+
+// Section skipping and the transcript both read the VTT. Without one there
+// is nothing for either to do, and no markup worth shipping.
+const hasVtt: boolean = tracks.some((track) => !!track.vtt);
+
+const tracksJson: string = JSON.stringify(tracks);
 ---
 
 <div
-	id="audio-player"
+	id="sitd-audio-player"
 	class="audio-player"
-	data-audio-url={audioUrl}
+	data-tracks={tracksJson}
 	data-title={title}
 	aria-label="Audio player"
 	role="region"
 >
-	<!-- Seekable progress bar sits at the very top of the bar -->
 	<div
 		id="audio-progress-bar"
 		class="audio-progress-bar"
@@ -30,557 +85,1672 @@ const { audioUrl = '', title = '' } = Astro.props;
 	</div>
 
 	<div class="audio-controls">
-		<button
-			id="audio-section-prev-btn"
-			class="audio-secondary-btn"
-			aria-label="Previous section"
-			title="Previous section"
-			type="button"
-		>
-			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="16" height="16">
-				<polyline points="11 17 6 12 11 7" />
-				<polyline points="18 17 13 12 18 7" />
-			</svg>
-		</button>
-		<button
-			id="audio-play-btn"
-			class="audio-play-btn"
-			aria-label="Play"
-			type="button"
-		>
-			<!-- Play icon (shown by default) -->
-			<svg id="icon-play" class="audio-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-				<path d="M8 5v14l11-7z" />
-			</svg>
-			<!-- Pause icon (hidden by default) -->
-			<svg id="icon-pause" class="audio-icon hidden" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-				<path d="M6 19h4V5H6zm8-14v14h4V5z" />
-			</svg>
-		</button>
+		<div class="audio-row audio-row-primary">
+			<span id="audio-current" class="audio-time-side audio-time-left">0:00</span>
 
-		<button
-			id="audio-section-next-btn"
-			class="audio-secondary-btn"
-			aria-label="Next section"
-			title="Next section"
-			type="button"
-		>
-			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="16" height="16">
-				<polyline points="6 7 11 12 6 17" />
-				<polyline points="13 7 18 12 13 17" />
-			</svg>
-		</button>
+			<div class="audio-transport" role="group" aria-label="Playback controls">
+				{multiTrack && (
+					<button id="audio-prev-btn" class="audio-secondary-btn" aria-label="Previous part" type="button" title="Previous part">
+						<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" width="18" height="18">
+							<path d="M7 6h2v12H7zm3.5 6l8.5 6V6z" />
+						</svg>
+					</button>
+				)}
 
-		<div class="audio-time" aria-live="off">
-			<span id="audio-current" class="audio-current">0:00</span>
-			<span class="audio-separator" aria-hidden="true">/</span>
-			<span id="audio-duration" class="audio-duration">0:00</span>
+				{hasVtt && (
+					<button id="audio-section-prev-btn" class="audio-secondary-btn" aria-label="Previous section" type="button" title="Previous section">
+						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="16" height="16">
+							<polyline points="11 17 6 12 11 7" />
+							<polyline points="18 17 13 12 18 7" />
+						</svg>
+					</button>
+				)}
+
+				<button id="audio-play-btn" class="audio-play-btn" aria-label="Play" type="button">
+					<svg id="icon-play" class="audio-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+						<path d="M8 5v14l11-7z" />
+					</svg>
+					<svg id="icon-pause" class="audio-icon hidden" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+						<path d="M6 19h4V5H6zm8-14v14h4V5z" />
+					</svg>
+				</button>
+
+				{hasVtt && (
+					<button id="audio-section-next-btn" class="audio-secondary-btn" aria-label="Next section" type="button" title="Next section">
+						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="16" height="16">
+							<polyline points="6 7 11 12 6 17" />
+							<polyline points="13 7 18 12 13 17" />
+						</svg>
+					</button>
+				)}
+
+				{multiTrack && (
+					<button id="audio-skip-btn" class="audio-secondary-btn" aria-label="Next part" type="button" title="Next part">
+						<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" width="18" height="18">
+							<path d="M6 6l8.5 6L6 18V6zm11 0h2v12h-2V6z" />
+						</svg>
+					</button>
+				)}
+			</div>
+
+			<span id="audio-duration" class="audio-time-side audio-time-right">0:00</span>
 		</div>
 
-		<div id="audio-title" class="audio-title" aria-label="Now playing">
-			{title}
-		</div>
+		<div class="audio-row audio-row-secondary">
+			<div id="audio-title" class="audio-title" aria-label="Now playing">
+				{multiTrack && <span id="audio-part-num" class="audio-part-num"></span>}
+				<span id="audio-part-title">{tracks.length === 1 ? tracks[0].title : ''}</span>
+			</div>
 
-		<div class="audio-speed-group" role="group" aria-label="Playback speed">
-			<button
-				id="audio-slower-btn"
-				class="audio-secondary-btn"
-				aria-label="Slower"
-				title="Slower"
-				type="button"
-			>
-				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true" width="14" height="14">
-					<line x1="5" y1="12" x2="19" y2="12" />
-				</svg>
-			</button>
+			{hasVtt && (
+				<div class="audio-transcript-wrap">
+					<button
+						id="audio-transcript-btn"
+						class="audio-voice-btn audio-transcript-btn"
+						aria-expanded="false"
+						aria-controls="audio-transcript-panel"
+						aria-label="Show transcript"
+						type="button"
+						title="Read along"
+						hidden
+					>
+						<span class="audio-chip-value">Transcript</span>
+						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="10" height="10">
+							<polyline points="6 9 12 15 18 9"></polyline>
+						</svg>
+					</button>
 
-			<button
-				id="audio-speed-btn"
-				class="audio-speed"
-				aria-label="Playback speed: 1x"
-				type="button"
-			>
-				1x
-			</button>
+					<div
+						id="audio-transcript-panel"
+						class="audio-transcript-panel"
+						role="region"
+						aria-labelledby="audio-transcript-title"
+						tabindex="-1"
+						hidden
+					>
+						<div class="audio-transcript-head">
+							<h2 id="audio-transcript-title" class="audio-transcript-title">Transcript</h2>
+							<button id="audio-transcript-close" class="audio-transcript-close" type="button" aria-label="Close transcript">
+								<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" width="14" height="14">
+									<line x1="6" y1="6" x2="18" y2="18" />
+									<line x1="18" y1="6" x2="6" y2="18" />
+								</svg>
+							</button>
+						</div>
+						<ol id="audio-transcript-list" class="audio-transcript-list"></ol>
+					</div>
+				</div>
+			)}
 
-			<button
-				id="audio-faster-btn"
-				class="audio-secondary-btn"
-				aria-label="Faster"
-				title="Faster"
-				type="button"
-			>
-				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true" width="14" height="14">
-					<line x1="12" y1="5" x2="12" y2="19" />
-					<line x1="5" y1="12" x2="19" y2="12" />
-				</svg>
-			</button>
+			{hasVoiceChoice && (
+				<div class="audio-voice-menu-wrap">
+					<button
+						id="audio-voice-btn"
+						class="audio-voice-btn"
+						aria-haspopup="true"
+						aria-expanded="false"
+						aria-controls="audio-voice-menu"
+						aria-label="Narrator voice"
+						type="button"
+						title="Pick narrator voice"
+					>
+						<span class="audio-chip-prefix">Voice</span>
+						<span id="audio-voice-label" class="audio-chip-value">Aria</span>
+						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="10" height="10">
+							<polyline points="6 9 12 15 18 9"></polyline>
+						</svg>
+					</button>
+					<ul id="audio-voice-menu" class="audio-voice-menu" role="menu" hidden>
+						<li role="none">
+							<button type="button" role="menuitemradio" data-voice-key="female">
+								<span class="voice-name">Aria</span>
+								<span class="voice-desc">Female narrator</span>
+							</button>
+						</li>
+						<li role="none">
+							<button type="button" role="menuitemradio" data-voice-key="male">
+								<span class="voice-name">Guy</span>
+								<span class="voice-desc">Male narrator</span>
+							</button>
+						</li>
+					</ul>
+				</div>
+			)}
+
+			{hasDepthChoice && (
+				<div class="audio-voice-menu-wrap">
+					<button
+						id="audio-variant-btn"
+						class="audio-voice-btn"
+						aria-haspopup="true"
+						aria-expanded="false"
+						aria-controls="audio-variant-menu"
+						aria-label="Narration depth"
+						type="button"
+						title="Brief or elaborate code descriptions"
+					>
+						<span class="audio-chip-prefix">Depth</span>
+						<span id="audio-variant-label" class="audio-chip-value">Brief</span>
+						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="10" height="10">
+							<polyline points="6 9 12 15 18 9"></polyline>
+						</svg>
+					</button>
+					<ul id="audio-variant-menu" class="audio-voice-menu" role="menu" hidden>
+						<li role="none">
+							<button type="button" role="menuitemradio" data-variant-key="brief">
+								<span class="voice-name">Brief</span>
+								<span class="voice-desc">Short code descriptions</span>
+							</button>
+						</li>
+						<li role="none">
+							<button type="button" role="menuitemradio" data-variant-key="elaborate">
+								<span class="voice-name">Elaborate</span>
+								<span class="voice-desc">Walk through each field</span>
+							</button>
+						</li>
+					</ul>
+				</div>
+			)}
+
+			<div class="audio-speed-group" role="group" aria-label="Playback speed">
+				<button id="audio-speed-down" class="audio-speed-step" aria-label="Slower" type="button" title="Slower">
+					<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" width="12" height="12">
+						<path d="M19 13H5v-2h14v2z"/>
+					</svg>
+				</button>
+				<button
+					id="audio-speed-display"
+					class="audio-speed-display"
+					type="button"
+					aria-label="Playback speed: 1x"
+					title="Cycle playback speed"
+					aria-live="polite"
+				>1x</button>
+				<button id="audio-speed-up" class="audio-speed-step" aria-label="Faster" type="button" title="Faster">
+					<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" width="12" height="12">
+						<path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+					</svg>
+				</button>
+			</div>
 		</div>
 	</div>
 </div>
 
-<!--
-	Shared audio-player styles live in src/styles/global.css so both
-	AudioPlayer.astro and ReportAudioPlayer.astro pick them up on any
-	page, regardless of which component is rendered.
--->
+<style is:global>
+	.audio-secondary-btn {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 32px;
+		height: 32px;
+		border-radius: 50%;
+		border: none;
+		cursor: pointer;
+		background-color: var(--color-surface-800);
+		color: var(--color-surface-100);
+		flex-shrink: 0;
+		transition: background-color 0.15s ease, transform 0.1s ease;
+		outline: none;
+	}
+	html.light .audio-secondary-btn {
+		background-color: var(--color-surface-200);
+		color: var(--color-surface-900);
+	}
+	.audio-secondary-btn:hover {
+		background-color: var(--color-surface-700);
+	}
+	html.light .audio-secondary-btn:hover {
+		background-color: var(--color-surface-300);
+	}
+	.audio-secondary-btn:focus-visible {
+		outline: 2px solid var(--color-accent-400);
+		outline-offset: 2px;
+	}
+
+	/* -------- Voice / depth dropdowns -------- */
+	.audio-voice-menu-wrap {
+		position: relative;
+		flex-shrink: 0;
+	}
+
+	.audio-voice-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		font-family: var(--font-mono);
+		font-size: 0.6875rem;
+		font-weight: 600;
+		color: var(--color-surface-400);
+		background-color: var(--color-surface-800);
+		border: 1px solid var(--color-surface-700);
+		border-radius: 9999px;
+		padding: 3px 10px;
+		cursor: pointer;
+		transition: color 0.15s ease, background-color 0.15s ease;
+		outline: none;
+		white-space: nowrap;
+	}
+	html.light .audio-voice-btn {
+		color: var(--color-surface-600);
+		background-color: var(--color-surface-200);
+		border-color: var(--color-surface-300);
+	}
+	.audio-voice-btn:hover {
+		color: var(--color-surface-100);
+		background-color: var(--color-surface-700);
+	}
+	html.light .audio-voice-btn:hover {
+		color: var(--color-surface-900);
+		background-color: var(--color-surface-300);
+	}
+	.audio-voice-btn:focus-visible {
+		outline: 2px solid var(--color-accent-400);
+		outline-offset: 2px;
+	}
+	.audio-voice-btn[aria-expanded="true"] svg {
+		transform: rotate(180deg);
+	}
+	.audio-voice-btn svg {
+		transition: transform 0.15s ease;
+	}
+
+	.audio-chip-prefix {
+		font-size: 0.625rem;
+		font-weight: 500;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+		color: var(--color-surface-500);
+	}
+	html.light .audio-chip-prefix {
+		color: var(--color-surface-500);
+	}
+	.audio-chip-value {
+		font-weight: 600;
+	}
+	/* On very tight desktop widths the prefix collapses, leaving the
+	   current value + chevron — still self-explanatory next to the
+	   aria-label. Mobile keeps both because row 2 has room. */
+	@media (min-width: 721px) and (max-width: 900px) {
+		.audio-chip-prefix {
+			display: none;
+		}
+	}
+
+	.audio-voice-menu {
+		position: absolute;
+		bottom: calc(100% + 8px);
+		right: 0;
+		min-width: 10.5rem;
+		margin: 0;
+		padding: 4px;
+		list-style: none;
+		background-color: var(--color-surface-900);
+		border: 1px solid var(--color-surface-700);
+		border-radius: 8px;
+		box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
+		z-index: 55;
+	}
+	html.light .audio-voice-menu {
+		background-color: var(--color-surface-50);
+		border-color: var(--color-surface-300);
+	}
+	.audio-voice-menu li { margin: 0; }
+	.audio-voice-menu button {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 2px;
+		width: 100%;
+		padding: 8px 10px;
+		background: transparent;
+		border: 0;
+		border-radius: 5px;
+		color: var(--color-surface-200);
+		cursor: pointer;
+		text-align: left;
+		font-family: inherit;
+	}
+	html.light .audio-voice-menu button { color: var(--color-surface-900); }
+	.audio-voice-menu button:hover,
+	.audio-voice-menu button:focus-visible {
+		background-color: var(--color-surface-800);
+		outline: none;
+	}
+	html.light .audio-voice-menu button:hover,
+	html.light .audio-voice-menu button:focus-visible {
+		background-color: var(--color-surface-200);
+	}
+	.audio-voice-menu button[aria-checked="true"] {
+		color: var(--color-accent-400);
+	}
+	html.light .audio-voice-menu button[aria-checked="true"] {
+		color: var(--color-accent-700);
+	}
+	.audio-voice-menu .voice-name {
+		font-weight: 600;
+		font-size: 0.8125rem;
+	}
+	.audio-voice-menu .voice-desc {
+		font-size: 0.6875rem;
+		color: var(--color-surface-500);
+	}
+	html.light .audio-voice-menu .voice-desc {
+		color: var(--color-surface-600);
+	}
+
+	/* -------- Transcript -------- */
+	.audio-transcript-wrap {
+		position: relative;
+		flex-shrink: 0;
+	}
+
+	.audio-transcript-btn[hidden] {
+		display: none;
+	}
+
+	.audio-transcript-panel {
+		position: absolute;
+		bottom: calc(100% + 8px);
+		right: 0;
+		width: min(38rem, calc(100vw - 28px));
+		max-height: min(60vh, 30rem);
+		display: flex;
+		flex-direction: column;
+		background-color: var(--color-surface-900);
+		border: 1px solid var(--color-surface-700);
+		border-radius: 10px;
+		box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+		z-index: 56;
+		outline: none;
+	}
+	.audio-transcript-panel[hidden] {
+		display: none;
+	}
+	html.light .audio-transcript-panel {
+		background-color: var(--color-surface-50);
+		border-color: var(--color-surface-300);
+	}
+	.audio-transcript-panel:focus-visible {
+		outline: 2px solid var(--color-accent-400);
+		outline-offset: 2px;
+	}
+
+	.audio-transcript-head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.5rem;
+		padding: 10px 12px;
+		border-bottom: 1px solid var(--color-surface-800);
+		flex-shrink: 0;
+	}
+	html.light .audio-transcript-head {
+		border-bottom-color: var(--color-surface-200);
+	}
+
+	.audio-transcript-title {
+		margin: 0;
+		font-family: var(--font-mono);
+		font-size: 0.6875rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-surface-500);
+	}
+	html.light .audio-transcript-title { color: var(--color-surface-600); }
+
+	.audio-transcript-close {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 24px;
+		height: 24px;
+		border: 0;
+		border-radius: 5px;
+		background: transparent;
+		color: var(--color-surface-400);
+		cursor: pointer;
+		outline: none;
+	}
+	.audio-transcript-close:hover {
+		background-color: var(--color-surface-800);
+		color: var(--color-surface-100);
+	}
+	html.light .audio-transcript-close:hover {
+		background-color: var(--color-surface-200);
+		color: var(--color-surface-900);
+	}
+	.audio-transcript-close:focus-visible {
+		outline: 2px solid var(--color-accent-400);
+		outline-offset: 2px;
+	}
+
+	.audio-transcript-list {
+		list-style: none;
+		margin: 0;
+		padding: 4px;
+		overflow-y: auto;
+		overscroll-behavior: contain;
+		flex: 1;
+		min-height: 0;
+	}
+	.audio-transcript-list li { margin: 0; }
+
+	.audio-transcript-line {
+		display: flex;
+		align-items: baseline;
+		gap: 0.6rem;
+		width: 100%;
+		padding: 6px 8px;
+		background: transparent;
+		border: 0;
+		border-left: 2px solid transparent;
+		border-radius: 4px;
+		color: var(--color-surface-300);
+		font-family: inherit;
+		font-size: 0.8125rem;
+		line-height: 1.5;
+		text-align: left;
+		cursor: pointer;
+		outline: none;
+	}
+	html.light .audio-transcript-line { color: var(--color-surface-700); }
+
+	.audio-transcript-line:hover {
+		background-color: var(--color-surface-800);
+		color: var(--color-surface-100);
+	}
+	html.light .audio-transcript-line:hover {
+		background-color: var(--color-surface-200);
+		color: var(--color-surface-950);
+	}
+	.audio-transcript-line:focus-visible {
+		outline: 2px solid var(--color-accent-400);
+		outline-offset: -2px;
+	}
+
+	.audio-transcript-line[aria-current="true"] {
+		border-left-color: var(--color-accent-400);
+		background-color: oklch(0.765 0.177 163.223 / 0.08);
+		color: var(--color-surface-50);
+	}
+	html.light .audio-transcript-line[aria-current="true"] {
+		border-left-color: var(--color-accent-700);
+		background-color: oklch(0.48 0.13 163 / 0.09);
+		color: var(--color-surface-950);
+	}
+
+	.audio-transcript-time {
+		flex-shrink: 0;
+		font-family: var(--font-mono);
+		font-size: 0.6875rem;
+		color: var(--color-surface-500);
+		min-width: 2.75rem;
+	}
+	.audio-transcript-line[aria-current="true"] .audio-transcript-time {
+		color: var(--color-accent-400);
+	}
+	html.light .audio-transcript-line[aria-current="true"] .audio-transcript-time {
+		color: var(--color-accent-700);
+	}
+
+	.audio-transcript-text {
+		min-width: 0;
+	}
+
+	.audio-transcript-line[data-kind="heading"] .audio-transcript-text {
+		font-weight: 700;
+	}
+	.audio-transcript-line[data-kind="literal"] .audio-transcript-text {
+		font-style: italic;
+	}
+	.audio-transcript-line[data-kind="code"] .audio-transcript-text,
+	.audio-transcript-line[data-kind="image"] .audio-transcript-text {
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
+		display: -webkit-box;
+		-webkit-line-clamp: 3;
+		line-clamp: 3;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+		white-space: pre-wrap;
+	}
+
+	/* -------- Speed stepper -------- */
+	/* Matches the voice/depth chip chrome: same pill border, same
+	   font-family/size/weight, same height via matching vertical
+	   padding. The -/+ step buttons sit flush against the value so
+	   the whole thing reads as one capsule rather than three controls. */
+	.audio-speed-group {
+		display: inline-flex;
+		align-items: stretch;
+		flex-shrink: 0;
+		font-family: var(--font-mono);
+		font-size: 0.6875rem;
+		font-weight: 600;
+		border: 1px solid var(--color-surface-700);
+		border-radius: 9999px;
+		background-color: var(--color-surface-800);
+		overflow: hidden;
+	}
+	html.light .audio-speed-group {
+		border-color: var(--color-surface-300);
+		background-color: var(--color-surface-200);
+	}
+
+	.audio-speed-step {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 24px;
+		padding: 3px 0;
+		background: transparent;
+		border: 0;
+		color: var(--color-surface-400);
+		cursor: pointer;
+		transition: color 0.15s ease, background-color 0.15s ease;
+	}
+	html.light .audio-speed-step { color: var(--color-surface-600); }
+	.audio-speed-step:hover {
+		color: var(--color-surface-100);
+		background-color: var(--color-surface-700);
+	}
+	html.light .audio-speed-step:hover {
+		color: var(--color-surface-900);
+		background-color: var(--color-surface-300);
+	}
+	.audio-speed-step:focus-visible {
+		outline: 2px solid var(--color-accent-400);
+		outline-offset: 2px;
+	}
+	.audio-speed-step:disabled {
+		opacity: 0.35;
+		cursor: not-allowed;
+	}
+
+	.audio-speed-display {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-width: 2.75rem;
+		padding: 3px 4px;
+		background: transparent;
+		border: 0;
+		font: inherit;
+		color: var(--color-surface-400);
+		white-space: nowrap;
+		cursor: pointer;
+		outline: none;
+	}
+	html.light .audio-speed-display { color: var(--color-surface-600); }
+	.audio-speed-display:hover {
+		color: var(--color-surface-100);
+		background-color: var(--color-surface-700);
+	}
+	html.light .audio-speed-display:hover {
+		color: var(--color-surface-900);
+		background-color: var(--color-surface-300);
+	}
+	.audio-speed-display:focus-visible {
+		outline: 2px solid var(--color-accent-400);
+		outline-offset: -2px;
+	}
+
+	/* Mobile row 2: pill grows a touch so the tap target matches the
+	   voice/depth chips at 5px/10px padding — same visual weight. */
+	@media (max-width: 720px) {
+		.audio-player .audio-speed-group {
+			font-size: 0.75rem;
+		}
+		.audio-player .audio-speed-step {
+			width: 26px;
+			padding: 5px 0;
+		}
+		.audio-player .audio-speed-display {
+			padding: 5px 6px;
+		}
+	}
+
+	.audio-part-num {
+		display: inline-block;
+		margin-right: 0.5em;
+		font-family: var(--font-mono);
+		font-size: 0.7rem;
+		color: var(--color-surface-500);
+	}
+	html.light .audio-part-num {
+		color: var(--color-surface-500);
+	}
+
+	/* -------- "Play from here" badge on headings -------- */
+	.report-part h1,
+	.report-part h2,
+	.report-part h3,
+	.report-part h4 {
+		position: relative;
+	}
+
+	/*
+	  rehype-autolink-headings wraps each heading's inner text in a
+	  .heading-anchor and shows a '#' on hover. The play-from-here
+	  button lives in the same left margin, so hide the '#' on report
+	  headings to avoid the clash. The clickable heading-anchor link
+	  (copy-to-clipboard via browser anchor behaviour) still works.
+	*/
+	.report-part .heading-anchor:hover::before {
+		content: none !important;
+	}
+
+	.report-part :is(h1, h2, h3, h4):hover .heading-seek-btn {
+		opacity: 1;
+	}
+</style>
 
 <script is:inline>
 (function () {
 	'use strict';
 
-	// ------------------------------------------------------------------ //
-	// Grab DOM refs                                                         //
-	// ------------------------------------------------------------------ //
+	const STORAGE_KEY = 'sitd:narrator-voice';
+	const VARIANT_KEY = 'sitd:narration-variant';
+	const SPEED_KEY = 'sitd:playback-speed';
+	// Per-track-list position memory. The key is scoped by the first track's
+	// slug so two different pages don't stomp each other.
+	const POSITION_KEY = 'sitd:audio-position';
 
-	var player   = document.getElementById('audio-player');
-	var progressBar  = document.getElementById('audio-progress-bar');
-	var progressFill = document.getElementById('audio-progress-fill');
-	var playBtn  = document.getElementById('audio-play-btn');
-	var iconPlay = document.getElementById('icon-play');
-	var iconPause = document.getElementById('icon-pause');
-	var currentTimeEl = document.getElementById('audio-current');
-	var durationEl = document.getElementById('audio-duration');
-	var titleEl  = document.getElementById('audio-title');
-	var speedBtn = document.getElementById('audio-speed-btn');
-	var sectionPrevBtn = document.getElementById('audio-section-prev-btn');
-	var sectionNextBtn = document.getElementById('audio-section-next-btn');
-
-	if (!player) return;
-
-	// ------------------------------------------------------------------ //
-	// Section skipping                                                     //
-	// ------------------------------------------------------------------ //
-	// The heading cues already exist in the entry's VTT as h-N bodies, and
-	// AudioSync publishes the URL on #audio-sync-data. Reusing that avoids a
-	// second source of truth for where the sections are.
-
-	var headingCache = {};
-
-	function entryVttUrl() {
-		var node = document.getElementById('audio-sync-data');
-		return node ? (node.getAttribute('data-vtt-url') || '') : '';
-	}
-
-	function fetchHeadings() {
-		var url = entryVttUrl();
-		if (!url) return Promise.resolve([]);
-		if (headingCache[url]) return Promise.resolve(headingCache[url]);
-
-		return fetch(url)
-			.then(function (r) { return r.text(); })
-			.then(function (text) {
-				var out = [];
-				var rawLines = text.split('\n');
-				for (var i = 0; i < rawLines.length; i++) {
-					var line = rawLines[i].replace('\r', '');
-					var m = line.match(/^(\d+):(\d+):(\d+)\.(\d+)\s*-->/);
-					if (!m) continue;
-					var body = (rawLines[i + 1] || '').replace('\r', '').trim();
-					if (!/^h-\d+$/.test(body)) continue;
-					out.push({
-						id: body,
-						start: Number(m[1]) * 3600 + Number(m[2]) * 60 + Number(m[3]) + Number('0.' + m[4]),
-					});
-				}
-				out.sort(function (a, b) { return a.start - b.start; });
-				headingCache[url] = out;
-				return out;
-			})
-			.catch(function () { return []; });
-	}
-
-	function skipToNextSection() {
-		fetchHeadings().then(function (headings) {
-			var now = audio.currentTime || 0;
-			for (var i = 0; i < headings.length; i++) {
-				if (headings[i].start > now + 0.1) {
-					try { audio.currentTime = headings[i].start; } catch (_) {}
-					return;
-				}
-			}
-		});
-	}
-
-	function skipToPrevSection() {
-		fetchHeadings().then(function (headings) {
-			var now = audio.currentTime || 0;
-			var current = null;
-			var previous = null;
-			for (var i = 0; i < headings.length; i++) {
-				if (headings[i].start <= now + 0.001) {
-					previous = current;
-					current = headings[i];
-				}
-			}
-			// More than three seconds in, restart this section rather than
-			// leaving it, which is what every music player does and what a
-			// listener reaching for the button almost always means.
-			var target = (current && now - current.start > 3)
-				? current
-				: (previous || current);
-			try { audio.currentTime = target ? target.start : 0; } catch (_) {}
-		});
-	}
-
-	function refreshSectionButtons() {
-		fetchHeadings().then(function (headings) {
-			var usable = headings.length > 1;
-			if (sectionPrevBtn) sectionPrevBtn.hidden = !usable;
-			if (sectionNextBtn) sectionNextBtn.hidden = !usable;
-		});
-	}
-
-
-	// ------------------------------------------------------------------ //
-	// Audio engine — native HTML5 Audio                                    //
-	// ------------------------------------------------------------------ //
-
-	// Global persistent <audio> lives in BaseLayout and survives view
-	// transitions. Keeps playback continuous when the user navigates.
-	var audio = document.getElementById('sitd-global-audio');
+	// The <audio> element lives in BaseLayout and survives view transitions,
+	// so playback continues across pages. Everything else in this player is
+	// re-read from the DOM on astro:page-load.
+	let audio = document.getElementById('sitd-global-audio');
 	if (!audio) {
-		// Fallback for pages that somehow skipped BaseLayout
 		audio = new Audio();
 		audio.preload = 'metadata';
 	}
 
-	var speeds = [0.75, 1, 1.25, 1.5];
-	var speedIndex = 1; // start at 1x
-
-	// Slower and Faster clamp at the ends rather than wrapping, so a listener
-	// holding one down cannot loop from 1.5x back to 0.75x. The pill stays the
-	// live readout for all three controls and carries the value in its
-	// aria-label, because the glyph buttons announce only a direction.
-	function applySpeed(nextIndex) {
-		speedIndex = Math.max(0, Math.min(speeds.length - 1, nextIndex));
-		var rate = speeds[speedIndex];
-		audio.playbackRate = rate;
-
-		var label = rate + 'x';
-		var btn = document.getElementById('audio-speed-btn');
-		if (btn) {
-			btn.textContent = label;
-			btn.setAttribute('aria-label', 'Playback speed: ' + label);
-		}
-
-		var slower = document.getElementById('audio-slower-btn');
-		var faster = document.getElementById('audio-faster-btn');
-		if (slower) slower.disabled = speedIndex === 0;
-		if (faster) faster.disabled = speedIndex === speeds.length - 1;
+	// This script is byte-identical on every page, so Astro's view transition
+	// router does not re-execute it and one instance serves the whole visit.
+	// If a future change ever makes it re-run, the older instance stands down
+	// here rather than double-handling every click.
+	const generation = (audio.sitdPlayerGeneration || 0) + 1;
+	audio.sitdPlayerGeneration = generation;
+	function superseded() {
+		return audio.sitdPlayerGeneration !== generation;
 	}
 
-	// ------------------------------------------------------------------ //
-	// State helpers                                                         //
-	// ------------------------------------------------------------------ //
+	// 0.1x increments between 0.5 and 2.0. Finer than 0.25 steps so users can
+	// nudge the rate without the big jumps that made 1.25 feel rushed and 1.5
+	// feel manic. 16 steps total, 1x is index 5.
+	const speeds = [
+		0.5, 0.6, 0.7, 0.8, 0.9,
+		1.0, 1.1, 1.2, 1.3, 1.4,
+		1.5, 1.6, 1.7, 1.8, 1.9,
+		2.0,
+	];
+
+	let tracks = [];
+	let tracksSignature = null;
+	let speedIndex = 5;
+	let currentIndex = 0;
+	let currentVoice = 'female';
+	let currentVariant = 'brief';
+	// When the page loads with a heading hash, we fetch that heading's cue
+	// start asynchronously. On the user's first play, apply it before playing
+	// so the audio starts at the heading they linked to.
+	let pendingInitialSeek = null;
+
+	try {
+		const saved = localStorage.getItem(STORAGE_KEY);
+		if (saved === 'male' || saved === 'female') currentVoice = saved;
+		const savedVariant = localStorage.getItem(VARIANT_KEY);
+		if (savedVariant === 'brief' || savedVariant === 'elaborate') currentVariant = savedVariant;
+		const savedSpeed = localStorage.getItem(SPEED_KEY);
+		if (savedSpeed != null) {
+			const idx = speeds.indexOf(parseFloat(savedSpeed));
+			if (idx >= 0) speedIndex = idx;
+		}
+	} catch (e) { /* localStorage blocked */ }
+
+	function el(id) {
+		return document.getElementById(id);
+	}
+
+	function playerEl() {
+		return el('sitd-audio-player');
+	}
+
+	// ---------------------------------------------------------------- //
+	// Track resolution                                                   //
+	// ---------------------------------------------------------------- //
+
+	// Resolve the audio/vtt URL for a track. A plain string is a single
+	// narration; a map falls back to the other variant when the requested
+	// one is missing.
+	function resolveTrackUrl(source, voice, variant) {
+		if (!source) return '';
+		if (typeof source === 'string') return source;
+		const voiceMap = source[voice] || source.female || source.male;
+		if (!voiceMap) return '';
+		if (typeof voiceMap === 'string') return voiceMap;
+		return voiceMap[variant] || voiceMap.brief || voiceMap.elaborate || '';
+	}
+
+	function resolveTrackDuration(track, voice, variant) {
+		if (!track || track.duration == null) return 0;
+		if (typeof track.duration === 'number') return Number(track.duration) || 0;
+		const voiceMap = track.duration[voice] || track.duration.female || track.duration.male;
+		if (!voiceMap) return 0;
+		if (typeof voiceMap === 'number') return Number(voiceMap) || 0;
+		return Number(voiceMap[variant] || voiceMap.brief || voiceMap.elaborate || 0) || 0;
+	}
+
+	function summedDuration() {
+		let total = 0;
+		for (let i = 0; i < tracks.length; i++) {
+			total += resolveTrackDuration(tracks[i], currentVoice, currentVariant);
+		}
+		return total;
+	}
+
+	// Precomputed VTT durations give a whole-list total before any metadata
+	// arrives. Pages that ship none (single-track entries) fall back to the
+	// element's own duration, which covers the one track they have.
+	function totalDuration() {
+		const summed = summedDuration();
+		if (summed > 0) return summed;
+		return isFinite(audio.duration) && audio.duration > 0 ? audio.duration : 0;
+	}
+
+	function currentPosition() {
+		let before = 0;
+		for (let i = 0; i < currentIndex; i++) {
+			before += resolveTrackDuration(tracks[i], currentVoice, currentVariant);
+		}
+		return before + (isFinite(audio.currentTime) ? audio.currentTime : 0);
+	}
+
+	function currentTrack() {
+		return tracks.length ? tracks[currentIndex] : null;
+	}
+
+	function currentVttUrl() {
+		const track = currentTrack();
+		if (track) return resolveTrackUrl(track.vtt, currentVoice, currentVariant);
+		const node = el('audio-sync-data');
+		return node ? (node.getAttribute('data-vtt-url') || '') : '';
+	}
+
+	// Report pages render every part on one page, so element ids collide
+	// across parts and lookups have to be scoped. A single-track page has
+	// nothing to collide with and scopes to the document.
+	function currentPartSlug() {
+		const track = currentTrack();
+		return tracks.length > 1 && track ? track.slug : '';
+	}
+
+	function findTrackIndexBySlug(slug) {
+		if (!slug) return -1;
+		for (let i = 0; i < tracks.length; i++) {
+			if (tracks[i].slug === slug) return i;
+		}
+		return -1;
+	}
+
+	function findTrackIndexByUrl(url) {
+		if (!url) return -1;
+		for (let i = 0; i < tracks.length; i++) {
+			const source = tracks[i].audio;
+			const urls = [
+				resolveTrackUrl(source, 'female', 'brief'),
+				resolveTrackUrl(source, 'female', 'elaborate'),
+				resolveTrackUrl(source, 'male', 'brief'),
+				resolveTrackUrl(source, 'male', 'elaborate'),
+			];
+			if (urls.indexOf(url) >= 0) return i;
+		}
+		return -1;
+	}
+
+	// ---------------------------------------------------------------- //
+	// Chrome                                                             //
+	// ---------------------------------------------------------------- //
 
 	function showPlayer() {
-		var p = document.getElementById('audio-player');
-		if (p) p.classList.add('is-visible');
+		const player = playerEl();
+		if (player) player.classList.add('is-visible');
 		document.body.classList.add('audio-player-visible');
 		document.documentElement.classList.add('audio-player-visible');
 	}
 
 	function hidePlayer() {
-		var p = document.getElementById('audio-player');
-		if (p) p.classList.remove('is-visible');
+		const player = playerEl();
+		if (player) player.classList.remove('is-visible');
 		document.body.classList.remove('audio-player-visible');
 		document.documentElement.classList.remove('audio-player-visible');
 	}
 
 	function setPlayingState(playing) {
-		var ip = document.getElementById('icon-play');
-		var ipa = document.getElementById('icon-pause');
-		var pb = document.getElementById('audio-play-btn');
-		if (!ip || !ipa || !pb) return;
+		const iconPlay = el('icon-play');
+		const iconPause = el('icon-pause');
+		const button = el('audio-play-btn');
+		if (!iconPlay || !iconPause || !button) return;
 		if (playing) {
-			ip.classList.add('hidden');
-			ipa.classList.remove('hidden');
-			pb.setAttribute('aria-label', 'Pause');
+			iconPlay.classList.add('hidden');
+			iconPause.classList.remove('hidden');
+			button.setAttribute('aria-label', 'Pause');
 		} else {
-			ip.classList.remove('hidden');
-			ipa.classList.add('hidden');
-			pb.setAttribute('aria-label', 'Play');
+			iconPlay.classList.remove('hidden');
+			iconPause.classList.add('hidden');
+			button.setAttribute('aria-label', 'Play');
 		}
 	}
 
 	function formatTime(seconds) {
 		if (!isFinite(seconds) || isNaN(seconds)) return '0:00';
-		var m = Math.floor(seconds / 60);
-		var s = Math.floor(seconds % 60);
-		return m + ':' + (s < 10 ? '0' : '') + s;
+		const minutes = Math.floor(seconds / 60);
+		const rest = Math.floor(seconds % 60);
+		return minutes + ':' + (rest < 10 ? '0' : '') + rest;
 	}
 
 	function updateProgress() {
-		if (!audio.duration) return;
-		var pct = (audio.currentTime / audio.duration) * 100;
-		var pf = document.getElementById('audio-progress-fill');
-		var pb = document.getElementById('audio-progress-bar');
-		var ct = document.getElementById('audio-current');
-		if (pf) pf.style.width = pct + '%';
-		if (pb) pb.setAttribute('aria-valuenow', Math.round(pct));
-		if (ct) ct.textContent = formatTime(audio.currentTime);
+		const total = totalDuration();
+		const position = currentPosition();
+		const currentEl = el('audio-current');
+		const durationEl = el('audio-duration');
+		const fill = el('audio-progress-fill');
+		const bar = el('audio-progress-bar');
+		if (currentEl) currentEl.textContent = formatTime(position);
+		if (durationEl) durationEl.textContent = formatTime(total);
+		if (total > 0) {
+			const pct = Math.max(0, Math.min(100, (position / total) * 100));
+			if (fill) fill.style.width = pct + '%';
+			if (bar) bar.setAttribute('aria-valuenow', Math.round(pct));
+		}
 	}
 
-	// ------------------------------------------------------------------ //
-	// Load a track                                                          //
-	// ------------------------------------------------------------------ //
-
-	function loadTrack(url, entryTitle) {
-		if (!url) {
-			hidePlayer();
-			return;
-		}
-
-		// Reset state visually before loading
-		setPlayingState(false);
-		var pf = document.getElementById('audio-progress-fill');
-		var ct = document.getElementById('audio-current');
-		var dt = document.getElementById('audio-duration');
-		var tl = document.getElementById('audio-title');
-		var sb = document.getElementById('audio-speed-btn');
-		if (pf) pf.style.width = '0%';
-		if (ct) ct.textContent = '0:00';
-		if (dt) dt.textContent = '0:00';
-		if (tl) tl.textContent = entryTitle || '';
-		speedIndex = 1;
-		if (sb) { sb.textContent = '1x'; sb.setAttribute('aria-label', 'Playback speed: 1x'); }
-		audio.playbackRate = 1;
-
-		audio.src = url;
-		audio.load();
-		showPlayer();
+	function updateVoiceLabel() {
+		const label = el('audio-voice-label');
+		const button = el('audio-voice-btn');
+		if (label) label.textContent = currentVoice === 'female' ? 'Aria' : 'Guy';
+		if (button) button.setAttribute('aria-label', 'Voice: ' + currentVoice + '. Click to switch.');
 	}
 
-	// ------------------------------------------------------------------ //
-	// Audio events                                                          //
-	// ------------------------------------------------------------------ //
+	function updateVariantLabel() {
+		const label = el('audio-variant-label');
+		const button = el('audio-variant-btn');
+		const text = currentVariant === 'elaborate' ? 'Elaborate' : 'Brief';
+		if (label) label.textContent = text;
+		if (button) button.setAttribute('aria-label', 'Narration depth: ' + text + '. Click to switch.');
+	}
 
-	audio.addEventListener('loadedmetadata', function () {
-		var de = document.getElementById('audio-duration');
-		if (de) de.textContent = formatTime(audio.duration);
-	});
-
-	audio.addEventListener('timeupdate', function() {
-		updateProgress();
-		document.dispatchEvent(new CustomEvent('audio-timeupdate', { detail: { currentTime: audio.currentTime, duration: audio.duration } }));
-	});
-
-	audio.addEventListener('play', function () {
-		setPlayingState(true);
-	});
-
-	audio.addEventListener('pause', function () {
-		setPlayingState(false);
-	});
-
-	audio.addEventListener('ended', function () {
-		document.dispatchEvent(new CustomEvent('audio-ended'));
-		setPlayingState(false);
-		audio.currentTime = 0;
-		progressFill.style.width = '0%';
-		currentTimeEl.textContent = '0:00';
-	});
-
-	audio.addEventListener('error', function () {
-		var e = audio.error;
-		console.warn('[AudioPlayer] Failed to load audio:', audio.src,
-			'code:', e ? e.code : 'unknown', 'message:', e ? e.message : 'none');
-		hidePlayer();
-	});
-
-	// ------------------------------------------------------------------ //
-	// Controls                                                              //
-	// ------------------------------------------------------------------ //
-
-	// Use event delegation — survives View Transition DOM swaps
-	document.addEventListener('click', function (e) {
-		if (e.target.closest('#audio-section-prev-btn')) {
-			skipToPrevSection();
-			return;
+	function updateTitle(track) {
+		const partNum = el('audio-part-num');
+		const partTitle = el('audio-part-title');
+		if (partNum) {
+			partNum.textContent = track && track.part != null
+				? 'Part ' + String(track.part).padStart(2, '0')
+				: '';
 		}
-		if (e.target.closest('#audio-section-next-btn')) {
-			skipToNextSection();
-			return;
+		if (partTitle) partTitle.textContent = track ? (track.title || '') : '';
+	}
+
+	function updateTocHighlight(slug) {
+		const links = document.querySelectorAll('.report-toc-link');
+		links.forEach(function (link) {
+			if (link.getAttribute('data-part-slug') === slug) link.classList.add('active');
+			else link.classList.remove('active');
+		});
+	}
+
+	function setSpeedIndex(index) {
+		speedIndex = Math.max(0, Math.min(speeds.length - 1, index));
+		const rate = speeds[speedIndex];
+		try { audio.playbackRate = rate; } catch (e) { /* ignore */ }
+		try { localStorage.setItem(SPEED_KEY, String(rate)); } catch (e) { /* blocked */ }
+		const label = (Number.isInteger(rate) ? rate.toFixed(0) : rate.toFixed(2).replace(/\.?0+$/, '')) + 'x';
+		const display = el('audio-speed-display');
+		if (display) {
+			display.textContent = label;
+			display.setAttribute('aria-label', 'Playback speed: ' + label);
 		}
-		if (e.target.closest('#audio-play-btn')) {
-			if (audio.paused) {
-				audio.play().catch(function (err) {
-					console.warn('[AudioPlayer] Play blocked:', err);
+		const down = el('audio-speed-down');
+		const up = el('audio-speed-up');
+		if (down) down.disabled = speedIndex === 0;
+		if (up) up.disabled = speedIndex === speeds.length - 1;
+	}
+
+	// ---------------------------------------------------------------- //
+	// VTT reading                                                        //
+	// ---------------------------------------------------------------- //
+
+	const vttCache = Object.create(null);
+
+	function fetchVttText(vttUrl) {
+		if (!vttUrl) return Promise.reject(new Error('no vtt url'));
+		if (vttCache[vttUrl] != null) return Promise.resolve(vttCache[vttUrl]);
+		return fetch(vttUrl).then(function (response) {
+			// A 404 body is an HTML error page. Caching it would poison every
+			// later read of this URL with cues that do not exist.
+			if (!response.ok) throw new Error('vtt ' + response.status);
+			return response.text();
+		}).then(function (text) {
+			vttCache[vttUrl] = text;
+			return text;
+		});
+	}
+
+	// Every cue in document order: { start, end, body }.
+	function parseVttCues(text) {
+		const cues = [];
+		const lines = text.replace(/\r/g, '').split('\n');
+		for (let i = 0; i < lines.length; i++) {
+			const match = lines[i].match(/(\d+:\d+:\d+\.\d+)\s*-->\s*(\d+:\d+:\d+\.\d+)/);
+			if (!match) continue;
+			const bodyLines = [];
+			let j = i + 1;
+			while (j < lines.length && lines[j].trim() !== '') {
+				bodyLines.push(lines[j].trim());
+				j++;
+			}
+			cues.push({
+				start: parseVttTimestamp(match[1]),
+				end: parseVttTimestamp(match[2]),
+				body: bodyLines.join(' '),
+			});
+			i = j;
+		}
+		return cues;
+	}
+
+	function parseVttTimestamp(stamp) {
+		const parts = stamp.split(':');
+		return parseInt(parts[0], 10) * 3600 + parseInt(parts[1], 10) * 60 + parseFloat(parts[2]);
+	}
+
+	function fetchVttCueStart(vttUrl, cueId) {
+		return fetchVttText(vttUrl).then(function (text) {
+			const cues = parseVttCues(text);
+			for (let i = 0; i < cues.length; i++) {
+				if (cues[i].body === cueId) return cues[i].start;
+			}
+			return null;
+		});
+	}
+
+	// Heading cues, in document order. The section skips move between these
+	// rather than by a fixed number of seconds.
+	function fetchVttHeadings(vttUrl) {
+		if (!vttUrl) return Promise.resolve([]);
+		return fetchVttText(vttUrl).then(function (text) {
+			return parseVttCues(text)
+				.filter(function (cue) { return /^h-\d+$/.test(cue.body); })
+				.map(function (cue) { return { id: cue.body, start: cue.start }; });
+		}).catch(function () { return []; });
+	}
+
+	// ---------------------------------------------------------------- //
+	// Transcript                                                         //
+	// ---------------------------------------------------------------- //
+
+	let transcriptCues = [];
+	let transcriptUrl = null;
+	let transcriptActiveIndex = -1;
+	let transcriptOpen = false;
+
+	function transcriptScope() {
+		const slug = currentPartSlug();
+		if (!slug) return document;
+		return document.querySelector('section[data-part-slug="' + slug + '"]') || document;
+	}
+
+	// A cue body is either a marker id, which is spoken as the text of the
+	// element it resolves to, or a literal line prefixed with --, which is
+	// spoken as written. The second kind is the title block, the narrated
+	// pull-quotes and the code descriptions: content that appears nowhere in
+	// the article prose, so it exists only here.
+	function resolveCueLine(body) {
+		if (!body) return null;
+
+		if (body.slice(0, 2) === '--') {
+			const text = body.slice(2).trim();
+			return text ? { text: text, kind: 'literal', cueId: '' } : null;
+		}
+
+		const scope = transcriptScope();
+
+		if (/^p-\d+$/.test(body)) {
+			const node = scope.querySelector('[id="' + body + '"]');
+			return node ? { text: elementText(node), kind: 'prose', cueId: body } : null;
+		}
+		if (/^h-\d+$/.test(body)) {
+			const node = scope.querySelector('[data-audio-h="' + body + '"]');
+			return node ? { text: elementText(node), kind: 'heading', cueId: body } : null;
+		}
+		if (/^code-\d+$/.test(body)) {
+			const node = scope.querySelector('[data-audio-code="' + body + '"]');
+			return node ? { text: elementText(node), kind: 'code', cueId: '' } : null;
+		}
+		if (/^i-\d+$/.test(body)) {
+			const node = scope.querySelector('[data-audio-i="' + body + '"]');
+			if (!node) return null;
+			const alt = node.getAttribute('alt') || '';
+			return alt ? { text: alt, kind: 'image', cueId: '' } : null;
+		}
+		if (body.indexOf('section:') === 0) {
+			const node = scope.querySelector('[id="' + body.slice(8) + '"]');
+			return node ? { text: elementText(node), kind: 'heading', cueId: '' } : null;
+		}
+
+		// Older VTTs carry the spoken prose itself rather than a marker.
+		return { text: body, kind: 'literal', cueId: '' };
+	}
+
+	function elementText(node) {
+		return (node.textContent || '').replace(/\s+/g, ' ').trim();
+	}
+
+	function hideTranscript() {
+		transcriptCues = [];
+		transcriptActiveIndex = -1;
+		closeTranscript(false);
+		const button = el('audio-transcript-btn');
+		if (button) button.hidden = true;
+		const list = el('audio-transcript-list');
+		if (list) list.textContent = '';
+	}
+
+	function buildTranscript(vttUrl) {
+		const button = el('audio-transcript-btn');
+		const list = el('audio-transcript-list');
+		if (!button || !list) return;
+		if (!vttUrl) { hideTranscript(); return; }
+		if (vttUrl === transcriptUrl && transcriptCues.length) return;
+
+		transcriptUrl = vttUrl;
+		fetchVttText(vttUrl).then(function (text) {
+			if (transcriptUrl !== vttUrl) return;
+			const cues = parseVttCues(text);
+			const resolved = [];
+			for (let i = 0; i < cues.length; i++) {
+				const line = resolveCueLine(cues[i].body);
+				if (!line) continue;
+				resolved.push({
+					start: cues[i].start,
+					end: cues[i].end,
+					text: line.text,
+					kind: line.kind,
+					cueId: line.cueId,
 				});
-			} else {
-				audio.pause();
 			}
-		}
-		if (e.target.closest('#audio-slower-btn')) {
-			applySpeed(speedIndex - 1);
-			return;
-		}
-		if (e.target.closest('#audio-faster-btn')) {
-			applySpeed(speedIndex + 1);
-			return;
-		}
-		if (e.target.closest('#audio-speed-btn')) {
-			applySpeed((speedIndex + 1) % speeds.length);
-		}
-	});
-
-	// ------------------------------------------------------------------ //
-	// Progress bar — click to seek, keyboard support                        //
-	// ------------------------------------------------------------------ //
-
-	function seekToPercent(pct) {
-		if (!audio.duration) return;
-		audio.currentTime = (pct / 100) * audio.duration;
-		updateProgress();
+			if (!resolved.length) { hideTranscript(); return; }
+			transcriptCues = resolved;
+			renderTranscript();
+			button.hidden = false;
+			transcriptActiveIndex = -1;
+			syncTranscriptToPlayback();
+		}).catch(function () {
+			// No VTT for this track — there is no transcript to offer, so the
+			// control does not exist rather than opening onto an empty panel.
+			if (transcriptUrl === vttUrl) transcriptUrl = null;
+			hideTranscript();
+		});
 	}
 
-	function getClickPercent(e) {
-		var bar = document.getElementById('audio-progress-bar');
-		if (!bar) return 0;
-		var rect = bar.getBoundingClientRect();
-		var x = (e.clientX !== undefined ? e.clientX : e.touches[0].clientX) - rect.left;
-		return Math.max(0, Math.min(100, (x / rect.width) * 100));
+	function renderTranscript() {
+		const list = el('audio-transcript-list');
+		if (!list) return;
+		const fragment = document.createDocumentFragment();
+		for (let i = 0; i < transcriptCues.length; i++) {
+			const cue = transcriptCues[i];
+			const item = document.createElement('li');
+			const button = document.createElement('button');
+			button.type = 'button';
+			button.className = 'audio-transcript-line';
+			button.setAttribute('data-index', String(i));
+			button.setAttribute('data-kind', cue.kind);
+
+			const time = document.createElement('span');
+			time.className = 'audio-transcript-time';
+			time.textContent = formatTime(cue.start);
+
+			const text = document.createElement('span');
+			text.className = 'audio-transcript-text';
+			text.textContent = cue.text;
+
+			button.appendChild(time);
+			button.appendChild(text);
+			item.appendChild(button);
+			fragment.appendChild(item);
+		}
+		list.textContent = '';
+		list.appendChild(fragment);
 	}
 
-	var isSeeking = false;
-
-	document.addEventListener('mousedown', function (e) {
-		if (!e.target.closest('#audio-progress-bar')) return;
-		e.preventDefault();
-		isSeeking = true;
-		seekToPercent(getClickPercent(e));
-	});
-
-	document.addEventListener('mousemove', function (e) {
-		if (!isSeeking) return;
-		seekToPercent(getClickPercent(e));
-	});
-
-	document.addEventListener('mouseup', function () {
-		isSeeking = false;
-	});
-
-	// Touch support
-	progressBar.addEventListener('touchstart', function (e) {
-		e.preventDefault();
-		seekToPercent(getClickPercent(e));
-	}, { passive: false });
-
-	progressBar.addEventListener('touchmove', function (e) {
-		e.preventDefault();
-		seekToPercent(getClickPercent(e));
-	}, { passive: false });
-
-	// Keyboard seek: left/right arrows on the progress bar
-	progressBar.addEventListener('keydown', function (e) {
-		if (!audio.duration) return;
-		var step = (e.shiftKey ? 30 : 5); // 5s or 30s with shift
-		if (e.key === 'ArrowLeft') {
-			audio.currentTime = Math.max(0, audio.currentTime - step);
-			e.preventDefault();
-		} else if (e.key === 'ArrowRight') {
-			audio.currentTime = Math.min(audio.duration, audio.currentTime + step);
-			e.preventDefault();
-		}
-	});
-
-	// ------------------------------------------------------------------ //
-	// View Transitions — Astro's SPA-like navigation                        //
-	// ------------------------------------------------------------------ //
-
-	function checkCurrentPage() {
-		var pagePlayer = document.getElementById('audio-player');
-		if (!pagePlayer) return;
-
-		var url   = pagePlayer.getAttribute('data-audio-url') || '';
-		var title = pagePlayer.getAttribute('data-title') || '';
-
-		// If the persisted audio is already playing, never interrupt it for
-		// navigation. The new page's UI just syncs to whatever is running.
-		var isPlaying = !audio.paused && audio.currentTime > 0;
-
-		if (url) {
-			// Only load a new track if (a) audio isn't currently playing OR
-			// (b) the URL changed and the user hasn't explicitly chosen to
-			// keep the previous stream.
-			if (url !== audio.src && !isPlaying) {
-				loadTrack(url, title);
-			} else {
-				// Same track, or audio is playing — keep the existing stream.
-				// Update the UI title only.
-				if (titleEl) titleEl.textContent = title || '';
-				showPlayer();
+	function setActiveTranscriptLine(index) {
+		if (index === transcriptActiveIndex) return;
+		const list = el('audio-transcript-list');
+		if (!list) return;
+		const previous = list.querySelector('.audio-transcript-line[aria-current="true"]');
+		if (previous) previous.removeAttribute('aria-current');
+		transcriptActiveIndex = index;
+		if (index < 0) return;
+		const line = list.querySelector('.audio-transcript-line[data-index="' + index + '"]');
+		if (!line) return;
+		// aria-current marks the spoken line without a live region, so a
+		// screen reader hears it when the listener moves through the panel
+		// instead of once per timeupdate.
+		line.setAttribute('aria-current', 'true');
+		if (transcriptOpen) {
+			const parent = line.parentElement;
+			if (parent && parent.scrollIntoView) {
+				parent.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
 			}
-		} else if (isPlaying) {
-			// Page has no audio URL, but audio is playing from a previous page.
-			// Keep the player visible so the user can still control playback.
-			showPlayer();
-		} else {
-			// No audio running and page has none — hide the player.
+		}
+	}
+
+	// AudioSync publishes the live cue on #audio-sync-data, which is what
+	// drives the marking: its mutations land the moment the highlight moves,
+	// including after a seek. The cue's own time range resolves which line
+	// that is, because the literal -- cues carry no id to match on.
+	function syncTranscriptToPlayback() {
+		if (!transcriptCues.length) return;
+		const now = audio.currentTime || 0;
+		let index = -1;
+		for (let i = 0; i < transcriptCues.length; i++) {
+			const cue = transcriptCues[i];
+			if (now >= cue.start && now < cue.end) { index = i; break; }
+			if (cue.start <= now) index = i;
+		}
+		setActiveTranscriptLine(index);
+	}
+
+	function openTranscript() {
+		const panel = el('audio-transcript-panel');
+		const button = el('audio-transcript-btn');
+		if (!panel || !button || button.hidden) return;
+		closeVoiceMenu();
+		closeVariantMenu();
+		panel.hidden = false;
+		button.setAttribute('aria-expanded', 'true');
+		button.setAttribute('aria-label', 'Hide transcript');
+		transcriptOpen = true;
+		panel.focus();
+		const active = panel.querySelector('.audio-transcript-line[aria-current="true"]');
+		if (active && active.parentElement) {
+			active.parentElement.scrollIntoView({ block: 'center' });
+		}
+	}
+
+	function closeTranscript(returnFocus) {
+		const panel = el('audio-transcript-panel');
+		const button = el('audio-transcript-btn');
+		if (panel) panel.hidden = true;
+		if (button) {
+			button.setAttribute('aria-expanded', 'false');
+			button.setAttribute('aria-label', 'Show transcript');
+			if (returnFocus && transcriptOpen) button.focus();
+		}
+		transcriptOpen = false;
+	}
+
+	function toggleTranscript() {
+		if (transcriptOpen) closeTranscript(true);
+		else openTranscript();
+	}
+
+	// ---------------------------------------------------------------- //
+	// Menus                                                              //
+	// ---------------------------------------------------------------- //
+
+	function updateVoiceMenuChecked() {
+		const menu = el('audio-voice-menu');
+		if (!menu) return;
+		menu.querySelectorAll('button[data-voice-key]').forEach(function (button) {
+			button.setAttribute('aria-checked', button.getAttribute('data-voice-key') === currentVoice ? 'true' : 'false');
+		});
+	}
+
+	function openVoiceMenu() {
+		const menu = el('audio-voice-menu');
+		const button = el('audio-voice-btn');
+		if (!menu || !button) return;
+		updateVoiceMenuChecked();
+		menu.hidden = false;
+		button.setAttribute('aria-expanded', 'true');
+	}
+
+	function closeVoiceMenu() {
+		const menu = el('audio-voice-menu');
+		const button = el('audio-voice-btn');
+		if (menu) menu.hidden = true;
+		if (button) button.setAttribute('aria-expanded', 'false');
+	}
+
+	function toggleVoiceMenu() {
+		const menu = el('audio-voice-menu');
+		if (!menu) return;
+		if (menu.hidden) openVoiceMenu(); else closeVoiceMenu();
+	}
+
+	function updateVariantMenuChecked() {
+		const menu = el('audio-variant-menu');
+		if (!menu) return;
+		menu.querySelectorAll('button[data-variant-key]').forEach(function (button) {
+			button.setAttribute('aria-checked', button.getAttribute('data-variant-key') === currentVariant ? 'true' : 'false');
+		});
+	}
+
+	function openVariantMenu() {
+		const menu = el('audio-variant-menu');
+		const button = el('audio-variant-btn');
+		if (!menu || !button) return;
+		updateVariantMenuChecked();
+		menu.hidden = false;
+		button.setAttribute('aria-expanded', 'true');
+	}
+
+	function closeVariantMenu() {
+		const menu = el('audio-variant-menu');
+		const button = el('audio-variant-btn');
+		if (menu) menu.hidden = true;
+		if (button) button.setAttribute('aria-expanded', 'false');
+	}
+
+	function toggleVariantMenu() {
+		const menu = el('audio-variant-menu');
+		if (!menu) return;
+		if (menu.hidden) openVariantMenu(); else closeVariantMenu();
+	}
+
+	// ---------------------------------------------------------------- //
+	// Loading a track                                                    //
+	// ---------------------------------------------------------------- //
+
+	function loadTrack(index, opts) {
+		opts = opts || {};
+		if (index < 0 || index >= tracks.length) return;
+		currentIndex = index;
+		const track = tracks[index];
+		const audioUrl = resolveTrackUrl(track.audio, currentVoice, currentVariant);
+		const vttUrl = resolveTrackUrl(track.vtt, currentVoice, currentVariant);
+
+		if (!audioUrl) {
+			console.warn('[AudioPlayer] No audio URL for', track.slug, 'voice=' + currentVoice, 'variant=' + currentVariant);
 			hidePlayer();
+			return;
+		}
+
+		const resumeTime = opts.resumeAt || 0;
+		const autoplay = !!opts.autoplay;
+
+		setPlayingState(false);
+
+		// Wire the onReady handler BEFORE the load() call. If the browser has
+		// the metadata cached it can fire loadedmetadata synchronously from
+		// inside load(), and a listener attached afterwards never hears it.
+		const onReady = function () {
+			audio.removeEventListener('loadedmetadata', onReady);
+			if (resumeTime) {
+				try { audio.currentTime = resumeTime; } catch (e) { /* ignore */ }
+			}
+			try { audio.playbackRate = speeds[speedIndex]; } catch (e) { /* ignore */ }
+			updateProgress();
+			if (autoplay) {
+				audio.play().catch(function (err) { console.warn('[AudioPlayer] Play blocked:', err); });
+			}
+		};
+		audio.addEventListener('loadedmetadata', onReady);
+
+		// Force a reload even if src is equal (the persistent element can
+		// carry the same URL across a view transition). Some browsers skip the
+		// fetch and leave duration at 0 when an identical src is re-assigned.
+		if (audio.src === audioUrl) audio.removeAttribute('src');
+		audio.src = audioUrl;
+		audio.load();
+
+		const partSlug = tracks.length > 1 ? track.slug : '';
+		const syncData = el('audio-sync-data');
+		if (syncData) {
+			syncData.setAttribute('data-vtt-url', vttUrl);
+			syncData.setAttribute('data-part-slug', partSlug);
+		}
+		document.dispatchEvent(new CustomEvent('audio-part-change', {
+			detail: { slug: partSlug, vttUrl: vttUrl, index: index },
+		}));
+
+		updateTitle(track);
+		updateTocHighlight(track.slug);
+		showPlayer();
+		updateProgress();
+		refreshSectionButtons();
+		buildTranscript(vttUrl);
+
+		// Scroll the part's heading to the top of the viewport — but only when
+		// a new track is actively about to play. On initial page load
+		// (autoplay:false, resumeAt:0) leave the viewport alone so the reader
+		// sees the page title first, and a voice swap mid-playback
+		// (resumeAt > 0) is a cosmetic change, not a new section.
+		if (opts.autoplay && !opts.resumeAt && tracks.length > 1) {
+			const section = document.querySelector('section[data-part-slug="' + track.slug + '"]');
+			if (section) {
+				const heading = section.querySelector('h1, h2') || section;
+				heading.scrollIntoView({ behavior: 'smooth', block: 'start' });
+			}
 		}
 	}
 
-	function seekToEntryHeading(cueId) {
-		if (!cueId) return;
-		fetchHeadings().then(function (headings) {
-			for (var i = 0; i < headings.length; i++) {
-				if (headings[i].id !== cueId) continue;
-				try { audio.currentTime = headings[i].start; } catch (_) {}
-				audio.play().catch(function () {});
+	// The two voices speak the same script at different paces and the
+	// elaborate variant adds sentences, so the same absolute time lands on a
+	// different paragraph. Re-anchor via the live cue id instead.
+	function reanchor(applyChange) {
+		const wasPlaying = !audio.paused;
+		const syncData = el('audio-sync-data');
+		const activeCue = syncData ? (syncData.getAttribute('data-active-cue') || '') : '';
+		const fallbackTime = audio.currentTime;
+
+		applyChange();
+
+		const track = currentTrack();
+		if (!track) return;
+		const nextVtt = resolveTrackUrl(track.vtt, currentVoice, currentVariant);
+		if (!activeCue || !nextVtt) {
+			loadTrack(currentIndex, { resumeAt: fallbackTime, autoplay: wasPlaying });
+			return;
+		}
+		fetchVttCueStart(nextVtt, activeCue)
+			.then(function (start) {
+				loadTrack(currentIndex, { resumeAt: start != null ? start : fallbackTime, autoplay: wasPlaying });
+			})
+			.catch(function () {
+				loadTrack(currentIndex, { resumeAt: fallbackTime, autoplay: wasPlaying });
+			});
+	}
+
+	function setVoice(nextVoice) {
+		if (nextVoice !== 'female' && nextVoice !== 'male') return;
+		if (nextVoice === currentVoice) { closeVoiceMenu(); return; }
+		reanchor(function () {
+			currentVoice = nextVoice;
+			try { localStorage.setItem(STORAGE_KEY, currentVoice); } catch (e) { /* blocked */ }
+			updateVoiceLabel();
+			updateVoiceMenuChecked();
+			closeVoiceMenu();
+		});
+	}
+
+	function setVariant(nextVariant) {
+		if (nextVariant !== 'brief' && nextVariant !== 'elaborate') return;
+		if (nextVariant === currentVariant) { closeVariantMenu(); return; }
+		reanchor(function () {
+			currentVariant = nextVariant;
+			try { localStorage.setItem(VARIANT_KEY, currentVariant); } catch (e) { /* blocked */ }
+			updateVariantLabel();
+			updateVariantMenuChecked();
+			closeVariantMenu();
+		});
+	}
+
+	// ---------------------------------------------------------------- //
+	// Transport                                                          //
+	// ---------------------------------------------------------------- //
+
+	function skipToNextPart() {
+		const next = currentIndex + 1;
+		if (next >= tracks.length) {
+			audio.pause();
+			try { audio.currentTime = 0; } catch (e) { /* ignore */ }
+			return;
+		}
+		loadTrack(next, { autoplay: true });
+	}
+
+	function skipToPrevPart() {
+		// Past ~3 seconds, restart the current part; otherwise step back one.
+		// Standard media-player idiom.
+		if (audio.currentTime > 3) {
+			try { audio.currentTime = 0; } catch (e) { /* ignore */ }
+			return;
+		}
+		const prev = currentIndex - 1;
+		if (prev < 0) {
+			try { audio.currentTime = 0; } catch (e) { /* ignore */ }
+			return;
+		}
+		loadTrack(prev, { autoplay: !audio.paused });
+	}
+
+	// Jump to the next heading cue in the current track. At the final heading
+	// of a multi-track list, roll into the next track's first heading.
+	function skipToNextSection() {
+		return fetchVttHeadings(currentVttUrl()).then(function (headings) {
+			const now = audio.currentTime || 0;
+			// Anchor a hair past current so we leave the heading we are on.
+			const target = headings.find(function (heading) { return heading.start > now + 0.1; });
+			if (target) {
+				try { audio.currentTime = target.start; } catch (e) { /* ignore */ }
 				return;
 			}
+			const nextIndex = currentIndex + 1;
+			if (nextIndex >= tracks.length) return;
+
+			const nextVtt = resolveTrackUrl(tracks[nextIndex].vtt, currentVoice, currentVariant);
+			return fetchVttHeadings(nextVtt).then(function (nextHeadings) {
+				const wasPlaying = !audio.paused;
+				loadTrack(nextIndex, { autoplay: wasPlaying });
+				if (!nextHeadings.length) return;
+				const seek = nextHeadings[0].start;
+				const onReady = function () {
+					audio.removeEventListener('loadedmetadata', onReady);
+					try { audio.currentTime = seek; } catch (e) { /* ignore */ }
+				};
+				audio.addEventListener('loadedmetadata', onReady);
+			});
 		});
 	}
 
-	// Entries carry the same "play from here" affordance the reports have:
-	// a button inside the heading rather than a click handler on the heading
-	// itself, so selecting the title text still works and the control shows
-	// up in the tab order with a name of its own.
-	function wireEntryHeadingButtons() {
-		var heads = document.querySelectorAll('[data-audio-h]');
-		Array.prototype.forEach.call(heads, function (h) {
-			if (h.querySelector('.heading-seek-btn')) return;
-			var btn = document.createElement('button');
-			btn.type = 'button';
-			btn.className = 'heading-seek-btn';
-			btn.setAttribute('aria-label', 'Play from this section');
-			btn.setAttribute('title', 'Play from here');
-			btn.dataset.cueId = h.getAttribute('data-audio-h') || '';
-			btn.innerHTML =
+	// More than ~3 seconds into the current section, snap back to its start;
+	// otherwise step to the previous heading, rolling into the previous track
+	// when we are already on the first one.
+	function skipToPrevSection() {
+		return fetchVttHeadings(currentVttUrl()).then(function (headings) {
+			const now = audio.currentTime || 0;
+			let currentHeading = -1;
+			for (let i = 0; i < headings.length; i++) {
+				if (headings[i].start <= now) currentHeading = i;
+				else break;
+			}
+			if (currentHeading >= 0 && now - headings[currentHeading].start > 3) {
+				try { audio.currentTime = headings[currentHeading].start; } catch (e) { /* ignore */ }
+				return;
+			}
+			const previous = currentHeading - 1;
+			if (previous >= 0) {
+				try { audio.currentTime = headings[previous].start; } catch (e) { /* ignore */ }
+				return;
+			}
+			const prevIndex = currentIndex - 1;
+			if (prevIndex < 0) {
+				try { audio.currentTime = 0; } catch (e) { /* ignore */ }
+				return;
+			}
+			const prevVtt = resolveTrackUrl(tracks[prevIndex].vtt, currentVoice, currentVariant);
+			return fetchVttHeadings(prevVtt).then(function (prevHeadings) {
+				const wasPlaying = !audio.paused;
+				loadTrack(prevIndex, { autoplay: wasPlaying });
+				const seek = prevHeadings.length ? prevHeadings[prevHeadings.length - 1].start : 0;
+				const onReady = function () {
+					audio.removeEventListener('loadedmetadata', onReady);
+					try { audio.currentTime = seek; } catch (e) { /* ignore */ }
+				};
+				audio.addEventListener('loadedmetadata', onReady);
+			});
+		});
+	}
+
+	// A single track whose narration has one heading has nowhere to skip to,
+	// so the buttons stand down rather than sitting there doing nothing.
+	function refreshSectionButtons() {
+		const prev = el('audio-section-prev-btn');
+		const next = el('audio-section-next-btn');
+		if (!prev && !next) return;
+		fetchVttHeadings(currentVttUrl()).then(function (headings) {
+			const usable = headings.length > 1 || tracks.length > 1;
+			if (prev) prev.hidden = !usable;
+			if (next) next.hidden = !usable;
+		});
+	}
+
+	// ---------------------------------------------------------------- //
+	// Position memory                                                    //
+	// ---------------------------------------------------------------- //
+
+	let lastPositionSaveAt = 0;
+
+	function positionKey() {
+		return POSITION_KEY + ':' + (tracks[0] && tracks[0].slug ? tracks[0].slug : 'default');
+	}
+
+	function savePosition(force) {
+		if (!tracks.length) return;
+		if (!audio || audio.duration === 0 || !isFinite(audio.duration)) return;
+		const now = Date.now();
+		if (!force && now - lastPositionSaveAt < 2500) return;
+		lastPositionSaveAt = now;
+		try {
+			localStorage.setItem(positionKey(), JSON.stringify({
+				slug: tracks[currentIndex] ? tracks[currentIndex].slug : null,
+				time: audio.currentTime,
+				savedAt: now,
+			}));
+		} catch (e) { /* quota / disabled */ }
+	}
+
+	function loadPosition() {
+		if (!tracks.length) return null;
+		try {
+			const raw = localStorage.getItem(positionKey());
+			if (!raw) return null;
+			const data = JSON.parse(raw);
+			if (typeof data !== 'object' || data === null) return null;
+			// Validate against the current tracks so a changed page does not
+			// produce a nonsense resume.
+			if (typeof data.slug !== 'string') return null;
+			const index = findTrackIndexBySlug(data.slug);
+			if (index < 0) return null;
+			return { trackIndex: index, time: Number.isFinite(data.time) ? data.time : 0 };
+		} catch (e) { return null; }
+	}
+
+	// ---------------------------------------------------------------- //
+	// Hash targets and play-from-here                                    //
+	// ---------------------------------------------------------------- //
+
+	// Resolve the current hash to { trackIndex, partSlug, element, cueId }.
+	// The hash can be a part section's id, a heading inside the prose, or a
+	// legacy #part-{slug} link. A heading also yields its h-N cue id so the
+	// caller can seek the narration to the same place the page scrolled to.
+	function resolveHashTarget() {
+		const raw = (window.location.hash || '').replace(/^#/, '');
+		if (!raw || !tracks.length) return null;
+
+		const legacy = raw.match(/^part-(.+)$/);
+		if (legacy) {
+			const index = findTrackIndexBySlug(legacy[1]);
+			if (index >= 0) {
+				return { trackIndex: index, partSlug: tracks[index].slug, element: null, cueId: null };
+			}
+		}
+
+		const node = document.getElementById(raw);
+		if (!node) return null;
+
+		const section = node.closest('[data-part-slug]');
+		let trackIndex = 0;
+		let partSlug = '';
+		if (section) {
+			partSlug = section.getAttribute('data-part-slug') || '';
+			trackIndex = findTrackIndexBySlug(partSlug);
+			if (trackIndex < 0) return null;
+			if (node === section) {
+				return { trackIndex: trackIndex, partSlug: partSlug, element: node, cueId: null };
+			}
+		} else {
+			partSlug = tracks[0].slug;
+		}
+
+		let cueId = node.getAttribute('data-audio-h');
+		if (!cueId && node.querySelector) {
+			const inner = node.querySelector('[data-audio-h]');
+			if (inner) cueId = inner.getAttribute('data-audio-h');
+		}
+		return { trackIndex: trackIndex, partSlug: partSlug, element: node, cueId: cueId || null };
+	}
+
+	function seekToHeading(partSlug, cueId) {
+		let targetIndex = partSlug ? findTrackIndexBySlug(partSlug) : currentIndex;
+		if (targetIndex < 0) targetIndex = currentIndex;
+		const track = tracks[targetIndex];
+		if (!track) return;
+
+		const vttUrl = resolveTrackUrl(track.vtt, currentVoice, currentVariant);
+		const needSwap = targetIndex !== currentIndex;
+		if (needSwap) loadTrack(targetIndex, { autoplay: true });
+
+		const applySeek = function (start) {
+			try { audio.currentTime = start; } catch (e) { /* ignore */ }
+			audio.play().catch(function () { /* autoplay blocked */ });
+		};
+
+		const resolveStart = cueId
+			? fetchVttCueStart(vttUrl, cueId).catch(function () { return null; })
+			: Promise.resolve(0);
+
+		resolveStart.then(function (start) {
+			// A heading with no cue in the VTT falls back to the start of the
+			// track, which is the closest honest answer.
+			const target = start == null ? 0 : start;
+			if (needSwap) {
+				const onReady = function () {
+					audio.removeEventListener('loadedmetadata', onReady);
+					applySeek(target);
+				};
+				audio.addEventListener('loadedmetadata', onReady);
+			} else {
+				applySeek(target);
+			}
+		});
+	}
+
+	// Every narrated heading gets a play-from-here button of its own rather
+	// than a click handler on the heading, so selecting the title text still
+	// works and the control shows up in the tab order with a name.
+	function wireHeadingSeekButtons() {
+		if (!tracks.length) return;
+		const heads = document.querySelectorAll('.report-part h1, [data-audio-h]');
+		heads.forEach(function (heading) {
+			if (heading.querySelector('.heading-seek-btn')) return;
+			const section = heading.closest('[data-part-slug]');
+			const partSlug = section ? (section.getAttribute('data-part-slug') || '') : '';
+			// A part's h1 has no cue of its own; seekToHeading falls back to
+			// time 0, which is exactly the start of that part.
+			const cueId = heading.getAttribute('data-audio-h') || '';
+			const isPartTitle = heading.tagName === 'H1';
+
+			const button = document.createElement('button');
+			button.type = 'button';
+			button.className = 'heading-seek-btn';
+			button.setAttribute('aria-label', isPartTitle ? 'Play this part' : 'Play from this section');
+			button.setAttribute('title', isPartTitle ? 'Play part' : 'Play from here');
+			button.dataset.partSlug = partSlug;
+			button.dataset.cueId = cueId;
+			button.innerHTML =
 				'<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" width="14" height="14">' +
 				'<path d="M8 5v14l11-7z"/></svg>';
-			h.insertBefore(btn, h.firstChild);
+			heading.insertBefore(button, heading.firstChild);
 		});
 	}
 
-	document.addEventListener('click', function (e) {
-		var btn = e.target && e.target.closest ? e.target.closest('.heading-seek-btn') : null;
-		if (!btn || !document.getElementById('audio-player')) return;
-		if (!btn.dataset || typeof btn.dataset.partSlug === 'string') return;
-		e.preventDefault();
-		seekToEntryHeading(btn.dataset.cueId);
-	});
-
-	// Arriving at a heading by anchor — a table-of-contents link, a shared
-	// deep link, the back button — seeks the narration to the same place the
-	// page just scrolled to, so the voice and the view never disagree.
-	function seekToHash() {
-		var id = (location.hash || '').replace('#', '');
-		if (!id) return;
-		var target = document.getElementById(id);
-		if (!target) return;
-		var head = target.getAttribute('data-audio-h')
-			? target
-			: target.querySelector('[data-audio-h]');
-		if (head) seekToEntryHeading(head.getAttribute('data-audio-h'));
-	}
-	window.addEventListener('hashchange', seekToHash);
-
 	// Without explicit handlers the OS media hub falls back to its generic
-	// ten-second seek buttons. Mapping prev/next to the section skips makes
-	// the external controls agree with the ones on the page.
+	// ten-second seek buttons. Mapping all four to the section skips makes the
+	// external controls agree with the ones on the page.
 	function wireMediaSession() {
 		if (!('mediaSession' in navigator)) return;
 		try {
@@ -588,54 +1758,494 @@ const { audioUrl = '', title = '' } = Astro.props;
 			navigator.mediaSession.setActionHandler('nexttrack', skipToNextSection);
 			navigator.mediaSession.setActionHandler('seekbackward', skipToPrevSection);
 			navigator.mediaSession.setActionHandler('seekforward', skipToNextSection);
-		} catch (_) {}
+		} catch (e) { /* handler unsupported */ }
 	}
 
-	// Note: we do NOT pause the audio on before-swap. The <audio> element is
-	// persisted via BaseLayout's transition:persist, so playback continues
-	// across navigations. The next page's AudioPlayer / ReportAudioPlayer
-	// will re-attach its UI to the same persistent element.
+	// ---------------------------------------------------------------- //
+	// Seeking                                                            //
+	// ---------------------------------------------------------------- //
 
-	document.addEventListener('astro:page-load', function () {
-		// Re-grab element references after the swap (DOM replaced)
-		player       = document.getElementById('audio-player');
-		progressBar  = document.getElementById('audio-progress-bar');
-		progressFill = document.getElementById('audio-progress-fill');
-		playBtn      = document.getElementById('audio-play-btn');
-		iconPlay     = document.getElementById('icon-play');
-		iconPause    = document.getElementById('icon-pause');
-		currentTimeEl = document.getElementById('audio-current');
-		durationEl   = document.getElementById('audio-duration');
-		titleEl      = document.getElementById('audio-title');
-		speedBtn     = document.getElementById('audio-speed-btn');
-
-		if (!player) return;
-
-		wireEntryHeadingButtons();
-		wireMediaSession();
-
-		// Event listeners use delegation (on document) so no re-attachment needed.
-
-		// Sync visual state if audio was already playing before navigation
-		setPlayingState(!audio.paused);
-		if (audio.duration) {
-			durationEl.textContent = formatTime(audio.duration);
+	// The progress bar represents every track summed, so a click at 50% has
+	// to work out which track that lands in and seek inside it. Pages with no
+	// precomputed durations scrub the loaded track directly.
+	function seekToPercent(pct) {
+		const total = totalDuration();
+		if (total <= 0) return;
+		if (summedDuration() <= 0) {
+			try { audio.currentTime = (pct / 100) * total; } catch (e) { /* ignore */ }
 			updateProgress();
+			return;
 		}
-		if (speedBtn) {
-			speedBtn.textContent = speeds[speedIndex] + 'x';
+		const target = (pct / 100) * total;
+		let acc = 0;
+		for (let i = 0; i < tracks.length; i++) {
+			const duration = resolveTrackDuration(tracks[i], currentVoice, currentVariant);
+			if (target <= acc + duration || i === tracks.length - 1) {
+				const withinTrack = Math.max(0, target - acc);
+				if (i !== currentIndex) {
+					loadTrack(i, { resumeAt: withinTrack, autoplay: !audio.paused });
+				} else {
+					try { audio.currentTime = withinTrack; } catch (e) { /* ignore */ }
+				}
+				updateProgress();
+				return;
+			}
+			acc += duration;
 		}
+	}
 
-		checkCurrentPage();
-		refreshSectionButtons();
+	function getClickPercent(event) {
+		const bar = el('audio-progress-bar');
+		if (!bar) return 0;
+		const rect = bar.getBoundingClientRect();
+		const x = (event.clientX !== undefined ? event.clientX : event.touches[0].clientX) - rect.left;
+		return Math.max(0, Math.min(100, (x / rect.width) * 100));
+	}
+
+	// ---------------------------------------------------------------- //
+	// Audio element events                                               //
+	// ---------------------------------------------------------------- //
+
+	audio.addEventListener('timeupdate', function () {
+		if (superseded()) return;
+		updateProgress();
+		document.dispatchEvent(new CustomEvent('audio-timeupdate', {
+			detail: { currentTime: audio.currentTime, duration: audio.duration },
+		}));
+		syncTranscriptToPlayback();
+		savePosition(false);
 	});
 
-	// ------------------------------------------------------------------ //
-	// Initial page load (no view transitions fired yet)                    //
-	// ------------------------------------------------------------------ //
+	audio.addEventListener('play', function () {
+		if (superseded()) return;
+		setPlayingState(true);
+	});
 
-	checkCurrentPage();
-	refreshSectionButtons();
+	audio.addEventListener('pause', function () {
+		if (superseded()) return;
+		setPlayingState(false);
+		savePosition(true);
+	});
 
+	audio.addEventListener('ended', function () {
+		if (superseded()) return;
+		document.dispatchEvent(new CustomEvent('audio-ended'));
+		const next = currentIndex + 1;
+		if (next < tracks.length) {
+			loadTrack(next, { autoplay: true });
+			return;
+		}
+		setPlayingState(false);
+		try { audio.currentTime = 0; } catch (e) { /* ignore */ }
+		const fill = el('audio-progress-fill');
+		const currentEl = el('audio-current');
+		if (fill) fill.style.width = '0%';
+		if (currentEl) currentEl.textContent = '0:00';
+	});
+
+	audio.addEventListener('error', function () {
+		if (superseded()) return;
+		const error = audio.error;
+		console.warn('[AudioPlayer] Failed to load:', audio.src, 'code:', error ? error.code : 'unknown');
+	});
+
+	window.addEventListener('pagehide', function () { savePosition(true); });
+	window.addEventListener('beforeunload', function () { savePosition(true); });
+
+	// ---------------------------------------------------------------- //
+	// Input — delegated so it survives view transition DOM swaps          //
+	// ---------------------------------------------------------------- //
+
+	document.addEventListener('click', function (event) {
+		if (superseded()) return;
+		const target = event.target;
+		if (!target || !target.closest) return;
+
+		if (target.closest('#audio-play-btn')) {
+			if (audio.paused) {
+				// A page opened on a heading hash, or resumed from a saved
+				// position, starts the first play there rather than at 0.
+				if (pendingInitialSeek != null && audio.currentTime < 0.5) {
+					try { audio.currentTime = pendingInitialSeek; } catch (e) { /* ignore */ }
+					pendingInitialSeek = null;
+				}
+				audio.play().catch(function (err) { console.warn('[AudioPlayer] Play blocked:', err); });
+			} else {
+				audio.pause();
+			}
+			return;
+		}
+
+		if (target.closest('#audio-skip-btn')) { skipToNextPart(); return; }
+		if (target.closest('#audio-prev-btn')) { skipToPrevPart(); return; }
+		if (target.closest('#audio-section-next-btn')) { skipToNextSection(); return; }
+		if (target.closest('#audio-section-prev-btn')) { skipToPrevSection(); return; }
+		if (target.closest('#audio-speed-down')) { setSpeedIndex(speedIndex - 1); return; }
+		if (target.closest('#audio-speed-up')) { setSpeedIndex(speedIndex + 1); return; }
+		if (target.closest('#audio-speed-display')) {
+			setSpeedIndex(speedIndex >= speeds.length - 1 ? 0 : speedIndex + 1);
+			return;
+		}
+
+		const seekButton = target.closest('.heading-seek-btn');
+		if (seekButton) {
+			event.preventDefault();
+			event.stopPropagation();
+			seekToHeading(seekButton.dataset.partSlug || '', seekButton.dataset.cueId || '');
+			return;
+		}
+
+		if (target.closest('#audio-transcript-btn')) {
+			event.preventDefault();
+			toggleTranscript();
+			return;
+		}
+		if (target.closest('#audio-transcript-close')) {
+			closeTranscript(true);
+			return;
+		}
+		const transcriptLine = target.closest('.audio-transcript-line');
+		if (transcriptLine) {
+			const index = Number(transcriptLine.getAttribute('data-index'));
+			const cue = transcriptCues[index];
+			if (cue) {
+				try { audio.currentTime = cue.start; } catch (e) { /* ignore */ }
+				setActiveTranscriptLine(index);
+				updateProgress();
+			}
+			return;
+		}
+
+		if (target.closest('#audio-voice-btn')) {
+			event.preventDefault();
+			toggleVoiceMenu();
+			return;
+		}
+		const voiceItem = target.closest('#audio-voice-menu button[data-voice-key]');
+		if (voiceItem) {
+			setVoice(voiceItem.getAttribute('data-voice-key'));
+			return;
+		}
+		if (target.closest('#audio-variant-btn')) {
+			event.preventDefault();
+			toggleVariantMenu();
+			return;
+		}
+		const variantItem = target.closest('#audio-variant-menu button[data-variant-key]');
+		if (variantItem) {
+			setVariant(variantItem.getAttribute('data-variant-key'));
+			return;
+		}
+
+		if (!target.closest('.audio-voice-menu-wrap')) {
+			closeVoiceMenu();
+			closeVariantMenu();
+		}
+		if (!target.closest('.audio-transcript-wrap')) {
+			closeTranscript(false);
+		}
+
+		// A sidebar contents link also switches the audio to that part. The
+		// browser still handles the hash scroll; we swap tracks underneath.
+		const tocLink = target.closest('.report-toc-link');
+		if (tocLink) {
+			const slug = tocLink.getAttribute('data-part-slug');
+			const index = findTrackIndexBySlug(slug);
+			if (index >= 0 && index !== currentIndex) {
+				loadTrack(index, { autoplay: !audio.paused && audio.currentTime > 0 });
+			}
+		}
+	});
+
+	document.addEventListener('keydown', function (event) {
+		if (superseded()) return;
+		if (event.key !== 'Escape') return;
+		closeVoiceMenu();
+		closeVariantMenu();
+		if (transcriptOpen) closeTranscript(true);
+	});
+
+	let isSeeking = false;
+	document.addEventListener('mousedown', function (event) {
+		if (superseded()) return;
+		if (!event.target.closest || !event.target.closest('#audio-progress-bar')) return;
+		event.preventDefault();
+		isSeeking = true;
+		seekToPercent(getClickPercent(event));
+	});
+	document.addEventListener('mousemove', function (event) {
+		if (superseded() || !isSeeking) return;
+		seekToPercent(getClickPercent(event));
+	});
+	document.addEventListener('mouseup', function () { isSeeking = false; });
+
+	document.addEventListener('touchstart', function (event) {
+		if (superseded()) return;
+		if (!event.target.closest || !event.target.closest('#audio-progress-bar')) return;
+		event.preventDefault();
+		seekToPercent(getClickPercent(event));
+	}, { passive: false });
+	document.addEventListener('touchmove', function (event) {
+		if (superseded()) return;
+		if (!event.target.closest || !event.target.closest('#audio-progress-bar')) return;
+		event.preventDefault();
+		seekToPercent(getClickPercent(event));
+	}, { passive: false });
+
+	document.addEventListener('keydown', function (event) {
+		if (superseded()) return;
+		if (!event.target || !event.target.closest) return;
+		if (!event.target.closest('#audio-progress-bar')) return;
+		const total = totalDuration();
+		if (!total) return;
+		const step = event.shiftKey ? 30 : 5;
+		if (event.key === 'ArrowLeft') {
+			try { audio.currentTime = Math.max(0, audio.currentTime - step); } catch (e) { /* ignore */ }
+			event.preventDefault();
+		} else if (event.key === 'ArrowRight') {
+			const ceiling = isFinite(audio.duration) ? audio.duration : total;
+			try { audio.currentTime = Math.min(ceiling, audio.currentTime + step); } catch (e) { /* ignore */ }
+			event.preventDefault();
+		}
+	});
+
+	// The reader landing on a heading — a contents link, a shared deep link,
+	// the back button — takes the narration with them, so the voice and the
+	// view never disagree.
+	window.addEventListener('hashchange', function () {
+		if (superseded()) return;
+		const target = resolveHashTarget();
+		if (!target) return;
+		if (target.cueId) {
+			seekToHeading(target.partSlug, target.cueId);
+		} else if (target.trackIndex !== currentIndex) {
+			loadTrack(target.trackIndex, { autoplay: !audio.paused && audio.currentTime > 0 });
+		}
+	});
+
+	// ---------------------------------------------------------------- //
+	// Report-page part tracking                                          //
+	// ---------------------------------------------------------------- //
+
+	let partObserver = null;
+
+	// Keep the URL hash on the section the reader is looking at so copying
+	// the URL captures it. replaceState fires no hashchange, so this never
+	// retriggers a track swap.
+	function syncHashToSection(section) {
+		if (!section || !section.id) return;
+		const hash = '#' + section.id;
+		if (window.location.hash === hash) return;
+		history.replaceState(null, '', window.location.pathname + window.location.search + hash);
+	}
+
+	function observeParts() {
+		if (partObserver) { partObserver.disconnect(); partObserver = null; }
+		const sections = Array.from(document.querySelectorAll('.report-part'));
+		if (!sections.length || !('IntersectionObserver' in window)) return;
+		partObserver = new IntersectionObserver(function (entries) {
+			// Pick the largest intersection ratio so the hash tracks the
+			// section dominating the viewport, not whichever crossed last.
+			let best = null;
+			entries.forEach(function (entry) {
+				if (!entry.isIntersecting) return;
+				if (!best || entry.intersectionRatio > best.intersectionRatio) best = entry;
+			});
+			if (!best) return;
+			const slug = best.target.getAttribute('data-part-slug');
+			if (!slug) return;
+			updateTocHighlight(slug);
+			syncHashToSection(best.target);
+		}, { rootMargin: '-20% 0px -60% 0px', threshold: [0, 0.25, 0.5, 0.75, 1] });
+		sections.forEach(function (section) { partObserver.observe(section); });
+	}
+
+	document.addEventListener('audio-part-change', function (event) {
+		if (superseded() || !event || !event.detail || !event.detail.slug) return;
+		const section = document.querySelector('section[data-part-slug="' + event.detail.slug + '"]');
+		if (section) syncHashToSection(section);
+	});
+
+	// AudioSync publishes the live cue here; picking it up keeps the
+	// transcript's marked line in step with the highlighted paragraph,
+	// including immediately after a seek.
+	function observeActiveCue() {
+		const syncData = el('audio-sync-data');
+		if (!syncData || !('MutationObserver' in window)) return;
+		if (syncData.sitdCueObserved) return;
+		syncData.sitdCueObserved = true;
+		new MutationObserver(function () {
+			if (superseded()) return;
+			syncTranscriptToPlayback();
+		}).observe(syncData, { attributes: true, attributeFilter: ['data-active-cue'] });
+	}
+
+	// ---------------------------------------------------------------- //
+	// Page sync                                                          //
+	// ---------------------------------------------------------------- //
+
+	function readTracks() {
+		const player = playerEl();
+		if (!player) return [];
+		try {
+			const parsed = JSON.parse(player.getAttribute('data-tracks') || '[]');
+			return Array.isArray(parsed) ? parsed : [];
+		} catch (e) {
+			console.warn('[AudioPlayer] Failed to parse tracks:', e);
+			return [];
+		}
+	}
+
+	function syncToPage() {
+		const player = playerEl();
+		if (!player) {
+			// No player on this page at all; leave whatever is playing alone.
+			return;
+		}
+
+		const nextTracks = readTracks();
+		const nextSignature = player.getAttribute('data-tracks') || '[]';
+		const changed = nextSignature !== tracksSignature;
+		tracks = nextTracks;
+		tracksSignature = nextSignature;
+
+		if (changed) {
+			currentIndex = 0;
+			pendingInitialSeek = null;
+			transcriptUrl = null;
+			transcriptCues = [];
+			transcriptActiveIndex = -1;
+			closeTranscript(false);
+		}
+
+		updateVoiceLabel();
+		updateVoiceMenuChecked();
+		updateVariantLabel();
+		updateVariantMenuChecked();
+		setSpeedIndex(speedIndex);
+		wireHeadingSeekButtons();
+		wireMediaSession();
+		observeParts();
+		observeActiveCue();
+
+		if (!tracks.length) {
+			// This page has no narration of its own. If something is still
+			// playing from an earlier page, keep the transport available so
+			// the listener does not lose control of it.
+			if (!audio.paused && audio.currentTime > 0) {
+				showPlayer();
+				setPlayingState(true);
+				updateProgress();
+			} else {
+				hidePlayer();
+			}
+			return;
+		}
+
+		const matched = findTrackIndexByUrl(audio.src || '');
+		if (matched >= 0) {
+			// Already playing a track from this page — reattach the UI to it
+			// rather than restarting anything.
+			currentIndex = matched;
+			const track = tracks[matched];
+			recoverVoiceAndVariant(track, audio.src);
+			updateVoiceLabel();
+			updateVariantLabel();
+			updateTitle(track);
+			updateTocHighlight(track.slug);
+			showPlayer();
+			setPlayingState(!audio.paused);
+			updateProgress();
+
+			const vttUrl = resolveTrackUrl(track.vtt, currentVoice, currentVariant);
+			const partSlug = tracks.length > 1 ? track.slug : '';
+			const syncData = el('audio-sync-data');
+			if (syncData) {
+				syncData.setAttribute('data-vtt-url', vttUrl);
+				syncData.setAttribute('data-part-slug', partSlug);
+			}
+			document.dispatchEvent(new CustomEvent('audio-part-change', {
+				detail: { slug: partSlug, vttUrl: vttUrl, index: matched },
+			}));
+			refreshSectionButtons();
+			buildTranscript(vttUrl);
+			return;
+		}
+
+		if (!audio.paused && audio.currentTime > 0) {
+			// Something else is playing (a different entry). Do not interrupt
+			// it; just keep the player visible so the listener has control.
+			showPlayer();
+			setPlayingState(true);
+			return;
+		}
+
+		// Fresh visit. A hash cues the part it points at and queues a seek to
+		// the heading; otherwise resume where this page was left. No autoplay
+		// on load either way — wait for the listener to press play.
+		const target = resolveHashTarget();
+		if (target) {
+			loadTrack(target.trackIndex, { autoplay: false });
+
+			// Browsers apply the hash scroll once, early, before this script
+			// mounts the player and adds the body padding for it. Re-scroll
+			// after layout settles so the reader lands where they asked.
+			const targetEl = target.element || document.getElementById((window.location.hash || '').slice(1));
+			if (targetEl) {
+				requestAnimationFrame(function () {
+					requestAnimationFrame(function () {
+						targetEl.scrollIntoView({ behavior: 'auto', block: 'start' });
+					});
+				});
+			}
+
+			if (target.cueId) {
+				const targetVtt = resolveTrackUrl(tracks[target.trackIndex].vtt, currentVoice, currentVariant);
+				fetchVttCueStart(targetVtt, target.cueId)
+					.then(function (start) { if (start != null) pendingInitialSeek = start; })
+					.catch(function () { /* best effort */ });
+			}
+			return;
+		}
+
+		const saved = loadPosition();
+		if (saved) {
+			loadTrack(saved.trackIndex, { autoplay: false });
+			// Remember the saved time but do not seek to it on load — that
+			// fires a timeupdate which scrolls the viewport to the saved cue
+			// and the reader never sees the top of the page.
+			if (saved.time > 1) pendingInitialSeek = saved.time;
+			return;
+		}
+
+		loadTrack(0, { autoplay: false });
+	}
+
+	// Only a source that actually offers alternatives can tell us which one
+	// is loaded; a single-URL track must never overwrite the stored choice.
+	function recoverVoiceAndVariant(track, src) {
+		if (!track || typeof track.audio !== 'object' || !track.audio) return;
+		const pairs = [
+			['female', 'brief'], ['female', 'elaborate'],
+			['male', 'brief'], ['male', 'elaborate'],
+		];
+		for (let i = 0; i < pairs.length; i++) {
+			if (resolveTrackUrl(track.audio, pairs[i][0], pairs[i][1]) !== src) continue;
+			currentVoice = pairs[i][0];
+			currentVariant = pairs[i][1];
+			try {
+				localStorage.setItem(STORAGE_KEY, currentVoice);
+				localStorage.setItem(VARIANT_KEY, currentVariant);
+			} catch (e) { /* blocked */ }
+			return;
+		}
+	}
+
+	document.addEventListener('astro:page-load', function () {
+		if (superseded()) return;
+		syncToPage();
+	});
+
+	syncToPage();
 })();
 </script>

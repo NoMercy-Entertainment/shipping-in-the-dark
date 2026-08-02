@@ -5,9 +5,11 @@ import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
 import AgentTooltip from '../../components/AgentTooltip.astro';
 import AudioPlayer from '../../components/AudioPlayer.astro';
+import type { Track } from '../../components/AudioPlayer.astro';
 import AudioSync from '../../components/AudioSync.astro';
 import ShareButtons from '../../components/ShareButtons.astro';
 import ArticleSource from '../../components/ArticleSource.astro';
+import { vttDuration } from '../../lib/vtt-duration.mjs';
 
 export async function getStaticPaths() {
 	const agents = await getCollection('agents');
@@ -30,6 +32,16 @@ const modelLabels: Record<string, string> = {
 	haiku: 'Claude Haiku',
 	human: 'Human',
 };
+
+const audioTracks: Track[] = agent.data.audio_url
+	? [{
+		slug: agent.data.id,
+		title: agent.data.display_name,
+		audio: agent.data.audio_url,
+		vtt: agent.data.vtt_url,
+		duration: vttDuration(agent.data.vtt_url ?? ''),
+	}]
+	: [];
 
 const modelColors: Record<string, string> = {
 	opus: 'bg-purple-500/15 text-purple-400 light:bg-purple-100 light:text-purple-800',
@@ -65,7 +77,7 @@ const modelColors: Record<string, string> = {
 		</header>
 
 		{agent.data.vtt_url && <AudioSync vttUrl={agent.data.vtt_url} />}
-		{agent.data.audio_url && <AudioPlayer audioUrl={agent.data.audio_url} title={agent.data.display_name} />}
+		{audioTracks.length > 0 && <AudioPlayer tracks={audioTracks} title={agent.data.display_name} />}
 
 		<div class="prose">
 			<Content />

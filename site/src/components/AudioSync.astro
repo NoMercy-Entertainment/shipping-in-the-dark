@@ -123,8 +123,7 @@ html.light .prose .audio-active .heading-anchor {
 	// a single 64px row; mobile uses two rows and is ~128px tall.
 	// Falls back to 64 when the player is not mounted yet.
 	function getPlayerHeight() {
-		var el = document.getElementById('report-audio-player');
-		if (!el) el = document.getElementById('sitd-audio-player');
+		var el = document.getElementById('sitd-audio-player');
 		if (!el) return 64;
 		var h = el.getBoundingClientRect().height;
 		return h > 0 ? h : 64;

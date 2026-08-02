@@ -7,8 +7,10 @@ import TableOfContents from '../components/TableOfContents.astro';
 import TagList from '../components/TagList.astro';
 import ShareButtons from '../components/ShareButtons.astro';
 import AudioPlayer from '../components/AudioPlayer.astro';
+import type { Track } from '../components/AudioPlayer.astro';
 import AudioSync from '../components/AudioSync.astro';
 import ArticleSource from '../components/ArticleSource.astro';
+import { vttDuration } from '../lib/vtt-duration.mjs';
 
 interface Props {
 	title: string;
@@ -51,6 +53,18 @@ const {
 } = Astro.props;
 
 const canonicalUrl = new URL(Astro.url.pathname, Astro.site).toString();
+
+// An entry is a one-track list: same player, same features, nothing to pick
+// between so the part transport and the voice/depth pickers never render.
+const audioTracks: Track[] = audioUrl
+	? [{
+		slug: Astro.url.pathname.replace(/\/+$/, '').split('/').pop() || 'entry',
+		title,
+		audio: audioUrl,
+		vtt: vttUrl,
+		duration: vttDuration(vttUrl ?? ''),
+	}]
+	: [];
 
 const jsonLd = {
 	'@context': 'https://schema.org',
@@ -162,7 +176,7 @@ const difficultyLabels: Record<string, string> = {
 	<Footer />
 
 	<AudioSync vttUrl={vttUrl} />
-	<AudioPlayer audioUrl={audioUrl} title={title} />
+	<AudioPlayer tracks={audioTracks} title={title} />
 </BaseLayout>
 
 <script is:inline>

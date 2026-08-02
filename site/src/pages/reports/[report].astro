@@ -1,36 +1,13 @@
 ---
 import { getCollection, render } from 'astro:content';
-import fs from 'node:fs';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
-import ReportAudioPlayer from '../../components/ReportAudioPlayer.astro';
+import AudioPlayer from '../../components/AudioPlayer.astro';
 import AudioSync from '../../components/AudioSync.astro';
 import ShareButtons from '../../components/ShareButtons.astro';
 import ArticleSource from '../../components/ArticleSource.astro';
-
-// Parse a VTT file and return the highest end-timestamp (in seconds).
-// Used to pre-compute each part's audio duration so the player can
-// show a report-wide total instead of just the current part.
-function vttDuration(vttRelPath: string): number {
-	try {
-		const siteRoot = path.dirname(fileURLToPath(new URL('../..', import.meta.url)));
-		const full = path.join(siteRoot, 'public', vttRelPath.replace(/^\//, ''));
-		const text = fs.readFileSync(full, 'utf-8');
-		let max = 0;
-		const re = /\d+:\d+:\d+\.\d+\s*-->\s*(\d+):(\d+):(\d+)\.(\d+)/g;
-		let m: RegExpExecArray | null;
-		while ((m = re.exec(text)) !== null) {
-			const secs = Number(m[1]) * 3600 + Number(m[2]) * 60 + Number(m[3]) + Number(`0.${m[4]}`);
-			if (secs > max) max = secs;
-		}
-		return max;
-	} catch {
-		return 0;
-	}
-}
+import { vttDuration } from '../../lib/vtt-duration.mjs';
 
 export async function getStaticPaths() {
 	const all = await getCollection('reports');
@@ -201,7 +178,7 @@ const reportSourcePath = `reports/${report}/`;
 	<Footer />
 
 	<AudioSync />
-	<ReportAudioPlayer tracks={tracks} title={title} />
+	<AudioPlayer tracks={tracks} title={title} />
 </BaseLayout>
 
 <style is:global>
