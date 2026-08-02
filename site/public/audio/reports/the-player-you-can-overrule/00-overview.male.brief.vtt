@@ -2,15 +2,15 @@ WEBVTT
 
 1
 00:00:00.000 --> 00:00:04.187
---NoMercy. The Player You Can Overrule.
+title
 
 2
 00:00:04.955 --> 00:00:15.242
---A deep report on the web player trio. What it is, why it exists, what it lets you build, and how far every decision in it can be overruled without forking anything.
+standfirst
 
 3
 00:00:16.490 --> 00:00:20.577
---Overview. Why we built our own player.
+part-title
 
 4
 00:00:21.537 --> 00:00:26.787

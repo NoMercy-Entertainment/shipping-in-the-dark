@@ -2,15 +2,15 @@ WEBVTT
 
 1
 00:00:00.000 --> 00:00:04.875
---NoMercy MediaServer. The Effortless Encoder.
+title
 
 2
 00:00:05.643 --> 00:00:21.355
---A deep report on the orchestration behind NoMercy MediaServer's video and audio encoding. Architecture, codecs, safety net, hardware, content analysis, subtitles, D-R-M, live transcode, disc ripping, distributed encoding, and roadmap.
+standfirst
 
 3
 00:00:22.603 --> 00:00:26.853
---Overview. Why we built our own encoder.
+part-title
 
 4
 00:00:27.813 --> 00:00:39.125
