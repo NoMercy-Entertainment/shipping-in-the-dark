@@ -31,6 +31,18 @@ const { audioUrl = '', title = '' } = Astro.props;
 
 	<div class="audio-controls">
 		<button
+			id="audio-section-prev-btn"
+			class="audio-secondary-btn"
+			aria-label="Previous section"
+			title="Previous section"
+			type="button"
+		>
+			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="16" height="16">
+				<polyline points="11 17 6 12 11 7" />
+				<polyline points="18 17 13 12 18 7" />
+			</svg>
+		</button>
+		<button
 			id="audio-play-btn"
 			class="audio-play-btn"
 			aria-label="Play"
@@ -43,6 +55,19 @@ const { audioUrl = '', title = '' } = Astro.props;
 			<!-- Pause icon (hidden by default) -->
 			<svg id="icon-pause" class="audio-icon hidden" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
 				<path d="M6 19h4V5H6zm8-14v14h4V5z" />
+			</svg>
+		</button>
+
+		<button
+			id="audio-section-next-btn"
+			class="audio-secondary-btn"
+			aria-label="Next section"
+			title="Next section"
+			type="button"
+		>
+			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="16" height="16">
+				<polyline points="6 7 11 12 6 17" />
+				<polyline points="13 7 18 12 13 17" />
 			</svg>
 		</button>
 
@@ -91,8 +116,93 @@ const { audioUrl = '', title = '' } = Astro.props;
 	var durationEl = document.getElementById('audio-duration');
 	var titleEl  = document.getElementById('audio-title');
 	var speedBtn = document.getElementById('audio-speed-btn');
+	var sectionPrevBtn = document.getElementById('audio-section-prev-btn');
+	var sectionNextBtn = document.getElementById('audio-section-next-btn');
 
 	if (!player) return;
+
+	// ------------------------------------------------------------------ //
+	// Section skipping                                                     //
+	// ------------------------------------------------------------------ //
+	// The heading cues already exist in the entry's VTT as h-N bodies, and
+	// AudioSync publishes the URL on #audio-sync-data. Reusing that avoids a
+	// second source of truth for where the sections are.
+
+	var headingCache = {};
+
+	function entryVttUrl() {
+		var node = document.getElementById('audio-sync-data');
+		return node ? (node.getAttribute('data-vtt-url') || '') : '';
+	}
+
+	function fetchHeadings() {
+		var url = entryVttUrl();
+		if (!url) return Promise.resolve([]);
+		if (headingCache[url]) return Promise.resolve(headingCache[url]);
+
+		return fetch(url)
+			.then(function (r) { return r.text(); })
+			.then(function (text) {
+				var out = [];
+				var rawLines = text.split('\n');
+				for (var i = 0; i < rawLines.length; i++) {
+					var line = rawLines[i].replace('\r', '');
+					var m = line.match(/^(\d+):(\d+):(\d+)\.(\d+)\s*-->/);
+					if (!m) continue;
+					var body = (rawLines[i + 1] || '').replace('\r', '').trim();
+					if (!/^h-\d+$/.test(body)) continue;
+					out.push({
+						start: Number(m[1]) * 3600 + Number(m[2]) * 60 + Number(m[3]) + Number('0.' + m[4]),
+					});
+				}
+				out.sort(function (a, b) { return a.start - b.start; });
+				headingCache[url] = out;
+				return out;
+			})
+			.catch(function () { return []; });
+	}
+
+	function skipToNextSection() {
+		fetchHeadings().then(function (headings) {
+			var now = audio.currentTime || 0;
+			for (var i = 0; i < headings.length; i++) {
+				if (headings[i].start > now + 0.1) {
+					try { audio.currentTime = headings[i].start; } catch (_) {}
+					return;
+				}
+			}
+		});
+	}
+
+	function skipToPrevSection() {
+		fetchHeadings().then(function (headings) {
+			var now = audio.currentTime || 0;
+			var current = null;
+			var previous = null;
+			for (var i = 0; i < headings.length; i++) {
+				if (headings[i].start <= now + 0.001) {
+					previous = current;
+					current = headings[i];
+				}
+			}
+			// More than three seconds in, restart this section rather than
+			// leaving it, which is what every music player does and what a
+			// listener reaching for the button almost always means.
+			var target = (current && now - current.start > 3)
+				? current
+				: (previous || current);
+			try { audio.currentTime = target ? target.start : 0; } catch (_) {}
+		});
+	}
+
+	function refreshSectionButtons() {
+		fetchHeadings().then(function (headings) {
+			var usable = headings.length > 1;
+			if (sectionPrevBtn) sectionPrevBtn.hidden = !usable;
+			if (sectionNextBtn) sectionNextBtn.hidden = !usable;
+		});
+	}
+
 
 	// ------------------------------------------------------------------ //
 	// Audio engine — native HTML5 Audio                                    //
@@ -235,6 +345,14 @@ const { audioUrl = '', title = '' } = Astro.props;
 
 	// Use event delegation — survives View Transition DOM swaps
 	document.addEventListener('click', function (e) {
+		if (e.target.closest('#audio-section-prev-btn')) {
+			skipToPrevSection();
+			return;
+		}
+		if (e.target.closest('#audio-section-next-btn')) {
+			skipToNextSection();
+			return;
+		}
 		if (e.target.closest('#audio-play-btn')) {
 			if (audio.paused) {
 				audio.play().catch(function (err) {
@@ -387,6 +505,7 @@ const { audioUrl = '', title = '' } = Astro.props;
 		}
 
 		checkCurrentPage();
+		refreshSectionButtons();
 	});
 
 	// ------------------------------------------------------------------ //
@@ -394,6 +513,7 @@ const { audioUrl = '', title = '' } = Astro.props;
 	// ------------------------------------------------------------------ //
 
 	checkCurrentPage();
+	refreshSectionButtons();
 
 })();
 </script>
