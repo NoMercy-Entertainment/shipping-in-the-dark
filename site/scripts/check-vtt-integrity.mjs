@@ -44,7 +44,23 @@ function gitWorks() {
 	if (gitBroken === null) {
 		try {
 			execFileSync('git', ['log', '-1', '--format=%H'], { cwd: REPO_ROOT, encoding: 'utf8' });
-			gitBroken = false;
+			// A shallow clone (the deploy checkout's default, absent an
+			// explicit fetch-depth: 0) makes every file's history stop at
+			// the single fetched commit -- git log for a path that commit
+			// didn't touch returns empty rather than throwing, which this
+			// function alone can't tell apart from "genuinely uncommitted."
+			// Treating a shallow repo as broken here is what actually
+			// matters, independent of whichever workflow config happens to
+			// be in place today.
+			const shallow = execFileSync('git', ['rev-parse', '--is-shallow-repository'], {
+				cwd: REPO_ROOT, encoding: 'utf8',
+			}).trim();
+			if (shallow === 'true') {
+				gitBroken = true;
+				console.error(`WARNING: ${REPO_ROOT} is a shallow git clone -- every path's history stops at one commit, so it cannot be trusted to tell a real retime from a fresh checkout. Skipping the retiming check rather than falling back to filesystem mtime.`);
+			} else {
+				gitBroken = false;
+			}
 		} catch (err) {
 			gitBroken = true;
 			console.error(`WARNING: git is not usable from ${REPO_ROOT} (${err.message.split('\n')[0]}) -- skipping the retiming check rather than falling back to filesystem mtime, which is unreliable on a fresh checkout.`);
