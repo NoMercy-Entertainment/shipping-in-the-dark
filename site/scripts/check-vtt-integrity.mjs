@@ -93,9 +93,18 @@ if (fs.existsSync(DIST)) {
 	const rendered = new Set();
 	for (const page of pages) {
 		const html = fs.readFileSync(page, 'utf8');
-		for (const m of html.matchAll(/id="((?:p|i)-\d+)"/g)) rendered.add(m[1]);
+		for (const m of html.matchAll(/id="(p-\d+)"/g)) rendered.add(m[1]);
 		for (const m of html.matchAll(/data-audio-h="(h-\d+)"/g)) rendered.add(m[1]);
 		for (const m of html.matchAll(/data-audio-code="(code-\d+)"/g)) rendered.add(m[1]);
+		// Images never get a literal id — Astro's own asset pipeline
+		// regenerates the <img> tag and does not preserve one reliably, which
+		// is exactly why paragraph-ids-rehype.mjs sets data-audio-i instead
+		// (see that file's comment). That is also what AudioSync.astro and
+		// AudioPlayer.astro actually query at runtime, so checking for a
+		// literal id="i-N" here was validating an attribute the real
+		// highlighter never looks at, and flagged every legitimate image cue
+		// as unresolved.
+		for (const m of html.matchAll(/data-audio-i="(i-\d+)"/g)) rendered.add(m[1]);
 	}
 
 	for (const file of walkVtts(AUDIO)) {

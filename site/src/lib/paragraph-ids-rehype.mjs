@@ -40,6 +40,23 @@ export default function rehypeParagraphIds() {
 				return;
 			}
 
+			// A standalone `![alt](src)` on its own line becomes `<p><img></p>`
+			// — a paragraph with no narratable text of its own, wrapping the
+			// image that gets the real i-N id. Assigning this wrapper its own
+			// p-N id used to cost that number a speech-script cue: the marker
+			// for the image narration ("<!-- i-N -->") had to sit right after
+			// this paragraph's marker with nothing spoken in between, and only
+			// the last marker before a text segment ever becomes that
+			// segment's cue id, so the p-N was silently swallowed. Not
+			// assigning it here means there is nothing to swallow.
+			if (
+				node.tagName === 'p' &&
+				node.children.filter((c) => !(c.type === 'text' && !c.value.trim())).length === 1 &&
+				node.children.some((c) => c.type === 'element' && c.tagName === 'img')
+			) {
+				return;
+			}
+
 			// Treat <p> and top-level <li> as the same class of "prose block"
 			// for narration alignment — markdown numbered and bulleted lists
 			// become <li>, and the narration still wants to highlight each
