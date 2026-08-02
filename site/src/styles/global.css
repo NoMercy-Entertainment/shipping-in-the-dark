@@ -516,6 +516,67 @@ html.light .audio-player .audio-secondary-btn {
 	cursor: default;
 }
 
+/* -------- "Play from here" badge on entry headings -------- */
+/* The reports carry the same control from their own component style block.
+   These rules give entries the identical affordance; the two definitions
+   agree, so a report page loading both lands on the same result. */
+:is(h2, h3, h4)[data-audio-h] {
+	position: relative;
+}
+
+.heading-seek-btn {
+	position: absolute;
+	left: -2.25rem;
+	top: 50%;
+	transform: translateY(-50%);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 26px;
+	height: 26px;
+	border-radius: 50%;
+	border: 1px solid var(--color-surface-700);
+	background-color: var(--color-surface-900);
+	color: var(--color-accent-400);
+	cursor: pointer;
+	opacity: 0;
+	transition: opacity 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+	padding: 0;
+}
+html.light .heading-seek-btn {
+	border-color: var(--color-surface-300);
+	background-color: var(--color-surface-50);
+	color: var(--color-accent-700);
+}
+
+:is(h2, h3, h4)[data-audio-h]:hover > .heading-seek-btn,
+.heading-seek-btn:focus-visible {
+	opacity: 1;
+}
+
+.heading-seek-btn:hover {
+	background-color: var(--color-accent-400);
+	color: var(--color-surface-950);
+}
+html.light .heading-seek-btn:hover {
+	background-color: var(--color-accent-700);
+	color: white;
+}
+
+.heading-seek-btn:focus-visible {
+	outline: 2px solid var(--color-accent-400);
+	outline-offset: 2px;
+}
+
+@media (max-width: 768px) {
+	.heading-seek-btn {
+		position: static;
+		transform: none;
+		opacity: 1;
+		margin-right: 0.5rem;
+	}
+}
+
 .audio-controls {
 	flex: 1;
 	display: flex;

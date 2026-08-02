@@ -179,6 +179,7 @@ const { audioUrl = '', title = '' } = Astro.props;
 					var body = (rawLines[i + 1] || '').replace('\r', '').trim();
 					if (!/^h-\d+$/.test(body)) continue;
 					out.push({
+						id: body,
 						start: Number(m[1]) * 3600 + Number(m[2]) * 60 + Number(m[3]) + Number('0.' + m[4]),
 					});
 				}
@@ -521,6 +522,75 @@ const { audioUrl = '', title = '' } = Astro.props;
 		}
 	}
 
+	function seekToEntryHeading(cueId) {
+		if (!cueId) return;
+		fetchHeadings().then(function (headings) {
+			for (var i = 0; i < headings.length; i++) {
+				if (headings[i].id !== cueId) continue;
+				try { audio.currentTime = headings[i].start; } catch (_) {}
+				audio.play().catch(function () {});
+				return;
+			}
+		});
+	}
+
+	// Entries carry the same "play from here" affordance the reports have:
+	// a button inside the heading rather than a click handler on the heading
+	// itself, so selecting the title text still works and the control shows
+	// up in the tab order with a name of its own.
+	function wireEntryHeadingButtons() {
+		var heads = document.querySelectorAll('[data-audio-h]');
+		Array.prototype.forEach.call(heads, function (h) {
+			if (h.querySelector('.heading-seek-btn')) return;
+			var btn = document.createElement('button');
+			btn.type = 'button';
+			btn.className = 'heading-seek-btn';
+			btn.setAttribute('aria-label', 'Play from this section');
+			btn.setAttribute('title', 'Play from here');
+			btn.dataset.cueId = h.getAttribute('data-audio-h') || '';
+			btn.innerHTML =
+				'<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" width="14" height="14">' +
+				'<path d="M8 5v14l11-7z"/></svg>';
+			h.insertBefore(btn, h.firstChild);
+		});
+	}
+
+	document.addEventListener('click', function (e) {
+		var btn = e.target && e.target.closest ? e.target.closest('.heading-seek-btn') : null;
+		if (!btn || !document.getElementById('audio-player')) return;
+		if (!btn.dataset || typeof btn.dataset.partSlug === 'string') return;
+		e.preventDefault();
+		seekToEntryHeading(btn.dataset.cueId);
+	});
+
+	// Arriving at a heading by anchor — a table-of-contents link, a shared
+	// deep link, the back button — seeks the narration to the same place the
+	// page just scrolled to, so the voice and the view never disagree.
+	function seekToHash() {
+		var id = (location.hash || '').replace('#', '');
+		if (!id) return;
+		var target = document.getElementById(id);
+		if (!target) return;
+		var head = target.getAttribute('data-audio-h')
+			? target
+			: target.querySelector('[data-audio-h]');
+		if (head) seekToEntryHeading(head.getAttribute('data-audio-h'));
+	}
+	window.addEventListener('hashchange', seekToHash);
+
+	// Without explicit handlers the OS media hub falls back to its generic
+	// ten-second seek buttons. Mapping prev/next to the section skips makes
+	// the external controls agree with the ones on the page.
+	function wireMediaSession() {
+		if (!('mediaSession' in navigator)) return;
+		try {
+			navigator.mediaSession.setActionHandler('previoustrack', skipToPrevSection);
+			navigator.mediaSession.setActionHandler('nexttrack', skipToNextSection);
+			navigator.mediaSession.setActionHandler('seekbackward', skipToPrevSection);
+			navigator.mediaSession.setActionHandler('seekforward', skipToNextSection);
+		} catch (_) {}
+	}
+
 	// Note: we do NOT pause the audio on before-swap. The <audio> element is
 	// persisted via BaseLayout's transition:persist, so playback continues
 	// across navigations. The next page's AudioPlayer / ReportAudioPlayer
@@ -540,6 +610,9 @@ const { audioUrl = '', title = '' } = Astro.props;
 		speedBtn     = document.getElementById('audio-speed-btn');
 
 		if (!player) return;
+
+		wireEntryHeadingButtons();
+		wireMediaSession();
 
 		// Event listeners use delegation (on document) so no re-attachment needed.
 

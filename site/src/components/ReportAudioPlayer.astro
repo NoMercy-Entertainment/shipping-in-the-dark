@@ -1521,6 +1521,21 @@ const tracksJson = JSON.stringify(tracks);
 	wireHeadingSeekButtons();
 	document.addEventListener('astro:page-load', wireHeadingSeekButtons);
 
+	// Without explicit handlers the OS media hub falls back to its generic
+	// ten-second seek buttons. Mapping prev/next to the section skips makes
+	// the external controls agree with the ones on the page.
+	function wireMediaSession() {
+		if (!('mediaSession' in navigator)) return;
+		try {
+			navigator.mediaSession.setActionHandler('previoustrack', skipToPrevSection);
+			navigator.mediaSession.setActionHandler('nexttrack', skipToNextSection);
+			navigator.mediaSession.setActionHandler('seekbackward', skipToPrevSection);
+			navigator.mediaSession.setActionHandler('seekforward', skipToNextSection);
+		} catch (_) { /* handler unsupported */ }
+	}
+	wireMediaSession();
+	document.addEventListener('astro:page-load', wireMediaSession);
+
 	const srcNow = audio.src || '';
 	const matched = findTrackIndexByUrl(srcNow);
 	if (matched >= 0) {
