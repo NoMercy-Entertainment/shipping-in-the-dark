@@ -214,11 +214,31 @@ html.light .prose .audio-active .heading-anchor {
 				result.push({ start: start, end: end, text: '', section: null, elementId: cueText, isCode: true });
 			} else if (/^i-\d+$/.test(cueText)) {
 				result.push({ start: start, end: end, text: '', section: null, elementId: cueText, isImage: true });
-			// Unmatched cues (prefixed with --) — skip, no scroll
+			// Cues prefixed with -- are spoken text with no id of their own:
+			// the title, the standfirst and the part title, all narrated
+			// before the first paragraph marker. They resolve to the main
+			// headline so the page shows what is being read instead of
+			// sitting unhighlighted through the whole opening.
 			} else if (cueText.startsWith('--')) {
-				result.push({ start: start, end: end, text: '', section: null, elementId: null });
+				result.push({ start: start, end: end, text: '', section: null, elementId: null, isPrelude: true });
 			} else {
 				result.push({ start: start, end: end, text: cueText, section: null, elementId: null });
+			}
+		}
+
+		// Only the opening run of unmatched cues is the title block. Later
+		// ones are narrated pull-quotes and callouts that carry no id of
+		// their own; sending those to the headline would drag the reader
+		// back to the top mid-article.
+		var firstMarker = -1;
+		for (var m = 0; m < result.length; m++) {
+			if (result[m].elementId || result[m].section) { firstMarker = m; break; }
+		}
+		for (var n = 0; n < result.length; n++) {
+			if (!result[n].isPrelude) continue;
+			if (firstMarker !== -1 && n > firstMarker) {
+				result[n].isPrelude = false;
+				result[n].holdsPrevious = true;
 			}
 		}
 
@@ -240,6 +260,17 @@ html.light .prose .audio-active .heading-anchor {
 			if (scoped) return scoped;
 		}
 		return null;
+	}
+
+	// The headline the opening cues are read against: a report part's own
+	// title when one part is loaded, otherwise the entry's title.
+	function lookupMainHeadline() {
+		var scope = getScopeRoot();
+		if (scope) {
+			var partHead = scope.querySelector('h1');
+			if (partHead) return partHead;
+		}
+		return document.querySelector('main h1') || document.querySelector('h1');
 	}
 
 	function lookupById(id) {
@@ -331,7 +362,14 @@ html.light .prose .audio-active .heading-anchor {
 		}
 
 		// For each cue, find best paragraph match
-		return rawCues.map(function(cue) {
+		var resolvedCues = rawCues.map(function(cue) {
+			if (cue.holdsPrevious) {
+				return {
+					start: cue.start, end: cue.end,
+					element: null, section: null,
+					isHeading: false, isCode: false, holdsPrevious: true,
+				};
+			}
 			// 1. Legacy section: cues — resolve by heading ID, no paragraph element
 			if (cue.section) {
 				return { start: cue.start, end: cue.end, element: lookupById(cue.section), section: cue.section };
@@ -363,7 +401,17 @@ html.light .prose .audio-active .heading-anchor {
 				};
 			}
 
-			// 3. Text-based fuzzy matching — fallback for VTTs without p-N ids
+			// 3. Prelude — the narrated title block, anchored on the headline
+			if (cue.isPrelude) {
+				var head = lookupMainHeadline();
+				return {
+					start: cue.start, end: cue.end,
+					element: head, section: head ? deriveSectionSlug(head) : null,
+					isHeading: true, isCode: false,
+				};
+			}
+
+			// 4. Text-based fuzzy matching — fallback for VTTs without p-N ids
 			if (!cue.text) return { start: cue.start, end: cue.end, element: null, section: null };
 
 			var data = getParaData();
@@ -408,6 +456,16 @@ html.light .prose .audio-active .heading-anchor {
 			var fuzzySection = match ? deriveSectionSlug(match) : null;
 			return { start: cue.start, end: cue.end, element: match, section: fuzzySection };
 		});
+
+		// Carry the last lit element forward across the cues that hold it,
+		// which can only be done once every neighbour has been resolved.
+		for (var r = 0; r < resolvedCues.length; r++) {
+			if (!resolvedCues[r].holdsPrevious || r === 0) continue;
+			resolvedCues[r].element = resolvedCues[r - 1].element;
+			resolvedCues[r].section = resolvedCues[r - 1].section;
+		}
+
+		return resolvedCues;
 	}
 
 	// ------------------------------------------------------------------ //
