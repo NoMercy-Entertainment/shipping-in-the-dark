@@ -2029,14 +2029,32 @@ const tracksJson: string = JSON.stringify(tracks);
 
 	let partObserver = null;
 
+	// The observer fires the moment the page settles, so without this the
+	// first section claimed the URL before the reader had moved at all — and
+	// a report opened on its own second heading with the main headline
+	// already scrolled off the top.
+	let readerHasMoved = false;
+	let initialPartSettled = false;
+	function markReaderMoved() { readerHasMoved = true; }
+	window.addEventListener('wheel', markReaderMoved, { passive: true, once: true });
+	window.addEventListener('touchmove', markReaderMoved, { passive: true, once: true });
+	window.addEventListener('keydown', markReaderMoved, { once: true });
+
 	// Keep the URL hash on the section the reader is looking at so copying
 	// the URL captures it. replaceState fires no hashchange, so this never
 	// retriggers a track swap.
-	function syncHashToSection(section) {
+	function syncHashToSection(section, force) {
 		if (!section || !section.id) return;
+		if (!force && !readerHasMoved) return;
 		const hash = '#' + section.id;
 		if (window.location.hash === hash) return;
-		history.replaceState(null, '', window.location.pathname + window.location.search + hash);
+		// Carry the existing history state through. Passing null wipes what
+		// Astro's router keeps there, and its scroll restoration reads it.
+		history.replaceState(
+			history.state,
+			'',
+			window.location.pathname + window.location.search + hash
+		);
 	}
 
 	function observeParts() {
@@ -2063,7 +2081,12 @@ const tracksJson: string = JSON.stringify(tracks);
 	document.addEventListener('audio-part-change', function (event) {
 		if (superseded() || !event || !event.detail || !event.detail.slug) return;
 		const section = document.querySelector('section[data-part-slug="' + event.detail.slug + '"]');
-		if (section) syncHashToSection(section);
+		// A part change is a deliberate act, so it owns the URL even if the
+		// reader has not touched the page — but the player emits one while
+		// mounting its initial track, and that one is not a choice anybody
+		// made. Letting it through is what pushed the headline off screen.
+		if (!initialPartSettled) { initialPartSettled = true; return; }
+		if (section) syncHashToSection(section, true);
 	});
 
 	// AudioSync publishes the live cue here; picking it up keeps the
