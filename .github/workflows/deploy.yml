@@ -21,6 +21,11 @@ jobs:
         uses: actions/checkout@v4
         with:
           clean: true
+          # The VTT integrity check reads each marker file's commit time to
+          # tell whether it was retimed after its audio was narrated. The
+          # default shallow clone gives every file the same single commit,
+          # which reads as "newer than the audio" for all of them.
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v4
