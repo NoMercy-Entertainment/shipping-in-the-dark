@@ -215,6 +215,37 @@ long tail. Given the trade-offs, we said no to the long tail —
 for now. A plugin can add a fifth family if someone needs it
 badly enough to write and maintain that code.
 
+### "Ship" is doing some work in that sentence
+
+Everything above describes what the encoder is built to do. It
+assumes the ffmpeg binary underneath it actually has the
+libraries compiled in, and that assumption has been wrong.
+
+We build our own ffmpeg, because the decryption and the codec
+mix we need are not in anybody's stock build. That build is
+produced by merging separate 8, 10 and 12 bit passes into one
+binary. On one of those merges the final link quietly dropped
+libx265, and the resulting ffmpeg reported "x265 not found" at
+encode time. Nothing failed during the build. The pipeline was
+green, the artifact was published, and the missing codec only
+turned up when something tried to use it.
+
+The first diagnosis was pkg-config, which is the obvious
+suspect and was entirely innocent. The multilib merge was
+relinking the library away after the configure step had already
+found it, so every check that ran before the merge agreed the
+codec was there.
+
+That is worth stating plainly in a document whose title
+contains the word effortless. The encoder chooses codecs by
+probing what the binary in front of it can actually do, rather
+than trusting a compiled-in list, and the reason that
+indirection exists is that the binary has lied to us. A
+capability table is a description of intent. The only authority
+on what your build supports is your build.
+
+
+
 ## Containers
 
 A codec is the encoding. A container is the file format that
