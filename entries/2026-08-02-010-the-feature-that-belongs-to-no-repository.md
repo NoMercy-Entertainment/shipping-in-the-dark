@@ -686,6 +686,24 @@ written, and which took an afternoon of already knowing the answer to think of.
 
 ---
 
+## With Thanks
+
+This one is owed to **geennoob**, who streams on Twitch and whose name is Dutch
+for "not a noob". He is the reason any of this got looked at. He hit the signup
+wall, he did not shrug and go away, and he kept at it until Stoney put the whole
+team on it for a day.
+
+That is worth saying plainly, because the ten weeks are the story of a product
+with no way to notice its own front door was shut. Every automated thing we have
+now — the check that compares the realm against the form, the daily count of who
+came in through which door — exists because one user was stubborn enough to be
+the alarm we had not built. Most people in that position close the tab, and we
+would never have known. He did not, and it cost him his time to do it.
+
+Thank you.
+
+---
+
 *This is Entry 010 of Shipping in the Dark. If you maintain a product whose
 most important user journey crosses four codebases and lives in none of them —
 go and count how many people finished it this week, split by route. It is one
