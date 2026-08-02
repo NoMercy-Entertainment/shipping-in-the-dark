@@ -27,10 +27,16 @@ function cueIds(text) {
 }
 
 function narratesTitle(text) {
-	// The title block is the leading run of "--" cues, before the first marker.
+	// Two shapes both count. Reports and entries open with a run of "--" cues
+	// carrying the spoken title before any marker. Team profiles instead open
+	// on h-1, which is the page's own heading — narrated and highlightable,
+	// so it is the better of the two rather than a miss.
 	const firstMarker = text.search(/^(?:p|h|code|i)-\d+\s*$/m);
 	const firstSpoken = text.search(/^--/m);
-	return firstSpoken !== -1 && (firstMarker === -1 || firstSpoken < firstMarker);
+	if (firstSpoken !== -1 && (firstMarker === -1 || firstSpoken < firstMarker)) return true;
+
+	const firstCue = text.match(/^(?:p|h|code|i)-\d+\s*$/m);
+	return firstCue ? firstCue[0].trim() === 'h-1' : false;
 }
 
 function sequenceBreaks(ids) {
