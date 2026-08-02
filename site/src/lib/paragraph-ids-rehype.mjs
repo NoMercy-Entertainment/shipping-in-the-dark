@@ -13,6 +13,14 @@ import { visit } from 'unist-util-visit';
  * auto-generated slugs). Their slot in the sequence is still consumed
  * so downstream numbering stays stable.
  *
+ * A <li> is one narration "beat" no matter how many block-level children
+ * it wraps. Loose lists (any blank line between items, e.g. a list item
+ * that also carries a code sample) make remark wrap each item's own text
+ * in a nested <p> — without this exclusion that inner <p> would consume
+ * its own id right after the <li>'s, silently splitting one bullet into
+ * two ids and leaving the speech script's one-cue-per-item narration
+ * with nothing to reference for the second id.
+ *
  * These IDs are the stable anchors used by AudioSync for deterministic
  * highlighting — VTT cues reference them directly.
  */
@@ -23,7 +31,15 @@ export default function rehypeParagraphIds() {
 		var iCounter = 0;
 		var cCounter = 0;
 
-		visit(tree, 'element', (node) => {
+		visit(tree, 'element', (node, index, parent) => {
+			// A <p> that is a direct child of an <li> is the loose-list
+			// wrapper described above — the <li> already claimed the id
+			// for this beat, so skip the nested <p> entirely (no id, and
+			// no slot consumed).
+			if (node.tagName === 'p' && parent && parent.tagName === 'li') {
+				return;
+			}
+
 			// Treat <p> and top-level <li> as the same class of "prose block"
 			// for narration alignment — markdown numbered and bulleted lists
 			// become <li>, and the narration still wants to highlight each
@@ -43,7 +59,17 @@ export default function rehypeParagraphIds() {
 			} else if (node.tagName === 'img') {
 				iCounter++;
 				if (!node.properties) node.properties = {};
-				node.properties.dataAudioI = 'i-' + iCounter;
+				// Astro's built-in image optimization regenerates <img> tags
+				// from this hast node through its own asset pipeline, which
+				// does not apply the camelCase-to-kebab-case attribute
+				// conversion the standard rehype-to-html serializer does for
+				// every other element (headings, <pre> blocks). A property
+				// set as `dataAudioI` therefore reaches the page verbatim as
+				// `dataAudioI`, not `data-audio-i` -- so
+				// `[data-audio-i="..."]` never matches and every image cue
+				// silently fails to highlight or seek. Setting the literal
+				// hyphenated key sidesteps whichever pipeline renders it.
+				node.properties['data-audio-i'] = 'i-' + iCounter;
 			} else if (node.tagName === 'pre') {
 				cCounter++;
 				if (!node.properties) node.properties = {};
