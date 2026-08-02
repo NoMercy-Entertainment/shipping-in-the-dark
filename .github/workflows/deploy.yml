@@ -39,6 +39,12 @@ jobs:
         working-directory: site
         run: npm run build
 
+      # Runs after the build so dist/ exists — the id cross-check compares
+      # every cue against what the pages actually rendered.
+      - name: Check VTT integrity
+        working-directory: site
+        run: node scripts/check-vtt-integrity.mjs
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
