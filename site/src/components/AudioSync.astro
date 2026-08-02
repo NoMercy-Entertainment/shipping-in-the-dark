@@ -745,9 +745,36 @@ html.light .prose .audio-active .heading-anchor {
 	// Event wiring                                                         //
 	// ------------------------------------------------------------------ //
 
+	/**
+	 * The <audio> element is persisted across view transitions so playback
+	 * survives navigation, but the cues belong to whatever page is on screen.
+	 * Listening to one entry while reading another therefore highlighted
+	 * paragraphs of the page being read, driven by the timestamps of the entry
+	 * being heard. The mp3 and the VTT are published under the same basename,
+	 * so comparing those is enough to tell whether this page is the one being
+	 * narrated, and it needs no contract between the two components.
+	 */
+	function basename(url) {
+		if (!url) return '';
+		var path = String(url).split('?')[0].split('#')[0];
+		var last = path.substring(path.lastIndexOf('/') + 1);
+		var dot = last.lastIndexOf('.');
+		return dot === -1 ? last : last.substring(0, dot);
+	}
+
+	function playingThisPage() {
+		var audio = document.getElementById('sitd-global-audio');
+		if (!audio || !audio.src) return false;
+		return basename(audio.src) === basename(currentVttUrl);
+	}
+
 	document.addEventListener('audio-timeupdate', function (e) {
 		if (!loaded) loadVTT();
 		if (cues.length === 0) return;
+		if (!playingThisPage()) {
+			clearHighlight();
+			return;
+		}
 		var active = findActiveCue(e.detail.currentTime);
 		applyHighlight(active);
 	});
