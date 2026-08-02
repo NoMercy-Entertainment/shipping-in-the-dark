@@ -11,10 +11,32 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
+import { execFileSync } from 'node:child_process';
 
 const SITE = path.resolve(import.meta.dirname, '..');
+const REPO_ROOT = path.resolve(SITE, '..');
 const AUDIO = path.join(SITE, 'public/audio');
 const DIST = path.join(SITE, 'dist');
+
+// The CI collect step writes the VTT and commits it in the same job it
+// records the manifest stamp in, so comparing timestamps is only valid
+// against the commit time, not the filesystem mtime -- a plain git clone
+// or pull resets every touched file's mtime to checkout time regardless of
+// when its content actually landed, which would flag whichever VTT you
+// happened to pull most recently as "retimed" even when it is perfectly in
+// sync with its audio.
+function gitCommittedAtMs(absPath) {
+	try {
+		const rel = path.relative(REPO_ROOT, absPath).replace(/\\/g, '/');
+		const out = execFileSync('git', ['log', '-1', '--format=%ct', '--', rel], {
+			cwd: REPO_ROOT,
+			encoding: 'utf8',
+		}).trim();
+		return out ? Number(out) * 1000 : null;
+	} catch {
+		return null;
+	}
+}
 
 const failures = [];
 
@@ -131,7 +153,19 @@ if (fs.existsSync(manifest)) {
 		const rel = path.relative(AUDIO, file).replace(/\\/g, '/');
 		const audioStamp = stamps[rel.replace(/\.vtt$/, '.mp3')];
 		if (!audioStamp) continue;
-		if (fs.statSync(file).mtimeMs > audioStamp + 60_000) {
+		const committedAt = gitCommittedAtMs(file);
+		// An uncommitted local edit has no git history to compare yet --
+		// fall back to mtime so a real, in-progress fix still gets caught
+		// rather than silently skipped.
+		const compareAt = committedAt ?? fs.statSync(file).mtimeMs;
+		// The manifest stamp is taken when the mp3 is written on the
+		// self-hosted runner; the VTT lands in a separate git commit once
+		// the collect step gathers every matrix job's output, builds the
+		// manifest, and pushes. Measured across a full regen, that gap runs
+		// 7-8 minutes on its own before any real desync — 20 minutes gives
+		// headroom for a slower run without hiding a VTT that was actually
+		// retimed hours or days after its audio.
+		if (compareAt > audioStamp + 20 * 60_000) {
 			failures.push(`${rel}: timings rewritten after the audio was last narrated`);
 		}
 	}
