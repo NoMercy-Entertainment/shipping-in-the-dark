@@ -1,0 +1,510 @@
+WEBVTT
+
+1
+00:00:00.000 --> 00:00:03.325
+--The Feature That Belongs To No Repository.
+
+2
+00:00:04.285 --> 00:00:06.235
+h-1
+
+3
+00:00:06.595 --> 00:00:17.332
+p-1
+
+4
+00:00:17.884 --> 00:00:39.159
+p-2
+
+5
+00:00:39.711 --> 00:00:56.098
+p-3
+
+6
+00:00:57.058 --> 00:00:59.058
+h-2
+
+7
+00:00:59.418 --> 00:01:22.430
+p-4
+
+8
+00:01:22.982 --> 00:01:45.657
+p-5
+
+9
+00:01:46.209 --> 00:01:55.621
+p-6
+
+10
+00:01:56.581 --> 00:02:00.043
+h-3
+
+11
+00:02:00.403 --> 00:02:24.528
+p-7
+
+12
+00:02:25.080 --> 00:02:50.867
+p-8
+
+13
+00:02:51.419 --> 00:03:04.094
+p-9
+
+14
+00:03:04.550 --> 00:03:21.387
+p-10
+
+15
+00:03:21.747 --> 00:03:43.697
+--In short: nomercy-stack owns the Keycloak realm and the login theme. nomercy-tv owns the account record, server registration, DNS and certificates. nomercy-media-server owns the device flow, boot stages, and library scanning. And nomercy-app-web owns the setup wizard and the offline screen.
+
+16
+00:03:44.249 --> 00:03:52.674
+p-11
+
+17
+00:03:53.226 --> 00:04:18.251
+p-12
+
+18
+00:04:19.211 --> 00:04:23.123
+h-4
+
+19
+00:04:23.483 --> 00:04:30.333
+p-13
+
+20
+00:04:30.789 --> 00:04:56.289
+p-14
+
+21
+00:04:56.841 --> 00:05:18.628
+p-15
+
+22
+00:05:19.180 --> 00:05:35.742
+p-16
+
+23
+00:05:36.294 --> 00:06:10.831
+p-17
+
+24
+00:06:11.791 --> 00:06:14.316
+h-5
+
+25
+00:06:14.676 --> 00:06:20.863
+p-18
+
+26
+00:06:21.319 --> 00:06:35.044
+p-19
+
+27
+00:06:35.500 --> 00:06:55.650
+p-20
+
+28
+00:06:56.202 --> 00:07:11.777
+p-21
+
+29
+00:07:12.329 --> 00:07:30.291
+p-22
+
+30
+00:07:30.843 --> 00:07:51.443
+p-23
+
+31
+00:07:51.995 --> 00:07:59.420
+p-24
+
+32
+00:08:00.380 --> 00:08:02.742
+h-6
+
+33
+00:08:03.102 --> 00:08:20.989
+p-25
+
+34
+00:08:21.541 --> 00:08:26.941
+p-26
+
+35
+00:08:27.397 --> 00:08:51.397
+p-27
+
+36
+00:08:51.853 --> 00:08:55.815
+p-28
+
+37
+00:08:56.367 --> 00:09:00.529
+p-29
+
+38
+00:09:00.529 --> 00:09:09.179
+--On the twelfth of July, Stoney reported that a user he had added to his own server could not be seen there, and said, in his own words:
+
+39
+00:09:09.827 --> 00:09:13.964
+p-30
+
+40
+00:09:14.732 --> 00:09:37.544
+p-31
+
+41
+00:09:38.096 --> 00:09:42.646
+p-32
+
+42
+00:09:42.646 --> 00:09:55.708
+--"Golden path fixes are done and green" was a true sentence about the fixes and a false sentence about the path. The sentence never carried which segment it had touched, and once it was said, it was heard as the whole walk.
+
+43
+00:09:56.260 --> 00:10:01.222
+p-33
+
+44
+00:10:01.222 --> 00:10:23.584
+--On the first of August, one day before the discovery, a {{512}} line commit in nomercy-media-server, titled "pin the full first-boot onboarding chain end to end," went in. It is careful work. Its own commit body describes the method: every stage runs the real production component "against fakes speaking the recorded wire contract."
+
+45
+00:10:24.136 --> 00:10:46.961
+p-34
+
+46
+00:10:47.513 --> 00:11:09.675
+p-35
+
+47
+00:11:10.443 --> 00:11:16.230
+p-36
+
+48
+00:11:16.230 --> 00:11:47.655
+--Also on the first of August, a commit in nomercy-tv fixed a four-oh-one error for email-only signups whose Keycloak users have no firstName or lastName keys at all. The platform's user service read those keys unguarded, the resulting warning got caught as "failed to fetch Keycloak user," and a brand-new account could not register a server until somebody repaired the database row by hand. Good fix. All profile fields are optional now, with the display name falling back to the username.
+
+49
+00:11:48.207 --> 00:12:05.569
+p-37
+
+50
+00:12:06.121 --> 00:12:10.633
+p-38
+
+51
+00:12:10.633 --> 00:12:37.258
+--A work document for the golden path existed by the twenty-seventh of June. The project's own instructions named onboarding reliability the current priority on the fourth of July. On the eighteenth of July the correct plan was written down in as many words: instrument and test the cold-start chain end to end, install through first playback. It then appears twice in the same session's remaining backlog, and it was not done.
+
+52
+00:12:37.810 --> 00:12:51.622
+p-39
+
+53
+00:12:52.582 --> 00:12:55.332
+h-7
+
+54
+00:12:55.692 --> 00:13:00.329
+p-40
+
+55
+00:13:00.785 --> 00:13:16.810
+p-41
+
+56
+00:13:17.362 --> 00:13:20.949
+p-42
+
+57
+00:13:21.597 --> 00:13:53.347
+p-43
+
+58
+00:13:53.899 --> 00:14:01.574
+p-44
+
+59
+00:14:02.126 --> 00:14:08.138
+p-45
+
+60
+00:14:09.098 --> 00:14:11.898
+h-8
+
+61
+00:14:12.258 --> 00:14:23.508
+p-46
+
+62
+00:14:23.964 --> 00:14:27.826
+p-47
+
+63
+00:14:27.826 --> 00:14:54.138
+--A device code lives about ten minutes. A genuinely new user spends that budget finding the site, creating an account, accepting terms, waiting for a verification email, finding it and clicking it. So the code expires in the ordinary case for the ordinary user, and on the console path the flow simply stopped: server stuck in setup mode, no code on screen, no way to get one short of a restart.
+
+64
+00:14:54.690 --> 00:15:11.290
+p-48
+
+65
+00:15:12.058 --> 00:15:44.095
+p-49
+
+66
+00:15:44.647 --> 00:15:48.634
+p-50
+
+67
+00:15:48.634 --> 00:16:13.584
+--Registration carries everything a client needs to reach a server: address, name, ports, platform, version, network translation and DNS scheme. It was sent on the first boot and never again. Nothing in that payload is stable. A DHCP lease moves an address. A container returns on a different bridge. An owner renames their server.
+
+68
+00:16:14.136 --> 00:16:29.848
+p-51
+
+69
+00:16:30.400 --> 00:16:34.937
+p-52
+
+70
+00:16:34.937 --> 00:17:06.262
+--Chrome's protection for a public website reaching into a private network address used to be called Private Network Access. It is now Local Network Access, and the header pair was renamed with it. Newer builds send a new preflight header asking about local network access, and never look at the private-network answer our middleware was returning. Every call from the web app to a self-hosted server on a local address died with the network error Chrome calls ERR_FAILED, and parked on the server-offline screen.
+
+71
+00:17:06.814 --> 00:17:23.076
+p-53
+
+72
+00:17:24.036 --> 00:17:27.811
+h-9
+
+73
+00:17:28.171 --> 00:17:42.996
+p-54
+
+74
+00:17:43.452 --> 00:17:46.039
+p-55
+
+75
+00:17:46.495 --> 00:17:48.207
+p-56
+
+76
+00:17:48.759 --> 00:17:51.834
+p-57
+
+77
+00:17:52.602 --> 00:18:12.414
+p-58
+
+78
+00:18:12.966 --> 00:18:14.641
+p-59
+
+79
+00:18:15.193 --> 00:18:19.880
+p-60
+
+80
+00:18:20.648 --> 00:18:52.860
+p-61
+
+81
+00:18:53.412 --> 00:18:55.099
+p-62
+
+82
+00:18:55.651 --> 00:19:00.113
+p-63
+
+83
+00:19:00.881 --> 00:19:03.881
+p-64
+
+84
+00:19:04.841 --> 00:19:07.591
+h-10
+
+85
+00:19:07.951 --> 00:19:20.488
+p-65
+
+86
+00:19:20.944 --> 00:19:37.331
+p-66
+
+87
+00:19:37.979 --> 00:19:54.641
+--{{97}} accounts had signed up with an email address and a password. The most recent one was on the twenty-first of May. {{17}} accounts had signed in with Google. The most recent one was on the second of August, at two minutes to two in the morning.
+
+88
+00:19:55.601 --> 00:20:16.276
+p-67
+
+89
+00:20:16.828 --> 00:20:37.365
+p-68
+
+90
+00:20:38.325 --> 00:20:41.462
+h-11
+
+91
+00:20:41.822 --> 00:20:50.259
+p-69
+
+92
+00:20:50.715 --> 00:21:15.777
+p-70
+
+93
+00:21:16.329 --> 00:21:23.204
+p-71
+
+94
+00:21:23.660 --> 00:21:42.285
+p-72
+
+95
+00:21:42.837 --> 00:22:18.374
+p-73
+
+96
+00:22:19.334 --> 00:22:21.821
+h-12
+
+97
+00:22:22.181 --> 00:22:28.281
+p-74
+
+98
+00:22:28.737 --> 00:22:57.499
+p-75
+
+99
+00:22:58.051 --> 00:23:20.338
+p-76
+
+100
+00:23:20.890 --> 00:23:40.777
+p-77
+
+101
+00:23:41.329 --> 00:23:48.304
+p-78
+
+102
+00:23:48.952 --> 00:24:00.314
+p-79
+
+103
+00:24:01.082 --> 00:24:08.507
+p-80
+
+104
+00:24:09.059 --> 00:24:30.221
+p-81
+
+105
+00:24:30.773 --> 00:24:45.698
+p-82
+
+106
+00:24:46.658 --> 00:24:49.645
+h-13
+
+107
+00:24:50.005 --> 00:24:55.017
+p-83
+
+108
+00:24:55.473 --> 00:25:38.985
+p-84
+
+109
+00:25:39.537 --> 00:26:07.374
+p-85
+
+110
+00:26:08.334 --> 00:26:10.796
+h-14
+
+111
+00:26:11.156 --> 00:26:24.106
+p-86
+
+112
+00:26:24.658 --> 00:26:49.895
+p-87
+
+113
+00:26:50.447 --> 00:27:13.972
+p-88
+
+114
+00:27:14.524 --> 00:27:36.924
+p-89
+
+115
+00:27:37.884 --> 00:27:39.834
+h-15
+
+116
+00:27:40.194 --> 00:27:57.731
+p-90
+
+117
+00:27:58.283 --> 00:28:18.133
+p-91
+
+118
+00:28:18.685 --> 00:28:50.610
+p-92
+
+119
+00:28:51.162 --> 00:29:02.512
+p-93
+
+120
+00:29:03.472 --> 00:29:05.397
+h-16
+
+121
+00:29:05.757 --> 00:29:29.694
+p-94
+
+122
+00:29:30.342 --> 00:29:53.929
+p-95
+
+123
+00:29:54.481 --> 00:30:13.181
+p-96
+
+124
+00:30:13.733 --> 00:30:30.245
+p-97
+
+125
+00:30:30.797 --> 00:30:49.484
+p-98
+
+126
+00:30:50.132 --> 00:31:20.532
+p-99
+
+127
+00:31:21.492 --> 00:31:40.254
+p-100
+
