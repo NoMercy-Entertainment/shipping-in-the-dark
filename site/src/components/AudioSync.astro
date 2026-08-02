@@ -6,9 +6,11 @@
  * On timeupdate, highlights the active paragraph and scrolls it into view.
  *
  * Cue matching priority:
- *   1. section:slug  → document.getElementById(slug)  (legacy heading match)
- *   2. p-N pattern   → document.getElementById('p-N') (deterministic ID match)
- *   3. Text fuzzy    → prefix + word-overlap scoring   (fallback for old VTTs)
+ *   1. section:slug        → document.getElementById(slug)  (legacy heading match)
+ *   2. p-N/h-N/i-N/code-N  → deterministic ID/attribute match
+ *      title/standfirst/   → singular markers for the page's own <h1>, its
+ *      part-title            standfirst paragraph, and a report part's own <h1>
+ *   3. Text fuzzy           → prefix + word-overlap scoring (fallback for old VTTs)
  */
 interface Props {
 	vttUrl?: string;
@@ -213,31 +215,25 @@ html.light .prose .audio-active .heading-anchor {
 				result.push({ start: start, end: end, text: '', section: null, elementId: cueText, isCode: true });
 			} else if (/^i-\d+$/.test(cueText)) {
 				result.push({ start: start, end: end, text: '', section: null, elementId: cueText, isImage: true });
-			// Cues prefixed with -- are spoken text with no id of their own:
-			// the title, the standfirst and the part title, all narrated
-			// before the first paragraph marker. They resolve to the main
-			// headline so the page shows what is being read instead of
-			// sitting unhighlighted through the whole opening.
+			// The page/report/entry's own <h1> (data-audio-title), its
+			// standfirst paragraph (data-audio-standfirst), and a report
+			// part's own <h1> (data-audio-part-title) — singular markers,
+			// there is only ever one of each in scope, so no trailing number.
+			} else if (cueText === 'title') {
+				result.push({ start: start, end: end, text: '', section: null, elementId: cueText, isTitle: true });
+			} else if (cueText === 'standfirst') {
+				result.push({ start: start, end: end, text: '', section: null, elementId: cueText, isStandfirst: true });
+			} else if (cueText === 'part-title') {
+				result.push({ start: start, end: end, text: '', section: null, elementId: cueText, isPartTitle: true });
+			// Cues prefixed with -- are narration with genuinely no element
+			// of its own on the page (a narrated pull-quote, a callout aside,
+			// a code walkthrough) -- title, standfirst and part-title all
+			// have their own real markers now, so these always hold whatever
+			// was lit before them rather than guessing at an anchor.
 			} else if (cueText.startsWith('--')) {
-				result.push({ start: start, end: end, text: '', section: null, elementId: null, isPrelude: true });
+				result.push({ start: start, end: end, text: '', section: null, elementId: null, holdsPrevious: true });
 			} else {
 				result.push({ start: start, end: end, text: cueText, section: null, elementId: null });
-			}
-		}
-
-		// Only the opening run of unmatched cues is the title block. Later
-		// ones are narrated pull-quotes and callouts that carry no id of
-		// their own; sending those to the headline would drag the reader
-		// back to the top mid-article.
-		var firstMarker = -1;
-		for (var m = 0; m < result.length; m++) {
-			if (result[m].elementId || result[m].section) { firstMarker = m; break; }
-		}
-		for (var n = 0; n < result.length; n++) {
-			if (!result[n].isPrelude) continue;
-			if (firstMarker !== -1 && n > firstMarker) {
-				result[n].isPrelude = false;
-				result[n].holdsPrevious = true;
 			}
 		}
 
@@ -261,15 +257,29 @@ html.light .prose .audio-active .heading-anchor {
 		return null;
 	}
 
-	// The headline the opening cues are read against: a report part's own
-	// title when one part is loaded, otherwise the entry's title.
-	function lookupMainHeadline() {
+	// The page's own <h1>: the entry's title, or a report's outer title
+	// (only narrated once, in that report's part 0). Always the unscoped
+	// page-level heading, never a report part's own <h1> -- part 0 needs
+	// to tell the two apart, since it narrates both back to back.
+	function lookupTitle() {
+		return document.querySelector('[data-audio-title="title"]');
+	}
+
+	// The standfirst paragraph under a report's outer title. Entries have
+	// no equivalent element, so this returns null there.
+	function lookupStandfirst() {
+		return document.querySelector('[data-audio-standfirst="standfirst"]');
+	}
+
+	// A report part's own <h1>, scoped to whichever part is currently
+	// loaded. Falls back to the page's only <h1> when there is no scope,
+	// so an entry (which has no parts) still resolves sensibly if a script
+	// ever emits a part-title cue for one by mistake.
+	function lookupPartTitle() {
 		var scope = getScopeRoot();
-		if (scope) {
-			var partHead = scope.querySelector('h1');
-			if (partHead) return partHead;
-		}
-		return document.querySelector('main h1') || document.querySelector('h1');
+		var sel = '[data-audio-part-title="part-title"]';
+		var el = scope ? scope.querySelector(sel) : document.querySelector(sel);
+		return el || lookupTitle();
 	}
 
 	function lookupById(id) {
@@ -374,7 +384,8 @@ html.light .prose .audio-active .heading-anchor {
 				return { start: cue.start, end: cue.end, element: lookupById(cue.section), section: cue.section };
 			}
 
-			// 2. Deterministic element reference — p-N, h-N, i-N, or code-N
+			// 2. Deterministic element reference — p-N, h-N, i-N, code-N,
+			// or the singular title / standfirst / part-title markers
 			if (cue.elementId) {
 				var el = null;
 				var isHeading = false;
@@ -391,8 +402,21 @@ html.light .prose .audio-active .heading-anchor {
 				} else if (cue.elementId.startsWith('i-')) {
 					el = lookupImage(cue.elementId);
 					if (el) el = el.closest('p') || el.parentElement || el;
+				} else if (cue.isTitle) {
+					el = lookupTitle();
+					isHeading = true;
+				} else if (cue.isStandfirst) {
+					el = lookupStandfirst();
+				} else if (cue.isPartTitle) {
+					el = lookupPartTitle();
+					isHeading = true;
 				}
-				var sectionSlug = el ? deriveSectionSlug(el) : null;
+				// title/standfirst/part-title live in the page header or a
+				// part's own opening line, above any h2/h3 section -- there
+				// is no ToC entry to light for them.
+				var sectionSlug = (cue.isTitle || cue.isStandfirst || cue.isPartTitle)
+					? null
+					: (el ? deriveSectionSlug(el) : null);
 				return {
 					start: cue.start, end: cue.end,
 					element: el, section: sectionSlug,
@@ -400,17 +424,7 @@ html.light .prose .audio-active .heading-anchor {
 				};
 			}
 
-			// 3. Prelude — the narrated title block, anchored on the headline
-			if (cue.isPrelude) {
-				var head = lookupMainHeadline();
-				return {
-					start: cue.start, end: cue.end,
-					element: head, section: head ? deriveSectionSlug(head) : null,
-					isHeading: true, isCode: false,
-				};
-			}
-
-			// 4. Text-based fuzzy matching — fallback for VTTs without p-N ids
+			// 3. Text-based fuzzy matching — fallback for VTTs without p-N ids
 			if (!cue.text) return { start: cue.start, end: cue.end, element: null, section: null };
 
 			var data = getParaData();

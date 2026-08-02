@@ -1138,6 +1138,19 @@ const tracksJson: string = JSON.stringify(tracks);
 			const node = scope.querySelector('[id="' + body.slice(8) + '"]');
 			return node ? { text: elementText(node), kind: 'heading', cueId: '' } : null;
 		}
+		if (body === 'title') {
+			const node = document.querySelector('[data-audio-title="title"]');
+			return node ? { text: elementText(node), kind: 'heading', cueId: body } : null;
+		}
+		if (body === 'standfirst') {
+			const node = document.querySelector('[data-audio-standfirst="standfirst"]');
+			return node ? { text: elementText(node), kind: 'prose', cueId: body } : null;
+		}
+		if (body === 'part-title') {
+			const node = scope.querySelector('[data-audio-part-title="part-title"]')
+				|| document.querySelector('[data-audio-title="title"]');
+			return node ? { text: elementText(node), kind: 'heading', cueId: body } : null;
+		}
 
 		// Older VTTs carry the spoken prose itself rather than a marker.
 		return { text: body, kind: 'literal', cueId: '' };

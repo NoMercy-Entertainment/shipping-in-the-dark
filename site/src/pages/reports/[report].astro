@@ -145,10 +145,13 @@ const reportSourcePath = `reports/${report}/`;
 					<div class="mb-4 inline-flex items-center rounded-full bg-accent-400/10 px-3 py-1 text-sm font-medium text-accent-400 light:bg-accent-600/10 light:text-accent-700">
 						Report · {parts.length} parts
 					</div>
-					<h1 class="mb-4 text-3xl font-bold leading-tight tracking-tight text-surface-50 sm:text-4xl light:text-surface-950">
+					<h1
+						class="mb-4 text-3xl font-bold leading-tight tracking-tight text-surface-50 sm:text-4xl light:text-surface-950"
+						data-audio-title="title"
+					>
 						{title}
 					</h1>
-					<p class="text-surface-400 light:text-surface-700">
+					<p class="text-surface-400 light:text-surface-700" data-audio-standfirst="standfirst">
 						{description}
 					</p>
 				</header>

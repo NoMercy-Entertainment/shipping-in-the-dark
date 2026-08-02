@@ -41,24 +41,44 @@ function gitCommittedAtMs(absPath) {
 const failures = [];
 
 function cueIds(text) {
-	return [...text.matchAll(/^((?:p|h|code|i)-(\d+))\s*$/gm)].map(m => ({
-		id: m[1],
-		kind: m[1].split('-')[0],
-		n: Number(m[2]),
-	}));
+	const re = /^((?:(p|h|code|i)-(\d+))|title|standfirst|part-title)\s*$/gm;
+	return [...text.matchAll(re)].map(m => {
+		if (m[2]) return { id: m[1], kind: m[2], n: Number(m[3]) };
+		return { id: m[1], kind: m[1], n: null };
+	});
+}
+
+// Body text of the very first cue block in the VTT, in document order --
+// unlike a plain regex search for a marker pattern, this does not skip past
+// leading unmarked "--" cues to find the first thing that happens to look
+// like a marker further down the file.
+function firstCueBody(text) {
+	const lines = text.replace(/\r/g, '').split('\n');
+	let i = 0;
+	while (i < lines.length && !/^\d+$/.test(lines[i])) i++;
+	if (i >= lines.length) return null;
+	i++; // past the cue number
+	if (!/-->/.test(lines[i] || '')) return null;
+	i++; // past the timestamp line
+	const body = [];
+	while (i < lines.length && lines[i].trim() !== '') {
+		body.push(lines[i].trim());
+		i++;
+	}
+	return body.join(' ').trim();
 }
 
 function narratesTitle(text) {
-	// Two shapes both count. Reports and entries open with a run of "--" cues
-	// carrying the spoken title before any marker. Team profiles instead open
-	// on h-1, which is the page's own heading — narrated and highlightable,
-	// so it is the better of the two rather than a miss.
-	const firstMarker = text.search(/^(?:p|h|code|i)-\d+\s*$/m);
-	const firstSpoken = text.search(/^--/m);
-	if (firstSpoken !== -1 && (firstMarker === -1 || firstSpoken < firstMarker)) return true;
-
-	const firstCue = text.match(/^(?:p|h|code|i)-\d+\s*$/m);
-	return firstCue ? firstCue[0].trim() === 'h-1' : false;
+	// The very first cue in the VTT should be one of: title (an entry, or a
+	// report's part 0 narrating its own outer title first), part-title
+	// (every other report part narrating its own heading first), or the
+	// legacy h-1 shape some team profiles still use (opening directly on
+	// their own page heading rather than a synthesized title line). A
+	// leading run of bare "--" text no longer counts — title, standfirst
+	// and part-title all have real markers now, so a script still opening
+	// on unmarked "--" was never migrated to use them.
+	const first = firstCueBody(text);
+	return first === 'title' || first === 'part-title' || first === 'h-1';
 }
 
 function sequenceBreaks(ids) {
@@ -127,6 +147,9 @@ if (fs.existsSync(DIST)) {
 		// highlighter never looks at, and flagged every legitimate image cue
 		// as unresolved.
 		for (const m of html.matchAll(/data-audio-i="(i-\d+)"/g)) rendered.add(m[1]);
+		for (const m of html.matchAll(/data-audio-title="(title)"/g)) rendered.add(m[1]);
+		for (const m of html.matchAll(/data-audio-standfirst="(standfirst)"/g)) rendered.add(m[1]);
+		for (const m of html.matchAll(/data-audio-part-title="(part-title)"/g)) rendered.add(m[1]);
 	}
 
 	for (const file of walkVtts(AUDIO)) {

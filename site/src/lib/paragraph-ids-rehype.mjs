@@ -8,6 +8,8 @@ import { visit } from 'unist-util-visit';
  *   p-1, p-2, ...   → <p> elements (paragraphs)
  *   h-1, h-2, ...   → <h2>, <h3>, <h4> elements (headings)
  *   i-1, i-2, ...   → <img> elements (images)
+ *   part-title      → <h1> (a report part's own heading; unnumbered,
+ *                     there is only ever one per part)
  *
  * Elements that already carry an id are skipped (headings often have
  * auto-generated slugs). Their slot in the sequence is still consumed
@@ -73,6 +75,16 @@ export default function rehypeParagraphIds() {
 				if (!node.properties) node.properties = {};
 				node.properties.id = node.properties.id || ('h-' + hCounter);
 				node.properties.dataAudioH = 'h-' + hCounter;
+			} else if (node.tagName === 'h1') {
+				// A report part's markdown opens with its own `# Title`,
+				// rendered as this part's <h1>. rehype-slug already gives it
+				// a real unique id, but AudioSync needs a marker that means
+				// "this scope's own title" specifically, distinct from the
+				// page-level title cue (data-audio-title) used for the
+				// entry/report's outer <h1> in the layout template, which
+				// this plugin never sees.
+				if (!node.properties) node.properties = {};
+				node.properties.dataAudioPartTitle = 'part-title';
 			} else if (node.tagName === 'img') {
 				iCounter++;
 				if (!node.properties) node.properties = {};
