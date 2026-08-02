@@ -765,7 +765,18 @@ html.light .prose .audio-active .heading-anchor {
 	function playingThisPage() {
 		var audio = document.getElementById('sitd-global-audio');
 		if (!audio || !audio.src) return false;
-		return basename(audio.src) === basename(currentVttUrl);
+
+		var playing = basename(audio.src);
+		var loaded = basename(currentVttUrl);
+		if (!playing || !loaded) return false;
+
+		// Reports prefix the mp3 with the report slug and the VTT does not, so
+		// "the-effortless-encoder--00-overview.female.brief" has to be recognised
+		// as the same part as "00-overview.female.brief". Comparing for equality
+		// alone silently cleared every highlight on every report page.
+		return playing === loaded
+			|| playing.endsWith(loaded)
+			|| loaded.endsWith(playing);
 	}
 
 	document.addEventListener('audio-timeupdate', function (e) {
