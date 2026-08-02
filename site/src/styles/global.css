@@ -505,6 +505,17 @@ html.light .audio-player .audio-secondary-btn {
 	display: none;
 }
 
+.audio-player .audio-speed-group {
+	display: flex;
+	align-items: center;
+	gap: 0.375rem;
+	flex-shrink: 0;
+}
+.audio-player .audio-secondary-btn:disabled {
+	opacity: 0.4;
+	cursor: default;
+}
+
 .audio-controls {
 	flex: 1;
 	display: flex;

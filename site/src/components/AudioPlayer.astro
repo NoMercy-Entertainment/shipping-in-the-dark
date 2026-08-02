@@ -81,14 +81,41 @@ const { audioUrl = '', title = '' } = Astro.props;
 			{title}
 		</div>
 
-		<button
-			id="audio-speed-btn"
-			class="audio-speed"
-			aria-label="Playback speed: 1x"
-			type="button"
-		>
-			1x
-		</button>
+		<div class="audio-speed-group" role="group" aria-label="Playback speed">
+			<button
+				id="audio-slower-btn"
+				class="audio-secondary-btn"
+				aria-label="Slower"
+				title="Slower"
+				type="button"
+			>
+				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true" width="14" height="14">
+					<line x1="5" y1="12" x2="19" y2="12" />
+				</svg>
+			</button>
+
+			<button
+				id="audio-speed-btn"
+				class="audio-speed"
+				aria-label="Playback speed: 1x"
+				type="button"
+			>
+				1x
+			</button>
+
+			<button
+				id="audio-faster-btn"
+				class="audio-secondary-btn"
+				aria-label="Faster"
+				title="Faster"
+				type="button"
+			>
+				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true" width="14" height="14">
+					<line x1="12" y1="5" x2="12" y2="19" />
+					<line x1="5" y1="12" x2="19" y2="12" />
+				</svg>
+			</button>
+		</div>
 	</div>
 </div>
 
@@ -219,6 +246,28 @@ const { audioUrl = '', title = '' } = Astro.props;
 
 	var speeds = [0.75, 1, 1.25, 1.5];
 	var speedIndex = 1; // start at 1x
+
+	// Slower and Faster clamp at the ends rather than wrapping, so a listener
+	// holding one down cannot loop from 1.5x back to 0.75x. The pill stays the
+	// live readout for all three controls and carries the value in its
+	// aria-label, because the glyph buttons announce only a direction.
+	function applySpeed(nextIndex) {
+		speedIndex = Math.max(0, Math.min(speeds.length - 1, nextIndex));
+		var rate = speeds[speedIndex];
+		audio.playbackRate = rate;
+
+		var label = rate + 'x';
+		var btn = document.getElementById('audio-speed-btn');
+		if (btn) {
+			btn.textContent = label;
+			btn.setAttribute('aria-label', 'Playback speed: ' + label);
+		}
+
+		var slower = document.getElementById('audio-slower-btn');
+		var faster = document.getElementById('audio-faster-btn');
+		if (slower) slower.disabled = speedIndex === 0;
+		if (faster) faster.disabled = speedIndex === speeds.length - 1;
+	}
 
 	// ------------------------------------------------------------------ //
 	// State helpers                                                         //
@@ -362,16 +411,16 @@ const { audioUrl = '', title = '' } = Astro.props;
 				audio.pause();
 			}
 		}
+		if (e.target.closest('#audio-slower-btn')) {
+			applySpeed(speedIndex - 1);
+			return;
+		}
+		if (e.target.closest('#audio-faster-btn')) {
+			applySpeed(speedIndex + 1);
+			return;
+		}
 		if (e.target.closest('#audio-speed-btn')) {
-			speedIndex = (speedIndex + 1) % speeds.length;
-			var rate = speeds[speedIndex];
-			audio.playbackRate = rate;
-			var label = rate + 'x';
-			var btn = document.getElementById('audio-speed-btn');
-			if (btn) {
-				btn.textContent = label;
-				btn.setAttribute('aria-label', 'Playback speed: ' + label);
-			}
+			applySpeed((speedIndex + 1) % speeds.length);
 		}
 	});
 
