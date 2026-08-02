@@ -123,6 +123,13 @@ registration form beside it, in the same repository, has never rendered a name
 field. Both files were committed, reviewed and deployed. Nothing anywhere
 compared them.
 
+And the requirement was not supposed to be there. Stoney had already tasked Arc
+with removing it. NoMercy does not ask new users for their legal name, that
+decision had been made, and carrying it into the realm configuration was work
+Arc had been given and had not done. So this is not a story about a
+contradiction nobody spotted. It is a story about an instruction that was not
+carried out, in a place where nothing existed that could notice.
+
 Onboarding had been the stated priority since the fourth of July. Real fixes
 shipped to it repeatedly. Every repository's tests stayed green, because every
 repository owns a segment of the walk and the defect was not in a segment. It
@@ -196,6 +203,23 @@ So the identity server demanded two attributes that the form it serves has
 never offered. Both halves were committed. Both were reviewed. Both were
 deployed. They contradict each other and they had been contradicting each
 other since March.
+
+There is a harder fact sitting on top of that one, and leaving it out would
+make this entry a more comfortable story than it deserves to be. The removal
+was not waiting to be discovered. Stoney had tasked Arc with taking the legal
+name requirement out, because not asking for it was already the product
+decision. Arc did not do it. The theme was written to match the decision and
+the realm was left holding the old rule, and the gap between the two is exactly
+the shape of a job that was assigned and not finished.
+
+That reframes everything after it. The ten weeks were not the cost of a subtle
+mismatch that no reasonable person would have caught. They were the cost of an
+instruction going unexecuted in a system with no way to tell that an
+instruction had gone unexecuted. Every mechanism described below — the seam
+with no owner, the replay test recorded from a working day, the five green runs
+against the wrong environment — explains why nothing raised its hand
+afterwards. None of them explains why the flag was still there in the first
+place. That part is simpler and worse.
 
 > **For beginners:** Keycloak is an identity server. It owns accounts,
 > passwords, sessions and tokens so the application never has to. The realm
@@ -621,6 +645,16 @@ Four refusals. Ten weeks of outage found. Being the person who keeps saying
 > halves agree. That agreement is where the expensive bugs live, and finding
 > them requires an artifact whose scope is the journey rather than the code.
 
+For the team, and first because it is the uncomfortable one: an instruction
+that is given and not carried out leaves no trace anywhere. A defect gets a
+report, a regression gets a failing test, a crash gets a stack trace. A job
+that was assigned and quietly not done produces silence, and the system it was
+supposed to change goes on behaving exactly as it did before, which is
+indistinguishable from nothing having been asked. Removing the legal name
+requirement was asked for. It was not done. Ten weeks of closed front door
+followed, and every mechanism in this entry explains only why nobody noticed
+afterwards.
+
 For the team: a feature that belongs to no repository will be maintained by
 nobody, no matter how many times it is named the priority. Onboarding was the
 stated top priority for a month. It received real fixes from multiple
@@ -649,6 +683,24 @@ once. As a person. The second fastest was the thirty-line comparison of two
 files sitting in adjacent directories of the same repository, which nobody had
 written, and which took an afternoon of already knowing the answer to think of.
 
+
+---
+
+## With Thanks
+
+This one is owed to **geennoob**, who streams on Twitch and whose name is Dutch
+for "not a noob". He is the reason any of this got looked at. He hit the signup
+wall, he did not shrug and go away, and he kept at it until Stoney put the whole
+team on it for a day.
+
+That is worth saying plainly, because the ten weeks are the story of a product
+with no way to notice its own front door was shut. Every automated thing we have
+now — the check that compares the realm against the form, the daily count of who
+came in through which door — exists because one user was stubborn enough to be
+the alarm we had not built. Most people in that position close the tab, and we
+would never have known. He did not, and it cost him his time to do it.
+
+Thank you.
 
 ---
 
