@@ -223,6 +223,11 @@ libraries compiled in, and that assumption has been wrong.
 
 We build our own ffmpeg, because the decryption and the codec
 mix we need are not in anybody's stock build. That build is
+**Fillz's** work. Every encoder handle in the table above is
+usable because somebody produced a binary that contains it,
+across six platform targets, and that somebody is him. It is the
+least visible layer in this entire report and everything else
+described here is standing on it. That build is
 produced by merging separate 8, 10 and 12 bit passes into one
 binary. On one of those merges the final link quietly dropped
 libx265, and the resulting ffmpeg reported "x265 not found" at
@@ -243,6 +248,13 @@ than trusting a compiled-in list, and the reason that
 indirection exists is that the binary has lied to us. A
 capability table is a description of intent. The only authority
 on what your build supports is your build.
+
+None of which is a criticism of the build. A multilib merge that
+produces one binary carrying 8, 10 and 12 bit paths, with
+decryption linked in, for six platform targets, is a genuinely
+hard piece of engineering that most projects avoid by shipping
+whatever the distribution gives them. The failure mode is subtle
+precisely because the thing being attempted is not.
 
 
 
