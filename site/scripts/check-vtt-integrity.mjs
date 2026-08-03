@@ -207,6 +207,69 @@ if (fs.existsSync(DIST)) {
 	console.log('dist/ not built — skipped the rendered-id cross-check');
 }
 
+// Audio can be fully produced and still be invisible. Entry 011 shipped with
+// its mp3 on the release, its VTT committed here and its manifest stamp
+// recorded, and the page rendered no player at all, because the frontmatter
+// carried neither audio_url nor vtt_url and the layout has nothing to pass
+// down. Every check above passes in that state: the VTT is internally
+// perfect, it just isn't referenced by anything.
+//
+// Only entries and team profiles are checked. Report parts resolve their
+// audio by convention from voice and length variants rather than declaring a
+// url in frontmatter, so requiring a declaration there would fail every one
+// of them.
+function frontmatter(text) {
+	const m = text.replace(/\r/g, '').match(/^---\n([\s\S]*?)\n---/);
+	if (!m) return {};
+	const fields = {};
+	for (const line of m[1].split('\n')) {
+		const kv = line.match(/^([a-z_]+):\s*(.+?)\s*$/);
+		if (kv) fields[kv[1]] = kv[2].replace(/^["']|["']$/g, '');
+	}
+	return fields;
+}
+
+const declaresAudio = [
+	{
+		dir: path.join(REPO_ROOT, 'entries'),
+		label: 'entries',
+		// The URL is the slug field, not the dated filename, and the VTT is
+		// named after the same slug.
+		vttRelFor: fields => (fields.slug ? `${fields.slug}.vtt` : null),
+	},
+	{
+		dir: path.join(SITE, 'src/content/agents'),
+		label: 'team profile',
+		vttRelFor: (_fields, file) => `team/${path.basename(file, '.md')}.vtt`,
+	},
+];
+
+for (const { dir, label, vttRelFor } of declaresAudio) {
+	if (!fs.existsSync(dir)) continue;
+	for (const name of fs.readdirSync(dir)) {
+		if (!name.endsWith('.md')) continue;
+		const file = path.join(dir, name);
+		const fields = frontmatter(fs.readFileSync(file, 'utf8'));
+		const vttRel = vttRelFor(fields, file);
+		if (!vttRel) continue;
+
+		const hasVtt = fs.existsSync(path.join(AUDIO, vttRel));
+		const expected = `/audio/${vttRel}`;
+
+		if (hasVtt && !fields.vtt_url) {
+			failures.push(`${label} ${name}: ${vttRel} exists but the frontmatter has no vtt_url, so the page renders no player`);
+		} else if (fields.vtt_url && fields.vtt_url !== expected) {
+			failures.push(`${label} ${name}: vtt_url is ${fields.vtt_url}, expected ${expected}`);
+		}
+
+		if (hasVtt && !fields.audio_url) {
+			failures.push(`${label} ${name}: ${vttRel} exists but the frontmatter has no audio_url, so the page renders no player`);
+		} else if (fields.audio_url && !fields.audio_url.endsWith(`/${path.basename(vttRel, '.vtt')}.mp3`)) {
+			failures.push(`${label} ${name}: audio_url does not point at ${path.basename(vttRel, '.vtt')}.mp3`);
+		}
+	}
+}
+
 // A VTT rewritten without re-narrating the audio is the worst failure here,
 // because it looks correct: the title cue is present, the ids all resolve,
 // and the shift gets absorbed by the trailing silence so an end-alignment
