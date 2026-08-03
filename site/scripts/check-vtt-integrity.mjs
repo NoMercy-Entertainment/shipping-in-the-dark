@@ -214,10 +214,9 @@ if (fs.existsSync(DIST)) {
 // down. Every check above passes in that state: the VTT is internally
 // perfect, it just isn't referenced by anything.
 //
-// Only entries and team profiles are checked. Report parts resolve their
-// audio by convention from voice and length variants rather than declaring a
-// url in frontmatter, so requiring a declaration there would fail every one
-// of them.
+// Entries and team profiles name their audio in frontmatter. Report parts
+// resolve theirs by convention instead, so they are checked further down
+// against that convention rather than against a declared url.
 function frontmatter(text) {
 	const m = text.replace(/\r/g, '').match(/^---\n([\s\S]*?)\n---/);
 	if (!m) return {};
@@ -270,14 +269,50 @@ for (const { dir, label, vttRelFor } of declaresAudio) {
 	}
 }
 
+// reports/[report].astro builds four fixed paths per part, one per voice and
+// length, and hands all four to the player so a voice swap is instant. A part
+// missing one of them gives the player a url that 404s the moment the reader
+// switches to that combination -- and only that combination, which is why it
+// survives a hand-check. The mp3 counterpart cannot be fetched from a build,
+// but the manifest records every mp3 the pipeline wrote, so a stamp missing
+// there is the same absence one layer earlier.
+const REPORTS_SRC = path.join(REPO_ROOT, 'reports');
+const VOICES = ['female', 'male'];
+const LENGTHS = ['brief', 'elaborate'];
+const manifestPath = path.join(AUDIO, 'audio-manifest.json');
+const stamps = fs.existsSync(manifestPath)
+	? JSON.parse(fs.readFileSync(manifestPath, 'utf8'))
+	: null;
+
+if (fs.existsSync(REPORTS_SRC)) {
+	for (const report of fs.readdirSync(REPORTS_SRC)) {
+		const partsDir = path.join(REPORTS_SRC, report);
+		if (!fs.statSync(partsDir).isDirectory()) continue;
+		for (const name of fs.readdirSync(partsDir)) {
+			if (!name.endsWith('.md')) continue;
+			const slug = path.basename(name, '.md');
+			for (const voice of VOICES) {
+				for (const length of LENGTHS) {
+					const variant = `${slug}.${voice}.${length}`;
+					const vttRel = `reports/${report}/${variant}.vtt`;
+					if (!fs.existsSync(path.join(AUDIO, vttRel))) {
+						failures.push(`report ${report}/${name}: no ${vttRel}, so the ${voice} ${length} track 404s`);
+					}
+					if (stamps && !stamps[`reports/${report}/${variant}.mp3`]) {
+						failures.push(`report ${report}/${name}: the manifest has no stamp for ${variant}.mp3, so that audio was never produced`);
+					}
+				}
+			}
+		}
+	}
+}
+
 // A VTT rewritten without re-narrating the audio is the worst failure here,
 // because it looks correct: the title cue is present, the ids all resolve,
 // and the shift gets absorbed by the trailing silence so an end-alignment
 // check still passes. The tell is a marker file newer than the speech it
 // claims to describe.
-const manifest = path.join(AUDIO, 'audio-manifest.json');
-if (fs.existsSync(manifest)) {
-	const stamps = JSON.parse(fs.readFileSync(manifest, 'utf8'));
+if (stamps) {
 	for (const file of walkVtts(AUDIO)) {
 		const rel = path.relative(AUDIO, file).replace(/\\/g, '/');
 		const audioStamp = stamps[rel.replace(/\.vtt$/, '.mp3')];
