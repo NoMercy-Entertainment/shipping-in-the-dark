@@ -180,8 +180,8 @@ const reportSourcePath = `reports/${report}/`;
 
 	<Footer />
 
-	<AudioSync />
-	<AudioPlayer tracks={tracks} title={title} />
+	{tracks.length > 0 && <AudioSync />}
+	{tracks.length > 0 && <AudioPlayer tracks={tracks} title={title} />}
 </BaseLayout>
 
 <style is:global>

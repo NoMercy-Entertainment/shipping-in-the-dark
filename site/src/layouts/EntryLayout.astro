@@ -178,8 +178,8 @@ const difficultyLabels: Record<string, string> = {
 
 	<Footer />
 
-	<AudioSync vttUrl={vttUrl} />
-	<AudioPlayer tracks={audioTracks} title={title} />
+	{vttUrl && <AudioSync vttUrl={vttUrl} />}
+	{audioTracks.length > 0 && <AudioPlayer tracks={audioTracks} title={title} />}
 </BaseLayout>
 
 <script is:inline>
