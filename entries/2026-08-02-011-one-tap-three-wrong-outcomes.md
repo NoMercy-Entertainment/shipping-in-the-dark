@@ -75,6 +75,8 @@ author: ink
 difficulty: intermediate
 reading_time_minutes: 16
 excerpt: "One television appeared twice in the picker, because a signing key rotated an identifier the app never should have trusted. Tapping the wrong twin sent the music nowhere. Tapping the right one woke the other television anyway, and fifteen seconds later the server ended a session nobody was holding."
+audio_url: https://github.com/NoMercy-Entertainment/shipping-in-the-dark/releases/download/audio-v1/one-tap-three-wrong-outcomes.mp3
+vtt_url: /audio/one-tap-three-wrong-outcomes.vtt
 ---
 
 
