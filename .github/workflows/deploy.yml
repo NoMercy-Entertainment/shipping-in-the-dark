@@ -151,7 +151,10 @@ jobs:
 
             # (b) route under site/src/pages/reports/
             if [ -z "$REPORT_SLUG" ]; then
-              REPORT_ROUTE=$(echo "$CHANGED_FILES" | grep -E '^site/src/pages/reports/[^/]+\.astro$' | tail -1)
+              # Excludes index.astro (the reports listing page, not a report)
+              # and [report].astro (the dynamic route template itself, not a
+              # real slug) — both are structural pages, not report content.
+              REPORT_ROUTE=$(echo "$CHANGED_FILES" | grep -E '^site/src/pages/reports/[^/]+\.astro$' | grep -vE '/(index|\[report\])\.astro$' | tail -1)
               if [ -n "$REPORT_ROUTE" ]; then
                 REPORT_SLUG=$(basename "$REPORT_ROUTE" .astro)
               fi
