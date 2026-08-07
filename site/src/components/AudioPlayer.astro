@@ -1272,17 +1272,17 @@ const tracksJson: string = JSON.stringify(tracks);
 		if (transcriptOpen) {
 			const parent = line.parentElement;
 			if (parent && parent.scrollIntoView) {
-				// 'smooth' animates over ~300-500ms. Cues as short as four or
-				// five seconds fire faster than that animation settles, so the
-				// scroll is still catching up to the PREVIOUS cue when the
-				// NEXT one changes the highlight -- the state is correct on
-				// time, the motion visibly is not. Instant jump for a
-				// real-time sync target; the manual open-panel jump above
-				// (openTranscript) is a one-off navigation and keeps 'smooth'.
-				parent.scrollIntoView({ block: 'nearest', behavior: 'auto' });
+				parent.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
 			}
 		}
 	}
+
+	// 'smooth' scrolling and the highlight animation both take real time to
+	// settle (roughly 300-500ms), so triggering them exactly on a cue's
+	// literal timestamp makes them arrive late by that same amount. Look
+	// ahead by that margin when deciding which cue is active, so the motion
+	// finishes right around when the narration actually gets there.
+	const TRANSCRIPT_LOOKAHEAD_SECONDS = 0.5;
 
 	// AudioSync publishes the live cue on #audio-sync-data, which is what
 	// drives the marking: its mutations land the moment the highlight moves,
@@ -1290,7 +1290,7 @@ const tracksJson: string = JSON.stringify(tracks);
 	// that is, because the literal -- cues carry no id to match on.
 	function syncTranscriptToPlayback() {
 		if (!transcriptCues.length) return;
-		const now = audio.currentTime || 0;
+		const now = (audio.currentTime || 0) + TRANSCRIPT_LOOKAHEAD_SECONDS;
 		let index = -1;
 		for (let i = 0; i < transcriptCues.length; i++) {
 			const cue = transcriptCues[i];
