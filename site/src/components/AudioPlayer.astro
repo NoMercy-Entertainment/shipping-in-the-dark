@@ -1272,7 +1272,14 @@ const tracksJson: string = JSON.stringify(tracks);
 		if (transcriptOpen) {
 			const parent = line.parentElement;
 			if (parent && parent.scrollIntoView) {
-				parent.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+				// 'smooth' animates over ~300-500ms. Cues as short as four or
+				// five seconds fire faster than that animation settles, so the
+				// scroll is still catching up to the PREVIOUS cue when the
+				// NEXT one changes the highlight -- the state is correct on
+				// time, the motion visibly is not. Instant jump for a
+				// real-time sync target; the manual open-panel jump above
+				// (openTranscript) is a one-off navigation and keeps 'smooth'.
+				parent.scrollIntoView({ block: 'nearest', behavior: 'auto' });
 			}
 		}
 	}
