@@ -475,6 +475,24 @@ const tracksJson: string = JSON.stringify(tracks);
 		outline-offset: 2px;
 	}
 
+	/* `right: 0` anchors the panel to the transcript BUTTON, not the
+	   viewport -- on a narrow screen the button sits wherever the
+	   control row scrolled it to, and `width: min(38rem, 100vw - 28px)`
+	   grows the panel leftward from there with no clamp against the
+	   left edge, so it can run off-screen. Below 720px, anchor to the
+	   viewport instead of the button so the panel's edges are always
+	   the same two numbers regardless of where the button is. */
+	@media (max-width: 720px) {
+		.audio-transcript-panel {
+			position: fixed;
+			left: 14px;
+			right: 14px;
+			bottom: 14px;
+			width: auto;
+			max-height: min(70vh, 32rem);
+		}
+	}
+
 	.audio-transcript-head {
 		display: flex;
 		align-items: center;
