@@ -243,29 +243,87 @@ const declaresAudio = [
 	},
 ];
 
-for (const { dir, label, vttRelFor } of declaresAudio) {
-	if (!fs.existsSync(dir)) continue;
-	for (const name of fs.readdirSync(dir)) {
-		if (!name.endsWith('.md')) continue;
-		const file = path.join(dir, name);
-		const fields = frontmatter(fs.readFileSync(file, 'utf8'));
-		const vttRel = vttRelFor(fields, file);
-		if (!vttRel) continue;
+const REPORTS_SRC = path.join(REPO_ROOT, 'reports');
+const VOICES = ['female', 'male'];
+const LENGTHS = ['brief', 'elaborate'];
+const manifestPath = path.join(AUDIO, 'audio-manifest.json');
+const stamps = fs.existsSync(manifestPath)
+	? JSON.parse(fs.readFileSync(manifestPath, 'utf8'))
+	: null;
 
-		const hasVtt = fs.existsSync(path.join(AUDIO, vttRel));
-		const expected = `/audio/${vttRel}`;
-
-		if (hasVtt && !fields.vtt_url) {
-			failures.push(`${label} ${name}: ${vttRel} exists but the frontmatter has no vtt_url, so the page renders no player`);
-		} else if (fields.vtt_url && fields.vtt_url !== expected) {
-			failures.push(`${label} ${name}: vtt_url is ${fields.vtt_url}, expected ${expected}`);
+// One unit per audio track the site can ever link to, regardless of which of
+// the three kinds (entries, team, report parts) produced it, and regardless
+// of whether it declares its player via explicit frontmatter (entries, team)
+// or by the reports layout's fixed-path convention. Every check below --
+// frontmatter wiring, presence, manifest stamp, source-vs-narration staleness
+// -- walks this ONE list instead of re-deriving it, so a new kind of audio
+// only ever needs a new generator here, never a new copy of every check.
+// `frontmatter` is the parsed fields object for entries/team, or null for
+// report parts (which have no frontmatter to check).
+function* audioUnits() {
+	for (const { dir, label, vttRelFor } of declaresAudio) {
+		if (!fs.existsSync(dir)) continue;
+		for (const name of fs.readdirSync(dir)) {
+			if (!name.endsWith('.md')) continue;
+			const sourceFile = path.join(dir, name);
+			const fields = frontmatter(fs.readFileSync(sourceFile, 'utf8'));
+			const vttRel = vttRelFor(fields, sourceFile);
+			if (!vttRel) continue;
+			yield {
+				sourceFile,
+				sourceLabel: `${label} ${name}`,
+				vttRel,
+				audioStampKey: vttRel.replace(/\.vtt$/, '.mp3'),
+				frontmatter: fields,
+			};
 		}
+	}
 
-		if (hasVtt && !fields.audio_url) {
-			failures.push(`${label} ${name}: ${vttRel} exists but the frontmatter has no audio_url, so the page renders no player`);
-		} else if (fields.audio_url && !fields.audio_url.endsWith(`/${path.basename(vttRel, '.vtt')}.mp3`)) {
-			failures.push(`${label} ${name}: audio_url does not point at ${path.basename(vttRel, '.vtt')}.mp3`);
+	if (fs.existsSync(REPORTS_SRC)) {
+		for (const report of fs.readdirSync(REPORTS_SRC)) {
+			const partsDir = path.join(REPORTS_SRC, report);
+			if (!fs.statSync(partsDir).isDirectory()) continue;
+			for (const name of fs.readdirSync(partsDir)) {
+				if (!name.endsWith('.md')) continue;
+				const slug = path.basename(name, '.md');
+				const sourceFile = path.join(partsDir, name);
+				for (const voice of VOICES) {
+					for (const length of LENGTHS) {
+						const variant = `${slug}.${voice}.${length}`;
+						const vttRel = `reports/${report}/${variant}.vtt`;
+						yield {
+							sourceFile,
+							sourceLabel: `report ${report}/${name}`,
+							vttRel,
+							audioStampKey: `reports/${report}/${variant}.mp3`,
+							frontmatter: null,
+						};
+					}
+				}
+			}
 		}
+	}
+}
+
+// entries/team declare their player via frontmatter; a track that exists
+// with nothing pointing at it renders no player at all (Entry 011's failure
+// mode -- every other check here passed while the page shipped silent).
+for (const unit of audioUnits()) {
+	if (!unit.frontmatter) continue; // reports have no frontmatter to check
+	const { sourceLabel, vttRel, frontmatter: fields } = unit;
+	const hasVtt = fs.existsSync(path.join(AUDIO, vttRel));
+	const expected = `/audio/${vttRel}`;
+
+	if (hasVtt && !fields.vtt_url) {
+		failures.push(`${sourceLabel}: ${vttRel} exists but the frontmatter has no vtt_url, so the page renders no player`);
+	} else if (fields.vtt_url && fields.vtt_url !== expected) {
+		failures.push(`${sourceLabel}: vtt_url is ${fields.vtt_url}, expected ${expected}`);
+	}
+
+	if (hasVtt && !fields.audio_url) {
+		failures.push(`${sourceLabel}: ${vttRel} exists but the frontmatter has no audio_url, so the page renders no player`);
+	} else if (fields.audio_url && !fields.audio_url.endsWith(`/${path.basename(vttRel, '.vtt')}.mp3`)) {
+		failures.push(`${sourceLabel}: audio_url does not point at ${path.basename(vttRel, '.vtt')}.mp3`);
 	}
 }
 
@@ -276,34 +334,20 @@ for (const { dir, label, vttRelFor } of declaresAudio) {
 // survives a hand-check. The mp3 counterpart cannot be fetched from a build,
 // but the manifest records every mp3 the pipeline wrote, so a stamp missing
 // there is the same absence one layer earlier.
-const REPORTS_SRC = path.join(REPO_ROOT, 'reports');
-const VOICES = ['female', 'male'];
-const LENGTHS = ['brief', 'elaborate'];
-const manifestPath = path.join(AUDIO, 'audio-manifest.json');
-const stamps = fs.existsSync(manifestPath)
-	? JSON.parse(fs.readFileSync(manifestPath, 'utf8'))
-	: null;
-
-if (fs.existsSync(REPORTS_SRC)) {
-	for (const report of fs.readdirSync(REPORTS_SRC)) {
-		const partsDir = path.join(REPORTS_SRC, report);
-		if (!fs.statSync(partsDir).isDirectory()) continue;
-		for (const name of fs.readdirSync(partsDir)) {
-			if (!name.endsWith('.md')) continue;
-			const slug = path.basename(name, '.md');
-			for (const voice of VOICES) {
-				for (const length of LENGTHS) {
-					const variant = `${slug}.${voice}.${length}`;
-					const vttRel = `reports/${report}/${variant}.vtt`;
-					if (!fs.existsSync(path.join(AUDIO, vttRel))) {
-						failures.push(`report ${report}/${name}: no ${vttRel}, so the ${voice} ${length} track 404s`);
-					}
-					if (stamps && !stamps[`reports/${report}/${variant}.mp3`]) {
-						failures.push(`report ${report}/${name}: the manifest has no stamp for ${variant}.mp3, so that audio was never produced`);
-					}
-				}
-			}
-		}
+//
+// Reports only, not entries/team: those two declare their own player via
+// frontmatter (checked above) and are allowed to exist with no audio at all
+// -- a profile or entry not yet narrated is a normal, valid state for them,
+// not a defect. Report parts have no such "not narrated yet" state: the
+// layout builds their four player urls unconditionally the moment the part
+// markdown exists, so an unnarrated part is always a 404 in waiting.
+for (const { sourceLabel, vttRel, audioStampKey, frontmatter: fm } of audioUnits()) {
+	if (fm !== null) continue; // entries/team (fm set): frontmatter check above already covers this; only reports (fm null) reach here
+	if (!fs.existsSync(path.join(AUDIO, vttRel))) {
+		failures.push(`${sourceLabel}: no ${vttRel}, so that track 404s`);
+	}
+	if (stamps && !stamps[audioStampKey]) {
+		failures.push(`${sourceLabel}: the manifest has no stamp for ${path.basename(audioStampKey)}, so that audio was never produced`);
 	}
 }
 
@@ -336,6 +380,30 @@ if (stamps) {
 		// retimed hours or days after its audio.
 		if (compareAt > audioStamp + 20 * 60_000) {
 			failures.push(`${rel}: timings rewritten after the audio was last narrated`);
+		}
+	}
+}
+
+// The check above catches a VTT retimed without its audio being re-narrated.
+// It cannot catch the opposite direction: the SOURCE markdown -- the words a
+// reader actually sees -- edited after the audio was narrated, so the voice
+// reads a sentence the page no longer has. Nothing else here looks at the
+// source .md's own commit time at all, so a post-narration wording fix (a
+// typo, a clarified line, a whole paragraph rewritten) ships silently
+// correct on the page and silently wrong in the reader's ear. Same 20-minute
+// buffer as the VTT-vs-audio check, for the same reason: the source commit
+// and the audio being narrated from it are not required to land in the same
+// push, so a close-but-real gap must not be flagged as staleness.
+if (stamps) {
+	for (const { sourceFile, sourceLabel, vttRel, audioStampKey } of audioUnits()) {
+		const audioStamp = stamps[audioStampKey];
+		if (!audioStamp) continue; // already reported above as missing audio
+		if (!fs.existsSync(path.join(AUDIO, vttRel))) continue; // already reported above as missing VTT
+		const sourceCommitted = gitCommittedAtMs(sourceFile);
+		if (!sourceCommitted.ok) continue; // git unusable; already warned once
+		const compareAt = sourceCommitted.ms !== null ? sourceCommitted.ms : fs.statSync(sourceFile).mtimeMs;
+		if (compareAt > audioStamp + 20 * 60_000) {
+			failures.push(`${sourceLabel}: the source text was edited after this narration was recorded -- the audio may be reading stale wording`);
 		}
 	}
 }
