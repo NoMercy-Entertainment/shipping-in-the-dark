@@ -248,13 +248,23 @@ html.light .prose .audio-active .heading-anchor {
 
 	function getScopeRoot() {
 		if (currentPartSlug) {
-			// Must match the section element, not a TOC link that also carries
-			// data-part-slug. Prefer the id'd section, which is unique.
-			var scoped = document.getElementById('part-' + currentPartSlug)
-				|| document.querySelector('section[data-part-slug="' + currentPartSlug + '"]');
-			if (scoped) return scoped;
+			return document.querySelector('section[data-part-slug="' + currentPartSlug + '"]');
 		}
 		return null;
+	}
+
+	// A merged report page renders every part's markdown independently, so
+	// each part's p-N/h-N/i-N/code-N counter restarts at 1 -- the DOM ends
+	// up with the same id repeated once per part. document.getElementById
+	// always returns the FIRST match in document order, which is only ever
+	// correct for part 0. Scoped lookups must fail closed (no highlight)
+	// rather than silently falling through to that first, wrong match.
+	function scopedQuery(selector) {
+		if (currentPartSlug) {
+			var scope = getScopeRoot();
+			return scope ? scope.querySelector(selector) : null;
+		}
+		return document.querySelector(selector);
 	}
 
 	// The page's own <h1>: the entry's title, or a report's outer title
@@ -276,32 +286,20 @@ html.light .prose .audio-active .heading-anchor {
 	// so an entry (which has no parts) still resolves sensibly if a script
 	// ever emits a part-title cue for one by mistake.
 	function lookupPartTitle() {
-		var scope = getScopeRoot();
-		var sel = '[data-audio-part-title="part-title"]';
-		var el = scope ? scope.querySelector(sel) : document.querySelector(sel);
-		return el || lookupTitle();
+		return scopedQuery('[data-audio-part-title="part-title"]') || lookupTitle();
 	}
 
 	function lookupById(id) {
-		var scope = getScopeRoot();
-		if (scope) {
-			// querySelector with an ID selector is scoped to descendants of scope
-			var escaped = id.replace(/"/g, '\\"');
-			return scope.querySelector('[id="' + escaped + '"]');
-		}
-		return document.getElementById(id);
+		var escaped = id.replace(/"/g, '\\"');
+		return scopedQuery('[id="' + escaped + '"]');
 	}
 
 	function lookupHeading(id) {
-		var scope = getScopeRoot();
-		var sel = '[data-audio-h="' + id + '"]';
-		return scope ? scope.querySelector(sel) : document.querySelector(sel);
+		return scopedQuery('[data-audio-h="' + id + '"]');
 	}
 
 	function lookupImage(id) {
-		var scope = getScopeRoot();
-		var sel = '[data-audio-i="' + id + '"]';
-		return scope ? scope.querySelector(sel) : document.querySelector(sel);
+		return scopedQuery('[data-audio-i="' + id + '"]');
 	}
 
 	// ------------------------------------------------------------------ //

@@ -1113,10 +1113,16 @@ const tracksJson: string = JSON.stringify(tracks);
 	let transcriptActiveIndex = -1;
 	let transcriptOpen = false;
 
+	// A merged report page renders every part's markdown independently, so
+	// each part's p-N/h-N/i-N ids restart at 1 and repeat once per part.
+	// If the section for the current part cannot be found, querying the
+	// whole document would silently resolve to the FIRST match instead --
+	// always part 0's paragraph, never the one actually playing. Returning
+	// null here makes that failure visible (no cue text) instead of wrong.
 	function transcriptScope() {
 		const slug = currentPartSlug();
 		if (!slug) return document;
-		return document.querySelector('section[data-part-slug="' + slug + '"]') || document;
+		return document.querySelector('section[data-part-slug="' + slug + '"]') || null;
 	}
 
 	// A cue body is either a marker id, which is spoken as the text of the
@@ -1133,6 +1139,7 @@ const tracksJson: string = JSON.stringify(tracks);
 		}
 
 		const scope = transcriptScope();
+		if (!scope) return null;
 
 		if (/^p-\d+$/.test(body)) {
 			const node = scope.querySelector('[id="' + body + '"]');
