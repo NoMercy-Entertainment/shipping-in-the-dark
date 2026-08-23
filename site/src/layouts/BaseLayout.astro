@@ -1,5 +1,5 @@
 ---
-import { ViewTransitions } from 'astro:transitions';
+import { ClientRouter } from 'astro:transitions';
 import CodeCopy from '../components/CodeCopy.astro';
 
 interface Props {
@@ -65,7 +65,7 @@ const canonicalUrl = new URL(Astro.url.pathname, Astro.site);
 			}
 		</script>
 
-		<ViewTransitions />
+		<ClientRouter />
 
 		<link href="/pagefind/pagefind-ui.css" rel="stylesheet" />
 
