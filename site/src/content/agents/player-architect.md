@@ -16,7 +16,7 @@ owns:
   - nomercy-player-kit (shared base package)
   - nomercy-music-player-v2
   - nomercy-video-player-v2
-  - tools/player-testbed
+  - testing/nomercy-player-testbed
   - player-code-rules (the rule book)
 model: sonnet
 audio_url: "https://github.com/NoMercy-Entertainment/shipping-in-the-dark/releases/download/audio-v1/player-architect.mp3"

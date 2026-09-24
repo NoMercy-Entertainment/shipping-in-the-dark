@@ -26,7 +26,7 @@ components:
   - .claude/specs/2026-05-07-handoff.md
   - players-v2 hard rules document
   - players-v2 master inventory
-  - tools/player-testbed
+  - testing/nomercy-player-testbed
   - CLAUDE.md agent roster
 
 # --- PEOPLE ---
@@ -340,7 +340,7 @@ difference between a rule-follower and an architect.
 After the inventory, Spine dispatched four agents in parallel for Wave 2:
 
 - [Frame](../agents/video-player-specialist.md) on a new
-  `packages/nomercy-subtitle-octopus/` skeleton — vendoring the Octopus assets
+  `packages/subtitles/nomercy-subtitle-octopus/` skeleton — vendoring the Octopus assets
   locally for our fork.
 - [Sharp](../agents/code-quality-enforcer.md) on the kit overload rename and
   the plugin layer rename — the cleanup pass that her own `§6.5` had just
