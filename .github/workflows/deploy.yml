@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   build:
-    runs-on: [self-hosted, beast-unit]
+    runs-on: [self-hosted, Linux, X64, beast-unit]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -44,6 +44,10 @@ jobs:
         working-directory: site
         run: npm run build
 
+      - name: Test the site scripts
+        working-directory: site
+        run: node --test "scripts/**/*.test.mjs"
+
       # Runs after the build so dist/ exists — the id cross-check compares
       # every cue against what the pages actually rendered.
       - name: Check VTT integrity
@@ -57,7 +61,7 @@ jobs:
 
   deploy:
     needs: build
-    runs-on: [self-hosted, beast-unit]
+    runs-on: [self-hosted, Linux, X64, beast-unit]
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -68,7 +72,7 @@ jobs:
 
   notify:
     needs: deploy
-    runs-on: [self-hosted, beast-unit]
+    runs-on: [self-hosted, Linux, X64, beast-unit]
     if: ${{ success() && vars.DISCORD_NOTIFY != 'false' }}
     steps:
       - name: Checkout

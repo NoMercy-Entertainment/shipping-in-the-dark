@@ -12,6 +12,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
+import { contentCommittedAtMs } from './git-content-time.mjs';
 
 const SITE = path.resolve(import.meta.dirname, '..');
 const REPO_ROOT = path.resolve(SITE, '..');
@@ -71,11 +72,7 @@ function gitWorks() {
 function gitCommittedAtMs(absPath) {
 	if (!gitWorks()) return { ok: false };
 	const rel = path.relative(REPO_ROOT, absPath).replace(/\\/g, '/');
-	const out = execFileSync('git', ['log', '-1', '--format=%ct', '--', rel], {
-		cwd: REPO_ROOT,
-		encoding: 'utf8',
-	}).trim();
-	return { ok: true, ms: out ? Number(out) * 1000 : null };
+	return { ok: true, ms: contentCommittedAtMs(REPO_ROOT, rel) };
 }
 
 const failures = [];
