@@ -26,5 +26,8 @@
   },
   "devDependencies": {
     "pagefind": "^1.4.0"
+  },
+  "overrides": {
+    "undici": "^8.10.2"
   }
 }
