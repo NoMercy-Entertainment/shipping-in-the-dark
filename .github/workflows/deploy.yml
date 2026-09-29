@@ -18,7 +18,7 @@ jobs:
     runs-on: [self-hosted, Linux, X64, beast-unit]
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           clean: true
           # The VTT integrity check reads each marker file's commit time to
@@ -28,7 +28,7 @@ jobs:
           fetch-depth: 0
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 22
 
@@ -55,7 +55,7 @@ jobs:
         run: node scripts/check-vtt-integrity.mjs
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: site/dist
 
@@ -68,7 +68,7 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
 
   notify:
     needs: deploy
@@ -76,7 +76,7 @@ jobs:
     if: ${{ success() && vars.DISCORD_NOTIFY != 'false' }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           # git diff HEAD~1 HEAD below needs a real previous commit to diff
           # against — a shallow (depth-1) clone has no HEAD~1, so the diff
