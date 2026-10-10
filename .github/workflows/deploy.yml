@@ -15,6 +15,7 @@ concurrency:
 
 jobs:
   build:
+    timeout-minutes: 7200
     runs-on: [self-hosted, Linux, X64, beast-unit]
     steps:
       - name: Checkout
@@ -60,6 +61,7 @@ jobs:
           path: site/dist
 
   deploy:
+    timeout-minutes: 7200
     needs: build
     runs-on: [self-hosted, Linux, X64, beast-unit]
     environment:
@@ -71,6 +73,7 @@ jobs:
         uses: actions/deploy-pages@v5
 
   notify:
+    timeout-minutes: 7200
     needs: deploy
     runs-on: [self-hosted, Linux, X64, beast-unit]
     if: ${{ success() && vars.DISCORD_NOTIFY != 'false' }}
