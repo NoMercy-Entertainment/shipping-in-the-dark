@@ -2,10 +2,11 @@
   "name": "@nomercy-entertainment/shipping-in-the-dark",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "yarn@4.18.1",
   "type": "module",
   "scripts": {
     "dev": "astro dev",
-    "build": "node scripts/copy-content.mjs && astro build && npx pagefind --site dist",
+    "build": "node scripts/copy-content.mjs && astro build && yarn pagefind --site dist",
     "preview": "astro preview"
   },
   "dependencies": {
@@ -27,7 +28,7 @@
   "devDependencies": {
     "pagefind": "^1.4.0"
   },
-  "overrides": {
+  "resolutions": {
     "undici": "^8.10.2"
   }
 }

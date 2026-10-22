@@ -33,17 +33,20 @@ jobs:
         with:
           node-version: 22
 
+      - name: Enable Corepack
+        run: corepack enable
+
       - name: Clean stale build cache
         working-directory: site
         run: rm -rf .astro dist node_modules/.astro
 
       - name: Install dependencies
         working-directory: site
-        run: npm ci
+        run: yarn install --immutable
 
       - name: Build
         working-directory: site
-        run: npm run build
+        run: yarn build
 
       - name: Test the site scripts
         working-directory: site
